@@ -4675,6 +4675,13 @@ def inorganic_csv(name4):
     print(data4)
     return data4
 
+# 8.2.1 用于magpie,导入含有无机材料化学式的csv
+def inorganic_magpie_csv(name20):
+    import pandas as pd
+    global data20
+    data20 = pd.read_csv(name20)
+    print(data20)
+    return data20
 
 # 8.2.2 matminer无机材料（类独热编码）描述符生成，102维
 # 例如(Fe2AgCu2)O3, Fe2O3, Cs3PbI3, MoS2, CuInGaSe, Si, TiO2等
@@ -4688,12 +4695,39 @@ def inorganic_featurizer(path):
     for i in range(0, len(data4.index)):
         data7 = pd.concat([data7, pd.DataFrame(ef.featurize(list4[i])).T])
     data8 = data7.reset_index()
+    data8 = data8.iloc[:, 1:]
     print(data8)
     element_fraction_labels = ef.feature_labels()
     print(element_fraction_labels)
     # 特征存入pydel_featurizer.csv
-    data8.to_csv(path+"/inorganic_featurizer_output.csv")
+    data8.to_csv(path+"/inorganic_featurizer_output.csv",index=None)
     return data8,element_fraction_labels
+
+# 8.2.3 magpie（matminer)无机材料描述符生成
+def inorganic_magpie_featurizer(path):
+    from matminer.featurizers.conversions import StrToComposition
+    from matminer.featurizers.composition import ElementProperty
+    import pandas as pd
+
+    str_to_comp = StrToComposition(target_col_id='composition')
+    df_comp = str_to_comp.featurize_dataframe(data20, col_id='formula')   #此处规定csv中第一列列名必须是 formula  否则软件闪退！！！！！
+    features = ['Number', 'MendeleevNumber', 'AtomicWeight', 'MeltingT',
+                'Column', 'Row', 'CovalentRadius', 'Electronegativity',
+                'NsValence', 'NpValence', 'NdValence', 'NfValence', 'NValence',
+                'NsUnfilled', 'NpUnfilled', 'NdUnfilled', 'NfUnfilled', 'NUnfilled',
+                'GSvolume_pa', 'GSbandgap', 'GSmagmom', 'SpaceGroupNumber']
+
+    stats = ['mean', 'minimum', 'maximum', 'range', 'avg_dev', 'mode']
+
+    featurizer = ElementProperty(data_source='magpie',
+                                 features=features,
+                                 stats=stats)
+    df_features = featurizer.featurize_dataframe(df_comp, col_id='composition')
+    df_features = df_features.iloc[:, 2:-1]
+    print(df_features)
+    df_features.to_csv(path+"/1_magpie.csv",index=None)
+    return df_features
+
 
 # 9 遗传算法设计新特征
 ## 9.1 普通默认运算符

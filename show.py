@@ -42,6 +42,10 @@ class mywindow(QtWidgets.QMainWindow, Ui_MainWindow):
                                 help="默认描述符生成-有机文件路径")
         self.parser.add_argument("--origin_path_4", type=str, default="D:/project_zl/Inorganic_formula.csv",
                                  help="默认描述符生成-无机文件路径")
+
+        self.parser.add_argument("--origin_path_20", type=str, default="D:/project_zl/Inorganic_magpie_formula.csv",
+                                 help="默认描述符生成-无机magpie文件路径")
+
         self.parser.add_argument("--origin_path_5", type=str, default="D:/project_zl/data_rfe25new.csv",
                                  help="没用")
         self.parser.add_argument("--origin_path_6", type=str,
@@ -74,10 +78,20 @@ class mywindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
         # 描述符生成
         self.action_smiles_2.triggered.connect(self.enter_organic_smiles)
-        self.action_17.triggered.connect(self.enter_inorganic_fomula)
         self.actionpydel.triggered.connect(self.Descriptorgeneration_Organicmoleculardescriptors_pydel)
         self.actionrdkit_2.triggered.connect(self.Descriptorgeneration_Organicmoleculardescriptors_rdkit)
+        self.action_importonehot.triggered.connect(self.enter_inorganic_fomula)
         self.actionmatminer_2.triggered.connect(self.Descriptorgeneration_Inorganicmoleculardescriptors_matminers)
+
+        self.actionImport_magpie_formula.triggered.connect(self.Import_magpie_formula)
+        self.actionGenerate_magpie.triggered.connect(self.Generate_magpie)
+        # self.menu_16.addAction(self.action_importonehot)
+        # self.menu_16.addAction(self.actionmatminer_2)
+        # self.menuInorganic_descriptor_matminer.addAction(self.actionImport_magpie_formula)
+        # self.menuInorganic_descriptor_matminer.addAction(self.actionGenerate_magpie)
+
+
+
 
         # 数据导入
         self.action_21.triggered.connect(self.enter_training_test_set_path)
@@ -115,6 +129,7 @@ class mywindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
         self.enter_organic_smiles_state =self.opt.if_control
         self.enter_inorganic_fomula_state = self.opt.if_control
+        self.Import_magpie_formula_state = self.opt.if_control
         self.enter_training_test_set_path_state=self.opt.if_control                      # 由于本电脑有默认导入文件路径，所以可由if_control控制，方便测试
 
 
@@ -237,6 +252,27 @@ class mywindow(QtWidgets.QMainWindow, Ui_MainWindow):
                 QMessageBox.information(self, 'Hint', 'Please enter a file!', QMessageBox.Ok | QMessageBox.Close,
                                         QMessageBox.Close)
 
+
+    def Import_magpie_formula(self):
+            directory_temp, filetype = QFileDialog.getOpenFileNames(self, "Select file")
+            if len(directory_temp) > 0:
+                str_root = str(directory_temp)
+                f_csv = str_root.rfind('.csv')
+                if f_csv != -1:                                           # 判断是不是.csv
+                    self.opt.origin_path_20= str((str_root.replace("\\", '/'))[2:-2])
+                    self.Import_magpie_formula_state = True
+                    QMessageBox.information(self, 'Hint', 'Completed!', QMessageBox.Ok | QMessageBox.Close,
+                                            QMessageBox.Close)
+                else:
+                    QMessageBox.information(self, 'Hint', 'Not .csv file, please re-enter!', QMessageBox.Ok | QMessageBox.Close,
+                                            QMessageBox.Close)
+            else:
+                QMessageBox.information(self, 'Hint', 'Please enter a file!', QMessageBox.Ok | QMessageBox.Close,
+                                        QMessageBox.Close)
+
+        # self.action_Import_magpie_formula.triggered.connect(self.Import_magpie_formula)
+        # self.actionGenerate_magpie.triggered.connect(self.Generate_magpie)
+
     # 暂时不行
     # 描述符生成--有机分子描述符--pydel描述符   descriptor generation_Organic molecular descriptors_pydel
     def Descriptorgeneration_Organicmoleculardescriptors_pydel(self):
@@ -309,6 +345,31 @@ class mywindow(QtWidgets.QMainWindow, Ui_MainWindow):
                 os.startfile(str1)
         else:
             QMessageBox.information(self, 'Hint', 'Do "Import formula"!', QMessageBox.Ok | QMessageBox.Close,
+                                    QMessageBox.Close)
+
+# self.action_Import_magpie_formula.triggered.connect(self.Import_magpie_formula)
+ # self.actionGenerate_magpie.triggered.connect(self.Generate_magpie)
+# 生成magpie描述符
+    def Generate_magpie(self):
+        if self.Import_magpie_formula_state == True:
+            path = self.opt.save_path + "/Descriptor generation/Inorganic molecular descriptors/magpie"
+            if os.path.exists(path):
+                shutil.rmtree(path)
+            os.makedirs(path)
+
+            data20=dataML.inorganic_magpie_csv(self.opt.origin_path_20)
+            data21=dataML.inorganic_magpie_featurizer(path)
+            self.textBrowser_print_Pandas_DataFrame_table(data20, 0, 1)
+            self.textBrowser_print_Pandas_DataFrame_table(data21, 2, 1)
+            self.textBrowser.append("*" * 150)
+
+            QMessageBox.information(self, 'Hint', 'Completed!', QMessageBox.Ok | QMessageBox.Close,
+                                    QMessageBox.Close)
+            if self.opt.if_open == True:
+                str1 = (path + "/1_magpie.csv").replace("/", "\\")
+                os.startfile(str1)
+        else:
+            QMessageBox.information(self, 'Hint', 'Do "Import smiles"!', QMessageBox.Ok | QMessageBox.Close,
                                     QMessageBox.Close)
 
     # 数据导入----------------------------------------------------------------------------------------
