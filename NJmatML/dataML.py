@@ -4,6 +4,271 @@
 # s_rfe 是rfe特征选择后的特征数据
 # target是目标数据
 
+
+
+# 0 描述符导入
+# 0.1 有机分子描述符导入（NJmatML提供了pydel描述符和rdkit描述符）
+# 0.1.1 pydel描述符
+# 0.1.1.1 导入有机分子smiles码的csv文件
+
+
+def smiles_csv_pydel(name2):
+    import pandas as pd
+    global data2
+    data2 = pd.read_csv(name2)
+    print(data2.iloc[:,0])
+    return data2
+
+# 0.1.1.2 pydel描述符生成
+def pydel_featurizer(path):
+    from padelpy import from_smiles
+    import pandas as pd
+    data2a = data2.iloc[:,0].map(lambda x : from_smiles(x).values())
+    data2a = pd.DataFrame(data2a)
+    data2b = data2a.iloc[:,0].apply(pd.Series)
+    #写入列名
+    data2c = data2.iloc[:,0].map(lambda x : from_smiles(x).keys())
+    col2c = data2c.iloc[0]
+    data2b.columns = col2c
+    print(data2b)
+    # 特征存入pydel_featurizer.csv
+    data2b.to_csv(path+"/pydel_featurizer_output.csv")
+    return data2b
+
+# !pip install padelpy
+# from padelpy import from_smiles
+# import pandas as pd
+# # calculate molecular descriptors for propane
+# CCC_descriptors = from_smiles('CCC')
+# print(CCC_descriptors)
+# print(CCC_descriptors['nAcid'])
+# print(CCC_descriptors['ALogP'])
+# print(CCC_descriptors['ALogp2'])
+
+
+# 0.1.2 rdkit描述符
+# 0.1.2.1 导入有机分子smiles码的csv文件
+def smiles_csv_rdkit(name3):
+    import pandas as pd
+    global data3
+    data3 = pd.read_csv(name3)
+    print(data3.iloc[:,0])
+    return data3
+
+
+
+# 0.1.2.2 rdkit描述符生成
+def rdkit_featurizer(path):
+    import pandas as pd
+    from rdkit import Chem
+    from rdkit.Chem import Draw
+    from rdkit.Chem import rdDepictor
+    from rdkit.ML.Descriptors.MoleculeDescriptors import MolecularDescriptorCalculator
+    # choose 200 molecular descriptors
+    chosen_descriptors = ['BalabanJ', 'BertzCT', 'Chi0', 'Chi0n', 'Chi0v', 'Chi1', 'Chi1n', 'Chi1v', 'Chi2n', 'Chi2v', 'Chi3n', 'Chi3v', 'Chi4n', 'Chi4v', 'EState_VSA1', 'EState_VSA10', 'EState_VSA11', 'EState_VSA2', 'EState_VSA3', 'EState_VSA4', 'EState_VSA5', 'EState_VSA6', 'EState_VSA7', 'EState_VSA8', 'EState_VSA9', 'ExactMolWt', 'FpDensityMorgan1', 'FpDensityMorgan2', 'FpDensityMorgan3', 'FractionCSP3', 'HallKierAlpha', 'HeavyAtomCount', 'HeavyAtomMolWt', 'Ipc', 'Kappa1', 'Kappa2', 'Kappa3', 'LabuteASA', 'MaxAbsEStateIndex', 'MaxAbsPartialCharge', 'MaxEStateIndex', 'MaxPartialCharge', 'MinAbsEStateIndex', 'MinAbsPartialCharge', 'MinEStateIndex', 'MinPartialCharge', 'MolLogP', 'MolMR', 'MolWt', 'NHOHCount', 'NOCount', 'NumAliphaticCarbocycles', 'NumAliphaticHeterocycles', 'NumAliphaticRings', 'NumAromaticCarbocycles', 'NumAromaticHeterocycles', 'NumAromaticRings', 'NumHAcceptors', 'NumHDonors', 'NumHeteroatoms', 'NumRadicalElectrons', 'NumRotatableBonds', 'NumSaturatedCarbocycles', 'NumSaturatedHeterocycles', 'NumSaturatedRings', 'NumValenceElectrons', 'PEOE_VSA1', 'PEOE_VSA10', 'PEOE_VSA11', 'PEOE_VSA12', 'PEOE_VSA13', 'PEOE_VSA14', 'PEOE_VSA2', 'PEOE_VSA3', 'PEOE_VSA4', 'PEOE_VSA5', 'PEOE_VSA6', 'PEOE_VSA7', 'PEOE_VSA8', 'PEOE_VSA9', 'RingCount', 'SMR_VSA1', 'SMR_VSA10', 'SMR_VSA2', 'SMR_VSA3', 'SMR_VSA4', 'SMR_VSA5', 'SMR_VSA6', 'SMR_VSA7', 'SMR_VSA8', 'SMR_VSA9', 'SlogP_VSA1', 'SlogP_VSA10', 'SlogP_VSA11', 'SlogP_VSA12', 'SlogP_VSA2', 'SlogP_VSA3', 'SlogP_VSA4', 'SlogP_VSA5', 'SlogP_VSA6', 'SlogP_VSA7', 'SlogP_VSA8', 'SlogP_VSA9', 'TPSA', 'VSA_EState1', 'VSA_EState10', 'VSA_EState2', 'VSA_EState3', 'VSA_EState4', 'VSA_EState5', 'VSA_EState6', 'VSA_EState7', 'VSA_EState8', 'VSA_EState9', 'fr_Al_COO', 'fr_Al_OH', 'fr_Al_OH_noTert', 'fr_ArN', 'fr_Ar_COO', 'fr_Ar_N', 'fr_Ar_NH', 'fr_Ar_OH', 'fr_COO', 'fr_COO2', 'fr_C_O', 'fr_C_O_noCOO', 'fr_C_S', 'fr_HOCCN', 'fr_Imine', 'fr_NH0', 'fr_NH1', 'fr_NH2', 'fr_N_O', 'fr_Ndealkylation1', 'fr_Ndealkylation2', 'fr_Nhpyrrole', 'fr_SH', 'fr_aldehyde', 'fr_alkyl_carbamate', 'fr_alkyl_halide', 'fr_allylic_oxid', 'fr_amide', 'fr_amidine', 'fr_aniline', 'fr_aryl_methyl', 'fr_azide', 'fr_azo', 'fr_barbitur', 'fr_benzene', 'fr_benzodiazepine', 'fr_bicyclic', 'fr_diazo', 'fr_dihydropyridine', 'fr_epoxide', 'fr_ester', 'fr_ether', 'fr_furan', 'fr_guanido', 'fr_halogen', 'fr_hdrzine', 'fr_hdrzone', 'fr_imidazole', 'fr_imide', 'fr_isocyan', 'fr_isothiocyan', 'fr_ketone', 'fr_ketone_Topliss', 'fr_lactam', 'fr_lactone', 'fr_methoxy', 'fr_morpholine', 'fr_nitrile', 'fr_nitro', 'fr_nitro_arom', 'fr_nitro_arom_nonortho', 'fr_nitroso', 'fr_oxazole', 'fr_oxime', 'fr_para_hydroxylation', 'fr_phenol', 'fr_phenol_noOrthoHbond', 'fr_phos_acid', 'fr_phos_ester', 'fr_piperdine', 'fr_piperzine', 'fr_priamide', 'fr_prisulfonamd', 'fr_pyridine', 'fr_quatN', 'fr_sulfide', 'fr_sulfonamd', 'fr_sulfone', 'fr_term_acetylene', 'fr_tetrazole', 'fr_thiazole', 'fr_thiocyan', 'fr_thiophene', 'fr_unbrch_alkane', 'fr_urea', 'qed']
+    # create molecular descriptor calculator
+    mol_descriptor_calculator = MolecularDescriptorCalculator(chosen_descriptors)
+    data4 = data3.iloc[:,0].map(lambda x : mol_descriptor_calculator.CalcDescriptors(Chem.MolFromSmiles(x)))
+    data4 = pd.DataFrame(data4)
+    data5 = pd.DataFrame()
+    # split to 200 columns
+    for i in range(0, 200):
+        data5 = pd.concat([data5, data4.applymap(lambda x: x[i])], axis=1)
+    data5.columns = chosen_descriptors
+    print(data5)
+    # 特征存入rdkit_featurizer.csv
+    data5.to_csv(path+"/rdkit_featurizer_output.csv")
+    return data5
+
+# 0.1.2.3 从smiles码画分子
+def drawMolecule(smiles):
+    import pandas as pd
+    from rdkit import Chem
+    from rdkit.Chem import Draw
+    from rdkit.Chem import rdDepictor
+    from rdkit.ML.Descriptors.MoleculeDescriptors import MolecularDescriptorCalculator
+    m = Chem.MolFromSmiles(smiles)
+    print(m)
+
+# 0.1.2.3 从smiles码画分子
+# drawMolecule('Cc1ccccc1') #括号里（SMILES码两边）请加引号
+
+
+# 0.2 无机材料描述符 (NJmatML参考Matminer使用类独热编码方式特征化无机化学式)
+# 0.2.1 导入含有无机材料化学式的csv
+def inorganic_csv(name4):
+    import pandas as pd
+    global data4
+    data4 = pd.read_csv(name4)
+    print(data4)
+    return data4
+
+# 0.2.1 用于magpie,导入含有无机材料化学式的csv
+def inorganic_magpie_csv(name20):
+    import pandas as pd
+    global data20
+    data20 = pd.read_csv(name20)
+    print(data20)
+    return data20
+
+# 0.2.2 matminer无机材料（类独热编码）描述符生成，102维
+# 例如(Fe2AgCu2)O3, Fe2O3, Cs3PbI3, MoS2, CuInGaSe, Si, TiO2等
+def inorganic_featurizer(path):
+    import pandas as pd
+    from matminer.featurizers.composition.element import ElementFraction
+    from pymatgen.core import Composition
+    ef = ElementFraction()
+    list4 = list(map(lambda x: Composition(x), data4.iloc[:,0]))
+    data7 = pd.DataFrame()
+    for i in range(0, len(data4.index)):
+        data7 = pd.concat([data7, pd.DataFrame(ef.featurize(list4[i])).T])
+    data8 = data7.reset_index()
+    data8 = data8.iloc[:, 1:]
+    print(data8)
+    element_fraction_labels = ef.feature_labels()
+    print(element_fraction_labels)
+    # 特征存入pydel_featurizer.csv
+    data8.to_csv(path+"/inorganic_featurizer_output.csv",index=None)
+    return data8,element_fraction_labels
+
+# 0.2.3 magpie（matminer)无机材料描述符生成
+def inorganic_magpie_featurizer(path):
+    from matminer.featurizers.conversions import StrToComposition
+    from matminer.featurizers.composition import ElementProperty
+    import pandas as pd
+
+    str_to_comp = StrToComposition(target_col_id='composition')
+    df_comp = str_to_comp.featurize_dataframe(data20, col_id='formula')   #此处规定csv中第一列列名必须是 formula  否则软件闪退！！！！！
+    features = ['Number', 'MendeleevNumber', 'AtomicWeight', 'MeltingT',
+                'Column', 'Row', 'CovalentRadius', 'Electronegativity',
+                'NsValence', 'NpValence', 'NdValence', 'NfValence', 'NValence',
+                'NsUnfilled', 'NpUnfilled', 'NdUnfilled', 'NfUnfilled', 'NUnfilled',
+                'GSvolume_pa', 'GSbandgap', 'GSmagmom', 'SpaceGroupNumber']
+
+    stats = ['mean', 'minimum', 'maximum', 'range', 'avg_dev', 'mode']
+
+    featurizer = ElementProperty(data_source='magpie',
+                                 features=features,
+                                 stats=stats)
+    df_features = featurizer.featurize_dataframe(df_comp, col_id='composition')
+    df_features = df_features.iloc[:, 2:-1]
+    print(df_features)
+    df_features.to_csv(path+"/1_magpie.csv",index=None)
+    return df_features
+
+
+# 9 遗传算法设计新特征
+## 9.1 普通默认运算符
+def gp_default(r_thresh):  ## 输入参数为皮尔森阈值 ：例如输入0.6后，大于0.6的才显示
+    import numpy as np
+    from sklearn import preprocessing
+    from gplearn import genetic
+    X = data.values[:,:-1]
+    y = data.values[:,-1]
+    for i in range(X.shape[1]):
+        X[:,[i]] = preprocessing.MinMaxScaler().fit_transform(X[:,[i]])
+    est_gp = genetic.SymbolicTransformer(population_size=1000,
+                               generations=91, stopping_criteria=0.01,
+                               p_crossover=0.8, p_subtree_mutation=0.05,
+                               p_hoist_mutation=0.05, p_point_mutation=0.05,
+                               max_samples=0.9, verbose=1,
+                               parsimony_coefficient=0.01, random_state=None,n_components=100)
+    V=est_gp.fit(X, y)
+    px=V.transform(X)
+    str1=""
+    for i in range(0,50):
+        pear=np.corrcoef(px[:,i], y)
+        pea=pear[0,1]
+        if pea>r_thresh:
+            print(pea,i,V[i])
+            str1=str1+str(pea)+"  "+str(i)+"  "+str(V[i])+"\n"
+    print('\n***************************')
+    for i in range(len(data.columns.values.tolist())):
+        print(i, data.columns.values.tolist()[i])
+    return str1,data
+
+## 9.2 更多运算符
+def gp_tan(r_thresh):
+    import numpy as np
+    from sklearn import preprocessing
+    from gplearn import genetic
+    X = data.values[:, :-1]
+    y = data.values[:, -1]
+    for i in range(X.shape[1]):
+        X[:, [i]] = preprocessing.MinMaxScaler().fit_transform(X[:, [i]])
+    function_set = ['add', 'sub', 'mul', 'div', 'log', 'sqrt', 'abs', 'neg','inv','sin','cos','tan', 'max', 'min']
+    est_gp = genetic.SymbolicTransformer(population_size=1000,
+                               generations=91, stopping_criteria=0.01,
+                               p_crossover=0.8, p_subtree_mutation=0.05,
+                               p_hoist_mutation=0.05, p_point_mutation=0.05,
+                               max_samples=0.9, verbose=1,function_set=function_set,
+                               parsimony_coefficient=0.01, random_state=None,n_components=100)
+    V=est_gp.fit(X, y)
+    px=V.transform(X)
+    str1 = ""
+    for i in range(0,50):
+        pear=np.corrcoef(px[:,i], y)
+        pea=pear[0,1]
+        if pea>r_thresh:
+            print(pea,i,V[i])
+            str1 = str1 + str(pea) + "  " + str(i) + "  " + str(V[i]) + "\n"
+    print('\n***************************')
+    for i in range(len(data.columns.values.tolist())):
+        print(i, data.columns.values.tolist()[i])
+    return str1, data
+
+## 9.3 tSR默认形式为(X[:,i]-X[:,j])*(X[:,k]-X[:,n])
+def tSR_default(r_thresh,path):
+    import numpy as np
+    X = data_rfe.values[:, :-1]
+    y = data_rfe.values[:, -1]
+    for i in range(0,(data_rfe.shape[1]-1)):
+         for j in range(0,(data_rfe.shape[1]-1)):
+              for k in range(0,(data_rfe.shape[1]-1)):
+                    for n in range(0,(data_rfe.shape[1]-1)):
+                         px=(X[:,i]-X[:,j])*(X[:,k]-X[:,n])
+                         per=np.corrcoef(px, y)
+                         if per[0,1]>r_thresh or per[0,1]< -1 * r_thresh:
+                              print(per[0,1])
+                              print(i,j,k,n)
+                              print(data_rfe.columns.values.tolist()[i],data_rfe.columns.values.tolist()[j],data_rfe.columns.values.tolist()[k],data_rfe.columns.values.tolist()[n])
+                              print('(',data_rfe.columns.values.tolist()[i],'-',data_rfe.columns.values.tolist()[j],')','*','(',data_rfe.columns.values.tolist()[k],'-',data_rfe.columns.values.tolist()[n],')')
+                              print('**********************************************')
+                              with open(path+"/data.txt", "a+") as f:
+                                  f.write(str(per[0,1])+"\n")
+                                  f.write(str(i)+" "+str(j)+" "+str(k)+" "+str(n)+"\n")
+                                  f.write(str(data_rfe.columns.values.tolist()[i])+" "
+                                          +str(data_rfe.columns.values.tolist()[j])+" "
+                                          +str(data_rfe.columns.values.tolist()[k])+" "
+                                          +str(data_rfe.columns.values.tolist()[n])+"\n")
+                                  f.write("( "+str(data_rfe.columns.values.tolist()[i]) + " - "
+                                          + str(data_rfe.columns.values.tolist()[j]) + " ) * ("
+                                          + str(data_rfe.columns.values.tolist()[k]) + " - "
+                                          + str(data_rfe.columns.values.tolist()[n]) + " )\n")
+                                  f.write('**********************************************\n')
+
+# ## 9.4 tSR更多运算符，默认形式为(X[:,i]-X[:,j])*(X[:,k]-X[:,n]) 可能删去，没有用处
+# def tSR_tan(r_thresh):
+#     import numpy as np
+#     X = data.values[:, :-1]
+#     y = data.values[:, -1]
+#     for i in range(0,(data.shape[1]-1)):
+#      for j in range(0,(data.shape[1]-1)):
+#       for k in range(0,(data.shape[1]-1)):
+#         for n in range(0,(data.shape[1]-1)):
+#          px=(X[:,i]-X[:,j])*(X[:,k]-X[:,n])
+#          per=np.corrcoef(px, y)
+#          if per[0,1]>r_thresh or per[0,1] < -1 * r_thresh:
+#           print(per[0,1])
+#           print(i,j,k,n)
+#           print(data.columns.values.tolist()[i],data.columns.values.tolist()[j],data.columns.values.tolist()[k],data.columns.values.tolist()[n])
+#           print('(',data.columns.values.tolist()[i],'-',data.columns.values.tolist()[j],')','*','(',data.columns.values.tolist()[k],'-',data.columns.values.tolist()[n],')')
+#           print('**********************************************')
+
+#未完待续（其他机器学习算法，网格搜索，预测集建立，描述符填充等等）
+
+
+
 #1.1打开csv并存到data中
 def file_name(name,path):
     import pandas as pd
@@ -4577,267 +4842,6 @@ def randomforest_default_predict(csvName,path):
     predict = clf_rf_default.predict(featureData1)
     predict_Ef = pd.DataFrame(predict)
     predict_Ef.to_csv(path + "/Predict_rf_dataset.csv")
-
-# 8 描述符导入
-# 8.1 有机分子描述符导入（NJmatML提供了pydel描述符和rdkit描述符）
-# 8.1.1 pydel描述符
-# 8.1.1.1 导入有机分子smiles码的csv文件
-
-
-def smiles_csv_pydel(name2):
-    import pandas as pd
-    global data2
-    data2 = pd.read_csv(name2)
-    print(data2.iloc[:,0])
-    return data2
-
-# 8.1.1.2 pydel描述符生成
-def pydel_featurizer(path):
-    from padelpy import from_smiles
-    import pandas as pd
-    data2a = data2.iloc[:,0].map(lambda x : from_smiles(x).values())
-    data2a = pd.DataFrame(data2a)
-    data2b = data2a.iloc[:,0].apply(pd.Series)
-    #写入列名
-    data2c = data2.iloc[:,0].map(lambda x : from_smiles(x).keys())
-    col2c = data2c.iloc[0]
-    data2b.columns = col2c
-    print(data2b)
-    # 特征存入pydel_featurizer.csv
-    data2b.to_csv(path+"/pydel_featurizer_output.csv")
-    return data2b
-
-# !pip install padelpy
-# from padelpy import from_smiles
-# import pandas as pd
-# # calculate molecular descriptors for propane
-# CCC_descriptors = from_smiles('CCC')
-# print(CCC_descriptors)
-# print(CCC_descriptors['nAcid'])
-# print(CCC_descriptors['ALogP'])
-# print(CCC_descriptors['ALogp2'])
-
-
-# 8.1.2 rdkit描述符
-# 8.1.2.1 导入有机分子smiles码的csv文件
-def smiles_csv_rdkit(name3):
-    import pandas as pd
-    global data3
-    data3 = pd.read_csv(name3)
-    print(data3.iloc[:,0])
-    return data3
-
-
-
-# 8.1.2.2 rdkit描述符生成
-def rdkit_featurizer(path):
-    import pandas as pd
-    from rdkit import Chem
-    from rdkit.Chem import Draw
-    from rdkit.Chem import rdDepictor
-    from rdkit.ML.Descriptors.MoleculeDescriptors import MolecularDescriptorCalculator
-    # choose 200 molecular descriptors
-    chosen_descriptors = ['BalabanJ', 'BertzCT', 'Chi0', 'Chi0n', 'Chi0v', 'Chi1', 'Chi1n', 'Chi1v', 'Chi2n', 'Chi2v', 'Chi3n', 'Chi3v', 'Chi4n', 'Chi4v', 'EState_VSA1', 'EState_VSA10', 'EState_VSA11', 'EState_VSA2', 'EState_VSA3', 'EState_VSA4', 'EState_VSA5', 'EState_VSA6', 'EState_VSA7', 'EState_VSA8', 'EState_VSA9', 'ExactMolWt', 'FpDensityMorgan1', 'FpDensityMorgan2', 'FpDensityMorgan3', 'FractionCSP3', 'HallKierAlpha', 'HeavyAtomCount', 'HeavyAtomMolWt', 'Ipc', 'Kappa1', 'Kappa2', 'Kappa3', 'LabuteASA', 'MaxAbsEStateIndex', 'MaxAbsPartialCharge', 'MaxEStateIndex', 'MaxPartialCharge', 'MinAbsEStateIndex', 'MinAbsPartialCharge', 'MinEStateIndex', 'MinPartialCharge', 'MolLogP', 'MolMR', 'MolWt', 'NHOHCount', 'NOCount', 'NumAliphaticCarbocycles', 'NumAliphaticHeterocycles', 'NumAliphaticRings', 'NumAromaticCarbocycles', 'NumAromaticHeterocycles', 'NumAromaticRings', 'NumHAcceptors', 'NumHDonors', 'NumHeteroatoms', 'NumRadicalElectrons', 'NumRotatableBonds', 'NumSaturatedCarbocycles', 'NumSaturatedHeterocycles', 'NumSaturatedRings', 'NumValenceElectrons', 'PEOE_VSA1', 'PEOE_VSA10', 'PEOE_VSA11', 'PEOE_VSA12', 'PEOE_VSA13', 'PEOE_VSA14', 'PEOE_VSA2', 'PEOE_VSA3', 'PEOE_VSA4', 'PEOE_VSA5', 'PEOE_VSA6', 'PEOE_VSA7', 'PEOE_VSA8', 'PEOE_VSA9', 'RingCount', 'SMR_VSA1', 'SMR_VSA10', 'SMR_VSA2', 'SMR_VSA3', 'SMR_VSA4', 'SMR_VSA5', 'SMR_VSA6', 'SMR_VSA7', 'SMR_VSA8', 'SMR_VSA9', 'SlogP_VSA1', 'SlogP_VSA10', 'SlogP_VSA11', 'SlogP_VSA12', 'SlogP_VSA2', 'SlogP_VSA3', 'SlogP_VSA4', 'SlogP_VSA5', 'SlogP_VSA6', 'SlogP_VSA7', 'SlogP_VSA8', 'SlogP_VSA9', 'TPSA', 'VSA_EState1', 'VSA_EState10', 'VSA_EState2', 'VSA_EState3', 'VSA_EState4', 'VSA_EState5', 'VSA_EState6', 'VSA_EState7', 'VSA_EState8', 'VSA_EState9', 'fr_Al_COO', 'fr_Al_OH', 'fr_Al_OH_noTert', 'fr_ArN', 'fr_Ar_COO', 'fr_Ar_N', 'fr_Ar_NH', 'fr_Ar_OH', 'fr_COO', 'fr_COO2', 'fr_C_O', 'fr_C_O_noCOO', 'fr_C_S', 'fr_HOCCN', 'fr_Imine', 'fr_NH0', 'fr_NH1', 'fr_NH2', 'fr_N_O', 'fr_Ndealkylation1', 'fr_Ndealkylation2', 'fr_Nhpyrrole', 'fr_SH', 'fr_aldehyde', 'fr_alkyl_carbamate', 'fr_alkyl_halide', 'fr_allylic_oxid', 'fr_amide', 'fr_amidine', 'fr_aniline', 'fr_aryl_methyl', 'fr_azide', 'fr_azo', 'fr_barbitur', 'fr_benzene', 'fr_benzodiazepine', 'fr_bicyclic', 'fr_diazo', 'fr_dihydropyridine', 'fr_epoxide', 'fr_ester', 'fr_ether', 'fr_furan', 'fr_guanido', 'fr_halogen', 'fr_hdrzine', 'fr_hdrzone', 'fr_imidazole', 'fr_imide', 'fr_isocyan', 'fr_isothiocyan', 'fr_ketone', 'fr_ketone_Topliss', 'fr_lactam', 'fr_lactone', 'fr_methoxy', 'fr_morpholine', 'fr_nitrile', 'fr_nitro', 'fr_nitro_arom', 'fr_nitro_arom_nonortho', 'fr_nitroso', 'fr_oxazole', 'fr_oxime', 'fr_para_hydroxylation', 'fr_phenol', 'fr_phenol_noOrthoHbond', 'fr_phos_acid', 'fr_phos_ester', 'fr_piperdine', 'fr_piperzine', 'fr_priamide', 'fr_prisulfonamd', 'fr_pyridine', 'fr_quatN', 'fr_sulfide', 'fr_sulfonamd', 'fr_sulfone', 'fr_term_acetylene', 'fr_tetrazole', 'fr_thiazole', 'fr_thiocyan', 'fr_thiophene', 'fr_unbrch_alkane', 'fr_urea', 'qed']
-    # create molecular descriptor calculator
-    mol_descriptor_calculator = MolecularDescriptorCalculator(chosen_descriptors)
-    data4 = data3.iloc[:,0].map(lambda x : mol_descriptor_calculator.CalcDescriptors(Chem.MolFromSmiles(x)))
-    data4 = pd.DataFrame(data4)
-    data5 = pd.DataFrame()
-    # split to 200 columns
-    for i in range(0, 200):
-        data5 = pd.concat([data5, data4.applymap(lambda x: x[i])], axis=1)
-    data5.columns = chosen_descriptors
-    print(data5)
-    # 特征存入rdkit_featurizer.csv
-    data5.to_csv(path+"/rdkit_featurizer_output.csv")
-    return data5
-
-# 8.1.2.3 从smiles码画分子
-def drawMolecule(smiles):
-    import pandas as pd
-    from rdkit import Chem
-    from rdkit.Chem import Draw
-    from rdkit.Chem import rdDepictor
-    from rdkit.ML.Descriptors.MoleculeDescriptors import MolecularDescriptorCalculator
-    m = Chem.MolFromSmiles(smiles)
-    print(m)
-
-# 8.1.2.3 从smiles码画分子
-# drawMolecule('Cc1ccccc1') #括号里（SMILES码两边）请加引号
-
-
-# 8.2 无机材料描述符 (NJmatML参考Matminer使用类独热编码方式特征化无机化学式)
-# 8.2.1 导入含有无机材料化学式的csv
-def inorganic_csv(name4):
-    import pandas as pd
-    global data4
-    data4 = pd.read_csv(name4)
-    print(data4)
-    return data4
-
-# 8.2.1 用于magpie,导入含有无机材料化学式的csv
-def inorganic_magpie_csv(name20):
-    import pandas as pd
-    global data20
-    data20 = pd.read_csv(name20)
-    print(data20)
-    return data20
-
-# 8.2.2 matminer无机材料（类独热编码）描述符生成，102维
-# 例如(Fe2AgCu2)O3, Fe2O3, Cs3PbI3, MoS2, CuInGaSe, Si, TiO2等
-def inorganic_featurizer(path):
-    import pandas as pd
-    from matminer.featurizers.composition.element import ElementFraction
-    from pymatgen.core import Composition
-    ef = ElementFraction()
-    list4 = list(map(lambda x: Composition(x), data4.iloc[:,0]))
-    data7 = pd.DataFrame()
-    for i in range(0, len(data4.index)):
-        data7 = pd.concat([data7, pd.DataFrame(ef.featurize(list4[i])).T])
-    data8 = data7.reset_index()
-    data8 = data8.iloc[:, 1:]
-    print(data8)
-    element_fraction_labels = ef.feature_labels()
-    print(element_fraction_labels)
-    # 特征存入pydel_featurizer.csv
-    data8.to_csv(path+"/inorganic_featurizer_output.csv",index=None)
-    return data8,element_fraction_labels
-
-# 8.2.3 magpie（matminer)无机材料描述符生成
-def inorganic_magpie_featurizer(path):
-    from matminer.featurizers.conversions import StrToComposition
-    from matminer.featurizers.composition import ElementProperty
-    import pandas as pd
-
-    str_to_comp = StrToComposition(target_col_id='composition')
-    df_comp = str_to_comp.featurize_dataframe(data20, col_id='formula')   #此处规定csv中第一列列名必须是 formula  否则软件闪退！！！！！
-    features = ['Number', 'MendeleevNumber', 'AtomicWeight', 'MeltingT',
-                'Column', 'Row', 'CovalentRadius', 'Electronegativity',
-                'NsValence', 'NpValence', 'NdValence', 'NfValence', 'NValence',
-                'NsUnfilled', 'NpUnfilled', 'NdUnfilled', 'NfUnfilled', 'NUnfilled',
-                'GSvolume_pa', 'GSbandgap', 'GSmagmom', 'SpaceGroupNumber']
-
-    stats = ['mean', 'minimum', 'maximum', 'range', 'avg_dev', 'mode']
-
-    featurizer = ElementProperty(data_source='magpie',
-                                 features=features,
-                                 stats=stats)
-    df_features = featurizer.featurize_dataframe(df_comp, col_id='composition')
-    df_features = df_features.iloc[:, 2:-1]
-    print(df_features)
-    df_features.to_csv(path+"/1_magpie.csv",index=None)
-    return df_features
-
-
-# 9 遗传算法设计新特征
-## 9.1 普通默认运算符
-def gp_default(r_thresh):  ## 输入参数为皮尔森阈值 ：例如输入0.6后，大于0.6的才显示
-    import numpy as np
-    from sklearn import preprocessing
-    from gplearn import genetic
-    X = data.values[:,:-1]
-    y = data.values[:,-1]
-    for i in range(X.shape[1]):
-        X[:,[i]] = preprocessing.MinMaxScaler().fit_transform(X[:,[i]])
-    est_gp = genetic.SymbolicTransformer(population_size=1000,
-                               generations=91, stopping_criteria=0.01,
-                               p_crossover=0.8, p_subtree_mutation=0.05,
-                               p_hoist_mutation=0.05, p_point_mutation=0.05,
-                               max_samples=0.9, verbose=1,
-                               parsimony_coefficient=0.01, random_state=None,n_components=100)
-    V=est_gp.fit(X, y)
-    px=V.transform(X)
-    str1=""
-    for i in range(0,50):
-        pear=np.corrcoef(px[:,i], y)
-        pea=pear[0,1]
-        if pea>r_thresh:
-            print(pea,i,V[i])
-            str1=str1+str(pea)+"  "+str(i)+"  "+str(V[i])+"\n"
-    print('\n***************************')
-    for i in range(len(data.columns.values.tolist())):
-        print(i, data.columns.values.tolist()[i])
-    return str1,data
-
-## 9.2 更多运算符
-def gp_tan(r_thresh):
-    import numpy as np
-    from sklearn import preprocessing
-    from gplearn import genetic
-    X = data.values[:, :-1]
-    y = data.values[:, -1]
-    for i in range(X.shape[1]):
-        X[:, [i]] = preprocessing.MinMaxScaler().fit_transform(X[:, [i]])
-    function_set = ['add', 'sub', 'mul', 'div', 'log', 'sqrt', 'abs', 'neg','inv','sin','cos','tan', 'max', 'min']
-    est_gp = genetic.SymbolicTransformer(population_size=1000,
-                               generations=91, stopping_criteria=0.01,
-                               p_crossover=0.8, p_subtree_mutation=0.05,
-                               p_hoist_mutation=0.05, p_point_mutation=0.05,
-                               max_samples=0.9, verbose=1,function_set=function_set,
-                               parsimony_coefficient=0.01, random_state=None,n_components=100)
-    V=est_gp.fit(X, y)
-    px=V.transform(X)
-    str1 = ""
-    for i in range(0,50):
-        pear=np.corrcoef(px[:,i], y)
-        pea=pear[0,1]
-        if pea>r_thresh:
-            print(pea,i,V[i])
-            str1 = str1 + str(pea) + "  " + str(i) + "  " + str(V[i]) + "\n"
-    print('\n***************************')
-    for i in range(len(data.columns.values.tolist())):
-        print(i, data.columns.values.tolist()[i])
-    return str1, data
-
-## 9.3 tSR默认形式为(X[:,i]-X[:,j])*(X[:,k]-X[:,n])
-def tSR_default(r_thresh,path):
-    import numpy as np
-    X = data_rfe.values[:, :-1]
-    y = data_rfe.values[:, -1]
-    for i in range(0,(data_rfe.shape[1]-1)):
-         for j in range(0,(data_rfe.shape[1]-1)):
-              for k in range(0,(data_rfe.shape[1]-1)):
-                    for n in range(0,(data_rfe.shape[1]-1)):
-                         px=(X[:,i]-X[:,j])*(X[:,k]-X[:,n])
-                         per=np.corrcoef(px, y)
-                         if per[0,1]>r_thresh or per[0,1]< -1 * r_thresh:
-                              print(per[0,1])
-                              print(i,j,k,n)
-                              print(data_rfe.columns.values.tolist()[i],data_rfe.columns.values.tolist()[j],data_rfe.columns.values.tolist()[k],data_rfe.columns.values.tolist()[n])
-                              print('(',data_rfe.columns.values.tolist()[i],'-',data_rfe.columns.values.tolist()[j],')','*','(',data_rfe.columns.values.tolist()[k],'-',data_rfe.columns.values.tolist()[n],')')
-                              print('**********************************************')
-                              with open(path+"/data.txt", "a+") as f:
-                                  f.write(str(per[0,1])+"\n")
-                                  f.write(str(i)+" "+str(j)+" "+str(k)+" "+str(n)+"\n")
-                                  f.write(str(data_rfe.columns.values.tolist()[i])+" "
-                                          +str(data_rfe.columns.values.tolist()[j])+" "
-                                          +str(data_rfe.columns.values.tolist()[k])+" "
-                                          +str(data_rfe.columns.values.tolist()[n])+"\n")
-                                  f.write("( "+str(data_rfe.columns.values.tolist()[i]) + " - "
-                                          + str(data_rfe.columns.values.tolist()[j]) + " ) * ("
-                                          + str(data_rfe.columns.values.tolist()[k]) + " - "
-                                          + str(data_rfe.columns.values.tolist()[n]) + " )\n")
-                                  f.write('**********************************************\n')
-
-# ## 9.4 tSR更多运算符，默认形式为(X[:,i]-X[:,j])*(X[:,k]-X[:,n]) 可能删去，没有用处
-# def tSR_tan(r_thresh):
-#     import numpy as np
-#     X = data.values[:, :-1]
-#     y = data.values[:, -1]
-#     for i in range(0,(data.shape[1]-1)):
-#      for j in range(0,(data.shape[1]-1)):
-#       for k in range(0,(data.shape[1]-1)):
-#         for n in range(0,(data.shape[1]-1)):
-#          px=(X[:,i]-X[:,j])*(X[:,k]-X[:,n])
-#          per=np.corrcoef(px, y)
-#          if per[0,1]>r_thresh or per[0,1] < -1 * r_thresh:
-#           print(per[0,1])
-#           print(i,j,k,n)
-#           print(data.columns.values.tolist()[i],data.columns.values.tolist()[j],data.columns.values.tolist()[k],data.columns.values.tolist()[n])
-#           print('(',data.columns.values.tolist()[i],'-',data.columns.values.tolist()[j],')','*','(',data.columns.values.tolist()[k],'-',data.columns.values.tolist()[n],')')
-#           print('**********************************************')
-
-#未完待续（其他机器学习算法，网格搜索，预测集建立，描述符填充等等）
 
 
 # 10.1
