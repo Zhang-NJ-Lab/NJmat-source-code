@@ -76,8 +76,9 @@ def rdkit_featurizer(path):
         data5 = pd.concat([data5, data4.applymap(lambda x: x[i])], axis=1)
     data5.columns = chosen_descriptors
     print(data5)
+    # data5=pd.DataFrame(data5.iloc[:,0:-1])
     # 特征存入rdkit_featurizer.csv
-    data5.to_csv(path+"/rdkit_featurizer_output.csv")
+    data5.to_csv(path+"/rdkit_featurizer_output.csv", index=False)
     return data5
 
 # 0.1.2.3 从smiles码画分子
@@ -124,9 +125,10 @@ def inorganic_featurizer(path):
         data7 = pd.concat([data7, pd.DataFrame(ef.featurize(list4[i])).T])
     data8 = data7.reset_index()
     data8 = data8.iloc[:, 1:]
-    print(data8)
     element_fraction_labels = ef.feature_labels()
     print(element_fraction_labels)
+    data8.columns = element_fraction_labels
+    print(data8)
     # 特征存入pydel_featurizer.csv
     data8.to_csv(path+"/inorganic_featurizer_output.csv",index=None)
     return data8,element_fraction_labels
@@ -6150,6 +6152,7 @@ def Symbolicclassification(csvname,path):
 
     return str1,str2
 
+#shap 导入和出结果
 def Result(csvname,path,model_path):
     import pandas as pd
     import matplotlib.pyplot as plt
@@ -6174,9 +6177,14 @@ def Result(csvname,path,model_path):
     #X = data.drop(columns=[column_name])
     #y = data[column_name]
 
-    X = data.drop(columns=['stability'])
-    y = data['stability']
+    X = data.drop(columns=['Potential (v)'])
+    y = data(columns=['Potential (v)'])
 
+    # X = data.values[:,:-1]
+    # y = data.values[:,-1]
+
+    # X = pd.DataFrame(data[:,:-1])
+    # y = pd.DataFrame(data[:,-1])
 
     # 初始化 SHAP explainer
     explainer = shap.Explainer(model, X)
