@@ -122,7 +122,6 @@
       <string>Organic descriptor</string>
      </property>
      <addaction name="action_smiles_2"/>
-     <addaction name="actionpydel"/>
      <addaction name="actionrdkit_2"/>
     </widget>
     <widget class="QMenu" name="menu_16">

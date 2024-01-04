@@ -216,7 +216,7 @@ class mywindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
 
     # 描述符生成----------------------------------------------------------------------------------------------
-    # 导入有机smlies
+    # 2.11.导入有机smlies
     def enter_organic_smiles(self):
             directory_temp, filetype = QFileDialog.getOpenFileNames(self, "Select file")
             if len(directory_temp) > 0:
@@ -234,41 +234,30 @@ class mywindow(QtWidgets.QMainWindow, Ui_MainWindow):
                 QMessageBox.information(self, 'Hint', 'Please enter a file!', QMessageBox.Ok | QMessageBox.Close,
                                         QMessageBox.Close)
 
-    # 导入无机化学式
-    def enter_inorganic_fomula(self):
-            directory_temp, filetype = QFileDialog.getOpenFileNames(self, "Select file")
-            if len(directory_temp) > 0:
-                str_root = str(directory_temp)
-                f_csv = str_root.rfind('.csv')
-                if f_csv != -1:                                           # 判断是不是.csv
-                    self.opt.origin_path_4= str((str_root.replace("\\", '/'))[2:-2])
-                    self.enter_inorganic_fomula_state = True
-                    QMessageBox.information(self, 'Hint', 'Completed!', QMessageBox.Ok | QMessageBox.Close,
-                                            QMessageBox.Close)
-                else:
-                    QMessageBox.information(self, 'Hint', 'Not .csv file, please re-enter!', QMessageBox.Ok | QMessageBox.Close,
-                                            QMessageBox.Close)
-            else:
-                QMessageBox.information(self, 'Hint', 'Please enter a file!', QMessageBox.Ok | QMessageBox.Close,
-                                        QMessageBox.Close)
+    # 2.12.描述符生成--有机描述符--rdkit描述符     descriptor generation_Organic molecular descriptors_rdkit
+    def Descriptorgeneration_Organicmoleculardescriptors_rdkit(self):
+        if self.enter_organic_smiles_state == True:
+            path = self.opt.save_path + "/Descriptor generation/Organic molecular descriptors/rdkit"
+            if os.path.exists(path):
+                shutil.rmtree(path)
+            os.makedirs(path)
+
+            data3=dataML.smiles_csv_rdkit(self.opt.origin_path_3)
+            data5=dataML.rdkit_featurizer(path)
+            self.textBrowser_print_Pandas_DataFrame_table(data3,0,1)
+            self.textBrowser_print_Pandas_DataFrame_table(data5, 2, 1)
+            self.textBrowser.append("*" * 150)
+
+            QMessageBox.information(self, 'Hint', 'Completed!', QMessageBox.Ok | QMessageBox.Close,
+                                    QMessageBox.Close)
+            if self.opt.if_open == True:
+                str1 = (path+"/rdkit_featurizer_output.csv").replace("/", "\\")
+                os.startfile(str1)
+        else:
+            QMessageBox.information(self, 'Hint', 'Do "Import smiles"!', QMessageBox.Ok | QMessageBox.Close,
+                                    QMessageBox.Close)
 
 
-    def Import_magpie_formula(self):
-            directory_temp, filetype = QFileDialog.getOpenFileNames(self, "Select file")
-            if len(directory_temp) > 0:
-                str_root = str(directory_temp)
-                f_csv = str_root.rfind('.csv')
-                if f_csv != -1:                                           # 判断是不是.csv
-                    self.opt.origin_path_20= str((str_root.replace("\\", '/'))[2:-2])
-                    self.Import_magpie_formula_state = True
-                    QMessageBox.information(self, 'Hint', 'Completed!', QMessageBox.Ok | QMessageBox.Close,
-                                            QMessageBox.Close)
-                else:
-                    QMessageBox.information(self, 'Hint', 'Not .csv file, please re-enter!', QMessageBox.Ok | QMessageBox.Close,
-                                            QMessageBox.Close)
-            else:
-                QMessageBox.information(self, 'Hint', 'Please enter a file!', QMessageBox.Ok | QMessageBox.Close,
-                                        QMessageBox.Close)
 
         # self.action_Import_magpie_formula.triggered.connect(self.Import_magpie_formula)
         # self.actionGenerate_magpie.triggered.connect(self.Generate_magpie)
@@ -297,29 +286,27 @@ class mywindow(QtWidgets.QMainWindow, Ui_MainWindow):
             QMessageBox.information(self, 'Hint', 'Do "Import smiles"!', QMessageBox.Ok | QMessageBox.Close,
                                     QMessageBox.Close)
 
-    # 描述符生成--有机描述符--rdkit描述符     descriptor generation_Organic molecular descriptors_rdkit
-    def Descriptorgeneration_Organicmoleculardescriptors_rdkit(self):
-        if self.enter_organic_smiles_state == True:
-            path = self.opt.save_path + "/Descriptor generation/Organic molecular descriptors/rdkit"
-            if os.path.exists(path):
-                shutil.rmtree(path)
-            os.makedirs(path)
 
-            data3=dataML.smiles_csv_rdkit(self.opt.origin_path_3)
-            data5=dataML.rdkit_featurizer(path)
-            self.textBrowser_print_Pandas_DataFrame_table(data3,0,1)
-            self.textBrowser_print_Pandas_DataFrame_table(data5, 2, 1)
-            self.textBrowser.append("*" * 150)
-
-            QMessageBox.information(self, 'Hint', 'Completed!', QMessageBox.Ok | QMessageBox.Close,
-                                    QMessageBox.Close)
-            if self.opt.if_open == True:
-                str1 = (path+"/rdkit_featurizer_output.csv").replace("/", "\\")
-                os.startfile(str1)
+#2.21.导入无机化学式为了matminer独热编码
+    def enter_inorganic_fomula(self):
+        directory_temp, filetype = QFileDialog.getOpenFileNames(self, "Select file")
+        if len(directory_temp) > 0:
+            str_root = str(directory_temp)
+            f_csv = str_root.rfind('.csv')
+            if f_csv != -1:  # 判断是不是.csv
+                self.opt.origin_path_4 = str((str_root.replace("\\", '/'))[2:-2])
+                self.enter_inorganic_fomula_state = True
+                QMessageBox.information(self, 'Hint', 'Completed!', QMessageBox.Ok | QMessageBox.Close,
+                                        QMessageBox.Close)
+            else:
+                QMessageBox.information(self, 'Hint', 'Not .csv file, please re-enter!',
+                                        QMessageBox.Ok | QMessageBox.Close,
+                                        QMessageBox.Close)
         else:
-            QMessageBox.information(self, 'Hint', 'Do "Import smiles"!', QMessageBox.Ok | QMessageBox.Close,
+            QMessageBox.information(self, 'Hint', 'Please enter a file!', QMessageBox.Ok | QMessageBox.Close,
                                     QMessageBox.Close)
 
+# 2.22 生成one-hot matminer独热编码
     # 描述符生成--无机描述符--matminer无机材料描述符生成     descriptor generation_Inorganic molecular descriptors_matminer
     def Descriptorgeneration_Inorganicmoleculardescriptors_matminers(self):
         if self.enter_inorganic_fomula_state == True:
@@ -347,22 +334,38 @@ class mywindow(QtWidgets.QMainWindow, Ui_MainWindow):
             QMessageBox.information(self, 'Hint', 'Do "Import formula"!', QMessageBox.Ok | QMessageBox.Close,
                                     QMessageBox.Close)
 
+#2.31 导入Magpie 无机化学式子
+    def Import_magpie_formula(self):
+        directory_temp, filetype = QFileDialog.getOpenFileNames(self, "Select file")
+        if len(directory_temp) > 0:
+            str_root = str(directory_temp)
+            f_csv = str_root.rfind('.csv')
+            if f_csv != -1:  # 判断是不是.csv
+                self.opt.origin_path_20 = str((str_root.replace("\\", '/'))[2:-2])
+                self.Import_magpie_formula_state = True
+                QMessageBox.information(self, 'Hint', 'Completed!', QMessageBox.Ok | QMessageBox.Close,
+                                        QMessageBox.Close)
+            else:
+                QMessageBox.information(self, 'Hint', 'Not .csv file, please re-enter!',
+                                        QMessageBox.Ok | QMessageBox.Close,
+                                        QMessageBox.Close)
+        else:
+            QMessageBox.information(self, 'Hint', 'Please enter a file!', QMessageBox.Ok | QMessageBox.Close,
+                                    QMessageBox.Close)
 # self.action_Import_magpie_formula.triggered.connect(self.Import_magpie_formula)
  # self.actionGenerate_magpie.triggered.connect(self.Generate_magpie)
-# 生成magpie描述符
+# 2.32.生成magpie描述符
     def Generate_magpie(self):
         if self.Import_magpie_formula_state == True:
             path = self.opt.save_path + "/Descriptor generation/Inorganic molecular descriptors/magpie"
             if os.path.exists(path):
                 shutil.rmtree(path)
             os.makedirs(path)
-
             data20=dataML.inorganic_magpie_csv(self.opt.origin_path_20)
             data21=dataML.inorganic_magpie_featurizer(path)
             self.textBrowser_print_Pandas_DataFrame_table(data20, 0, 1)
             self.textBrowser_print_Pandas_DataFrame_table(data21, 2, 1)
             self.textBrowser.append("*" * 150)
-
             QMessageBox.information(self, 'Hint', 'Completed!', QMessageBox.Ok | QMessageBox.Close,
                                     QMessageBox.Close)
             if self.opt.if_open == True:

@@ -20,20 +20,20 @@ def smiles_csv_pydel(name2):
     return data2
 
 # 0.1.1.2 pydel描述符生成
-def pydel_featurizer(path):
-    from padelpy import from_smiles
-    import pandas as pd
-    data2a = data2.iloc[:,0].map(lambda x : from_smiles(x).values())
-    data2a = pd.DataFrame(data2a)
-    data2b = data2a.iloc[:,0].apply(pd.Series)
-    #写入列名
-    data2c = data2.iloc[:,0].map(lambda x : from_smiles(x).keys())
-    col2c = data2c.iloc[0]
-    data2b.columns = col2c
-    print(data2b)
-    # 特征存入pydel_featurizer.csv
-    data2b.to_csv(path+"/pydel_featurizer_output.csv")
-    return data2b
+# def pydel_featurizer(path):
+#     from padelpy import from_smiles
+#     import pandas as pd
+#     data2a = data2.iloc[:,0].map(lambda x : from_smiles(x).values())
+#     data2a = pd.DataFrame(data2a)
+#     data2b = data2a.iloc[:,0].apply(pd.Series)
+#     #写入列名
+#     data2c = data2.iloc[:,0].map(lambda x : from_smiles(x).keys())
+#     col2c = data2c.iloc[0]
+#     data2b.columns = col2c
+#     print(data2b)
+#     # 特征存入pydel_featurizer.csv
+#     data2b.to_csv(path+"/pydel_featurizer_output.csv")
+#     return data2b
 
 # !pip install padelpy
 # from padelpy import from_smiles
@@ -104,13 +104,6 @@ def inorganic_csv(name4):
     print(data4)
     return data4
 
-# 0.2.1 用于magpie,导入含有无机材料化学式的csv
-def inorganic_magpie_csv(name20):
-    import pandas as pd
-    global data20
-    data20 = pd.read_csv(name20)
-    print(data20)
-    return data20
 
 # 0.2.2 matminer无机材料（类独热编码）描述符生成，102维
 # 例如(Fe2AgCu2)O3, Fe2O3, Cs3PbI3, MoS2, CuInGaSe, Si, TiO2等
@@ -133,12 +126,20 @@ def inorganic_featurizer(path):
     data8.to_csv(path+"/inorganic_featurizer_output.csv",index=None)
     return data8,element_fraction_labels
 
-# 0.2.3 magpie（matminer)无机材料描述符生成
+
+# 0.2.3 用于magpie,导入含有无机材料化学式的csv
+def inorganic_magpie_csv(name20):
+    import pandas as pd
+    global data20
+    data20 = pd.read_csv(name20)
+    print(data20)
+    return data20
+
+# 0.2.4 magpie（matminer)无机材料描述符生成
 def inorganic_magpie_featurizer(path):
     from matminer.featurizers.conversions import StrToComposition
     from matminer.featurizers.composition import ElementProperty
     import pandas as pd
-
     str_to_comp = StrToComposition(target_col_id='composition')
     df_comp = str_to_comp.featurize_dataframe(data20, col_id='formula')   #此处规定csv中第一列列名必须是 formula  否则软件闪退！！！！！
     features = ['Number', 'MendeleevNumber', 'AtomicWeight', 'MeltingT',
@@ -5889,7 +5890,7 @@ def Visualization_for_classification(csvname,path,column_name):
         # 如果出现KeyError异常，说明data[column_name]不存在
         return False
 
-
+#11.1.遗传算法回归
 def Symbolicregression_Modelconstruction(csvname,path):
     import pickle
     import matplotlib.pyplot as plot
@@ -5917,7 +5918,7 @@ def Symbolicregression_Modelconstruction(csvname,path):
     import pydotplus
     import graphviz
     from io import StringIO
-    from IPython.display import Image
+    # from IPython.display import Image
 
 
     data = pd.DataFrame(pd.read_csv(csvname))
@@ -5935,10 +5936,10 @@ def Symbolicregression_Modelconstruction(csvname,path):
     feature_names = list(data.columns[:-1])
 
     # 定义符号回归模型，并使用训练数据拟合模型
-    reg = SymbolicRegressor(population_size=5000, generations=5, verbose=1,
+    reg = SymbolicRegressor(population_size=5000, generations=50, verbose=1,
                             function_set=['add', 'sub', 'mul', 'div', 'sqrt', 'log', 'abs', 'neg',
                                           'inv', 'max', 'min', 'sin', 'cos', 'tan'],
-                            metric='mean absolute error', stopping_criteria=0.001,
+                            metric='mean absolute error', stopping_criteria=0.0,
                             random_state=0)
 
     Symbolic_Regression_Model=reg.fit(X_train, y_train)
@@ -5979,8 +5980,8 @@ def Symbolicregression_Modelconstruction(csvname,path):
     # 绘制预测值和真实值的散点图
     fig = plt.figure(dpi=300)
     plt.scatter(y_test, y_pred)
-    plt.xlabel('True Values')
-    plt.ylabel('Predictions')
+    plt.xlabel('Test_True')
+    plt.ylabel('Test_Prediction')
 
     # 绘制一条参考线，x=y，表示预测值等于真实值的情况
     plt.plot([plt.xlim()[0], plt.xlim()[1]], [plt.ylim()[0], plt.ylim()[1]], ls="--", c=".3")
@@ -6006,6 +6007,7 @@ def Symbolicregression_Modelconstruction(csvname,path):
 
     return mae
 
+#11.2.遗传算法分类
 def Symbolicclassification(csvname,path):
     import pickle
     import matplotlib.pyplot as plot
@@ -6033,7 +6035,7 @@ def Symbolicclassification(csvname,path):
     import pydotplus
     import graphviz
     from io import StringIO
-    from IPython.display import Image
+    # from IPython.display import Image
 
     data = pd.DataFrame(pd.read_csv(csvname))
 
