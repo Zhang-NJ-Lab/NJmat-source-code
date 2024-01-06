@@ -1,0 +1,6 @@
+Layer1_Perovskite_InorganicFormula,Layer2_OrganicSmiles,Layer3_Perovskite_InorganicFormula,Layer4_OrganicSmiles,Temperature,Concentration,Action,Retention Index
+(Fe2AgCu2)O3,Cc1ccccc1,Si,Cc1ccccc1,100,0.5,1,0.4467
+Fe2O3,C=CCC=CCO,TiO2,CC1=CC(Br)CCC1,120,0.7,2,0.6481
+CsPbI3,CC1=CC(Br)CCC1,H2O,CC1=CC(Br)CCC1,110,0.8,3,0.7238
+MoS2,C(C=CC1)=C(C=1C(=O)O)O,Fe2O3,C(C=CC1)=C(C=1C(=O)O)O,80,0.9,4,0.2292
+CuInGaSe,CCC,(Fe2AgCu2)O3,Cc1ccccc1,70,1,5,0.122

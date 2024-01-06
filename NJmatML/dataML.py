@@ -32,7 +32,7 @@ def smiles_csv_pydel(name2):
 #     data2b.columns = col2c
 #     print(data2b)
 #     # 特征存入pydel_featurizer.csv
-#     data2b.to_csv(path+"/pydel_featurizer_output.csv")
+#     data2b.to_csv(path+"/pydel_featurizer_output.csv", index=False)
 #     return data2b
 
 # !pip install padelpy
@@ -97,7 +97,7 @@ def drawMolecule(smiles):
 
 # 0.2 无机材料描述符 (NJmatML参考Matminer使用类独热编码方式特征化无机化学式)
 # 0.2.1 导入含有无机材料化学式的csv
-def inorganic_csv(name4):
+def inorganic_csv(name4):                        # one-hot matiminer import
     import pandas as pd
     global data4
     data4 = pd.read_csv(name4)
@@ -107,7 +107,7 @@ def inorganic_csv(name4):
 
 # 0.2.2 matminer无机材料（类独热编码）描述符生成，102维
 # 例如(Fe2AgCu2)O3, Fe2O3, Cs3PbI3, MoS2, CuInGaSe, Si, TiO2等
-def inorganic_featurizer(path):
+def inorganic_featurizer(path):                     # one-hot matiminer featurization
     import pandas as pd
     from matminer.featurizers.composition.element import ElementFraction
     from pymatgen.core import Composition
@@ -277,7 +277,7 @@ def file_name(name,path):
     import pandas as pd
     global data
     data = pd.read_csv(name)
-    data.to_csv(path+"/data.csv")
+    data.to_csv(path+"/data.csv", index=False)
     print(data)
     return data
 
@@ -300,7 +300,7 @@ def heatmap_before(path):
     featureData=data.iloc[:,:]
     global corMat
     corMat = pd.DataFrame(featureData.corr())  #corr 求相关系数矩阵
-    corMat.to_csv(path+'/heatmap-before.csv')
+    corMat.to_csv(path+'/heatmap-before.csv', index=False)
     plt.figure(figsize=(20, 30))
     sns.heatmap(corMat, annot=False, vmax=1, square=True, cmap="Blues",linewidths=0)
     plt.savefig(path+'/heatmap-before.png', dpi=300, bbox_inches = 'tight')
@@ -367,8 +367,8 @@ def feature_rfe_select1(remain_number,path):
         f.write("\nS_rfe(Final feature)：\n")
         for i in range(len(list2)):
             f.write(str(list2[i]) + '\n')
-    target.to_csv(path + "/target.csv")
-    data_rfe.to_csv(path + "/data_rfe.csv")
+    target.to_csv(path + "/target.csv", index=False)
+    data_rfe.to_csv(path + "/data_rfe.csv", index=False)
     return target,data_rfe
 
 #4.1 画rfe特征选择后的热图
@@ -377,7 +377,7 @@ def heatmap_afterRFE(path):
     import seaborn as sns
     import matplotlib.pyplot as plt
     data_rfe_corMat = pd.DataFrame(data_rfe.corr())  #corr 求相关系数矩阵
-    data_rfe_corMat.to_csv(path+'/heatmap-afterRFE.csv')
+    data_rfe_corMat.to_csv(path+'/heatmap-afterRFE.csv', index=False)
     plt.figure(figsize=(20, 30))
     sns.heatmap(data_rfe_corMat, annot=False, vmax=1, square=True, cmap="Blues",linewidths=0)
     plt.savefig(path+'/heatmap-afterRFE.png', dpi=300, bbox_inches = 'tight')
@@ -3686,7 +3686,7 @@ def LinearRegression_default(path):
     y_prediction=clf.predict(X_test)
     # datasave = pd.DataFrame([[y_test], [y_prediction]])
     # datasave = pd.DataFrame({'y_test': y_test, 'y_prediction': y_prediction})
-    # datasave.to_csv("LR-test.csv")
+    # datasave.to_csv("LR-test.csv", index=False)
     # 打印准确率
     mse = mean_squared_error(y_test, y_prediction)
     rmse = mse ** (1/2)
@@ -3865,7 +3865,7 @@ def LinearRegression_modify(a, b,c,d,path,csvname):
     y_prediction=clf.predict(X_test)
     # datasave = pd.DataFrame([[y_test], [y_prediction]])
     # datasave = pd.DataFrame({'y_test': y_test, 'y_prediction': y_prediction})
-    # datasave.to_csv("LR-test.csv")
+    # datasave.to_csv("LR-test.csv", index=False)
     # 打印准确率
     mse = mean_squared_error(y_test, y_prediction)
     rmse = mse ** (1/2)
@@ -4660,7 +4660,7 @@ def model_modify_predict(csvName,path,model_path):
     # print(featureData2)
     predict = clf_xgboost_modify.predict(featureData1)
     predict_Ef = pd.DataFrame(predict)
-    predict_Ef.to_csv(path + "/Predict_xgboost_dataset_modify.csv")"""
+    predict_Ef.to_csv(path + "/Predict_xgboost_dataset_modify.csv", index=False)"""
 
     import pickle
     import os
@@ -4682,7 +4682,7 @@ def model_modify_predict(csvName,path,model_path):
     tg = pd.DataFrame(target,columns=["Output"])
 
     prediction = pd.concat([data, tg], axis=1)
-    prediction.to_csv(path +"/"+ file_name)
+    prediction.to_csv(path +"/"+ file_name, index=False)
     return path +"/"+ file_name
 
 
@@ -4722,7 +4722,7 @@ def model_modify_predict(csvName,path,model_path):
     print("new output: ", y_New_prediction)
     NewData = pd.concat([x_New, y_New_prediction], axis=1)
     print("New total Data: ", NewData)
-    NewData.to_csv(path+"/New_prediction_total_xgboost_default.csv")
+    NewData.to_csv(path+"/New_prediction_total_xgboost_default.csv", index=False)
     return x_New,y_New_prediction, NewData"""
 
 def xgboost_default_predict(csvName,path):
@@ -4734,7 +4734,7 @@ def xgboost_default_predict(csvName,path):
     # print(featureData2)
     predict = clf_xgboost_default.predict(featureData1)
     predict_Ef = pd.DataFrame(predict)
-    predict_Ef.to_csv(path + "/Predict_xgboost_dataset.csv")
+    predict_Ef.to_csv(path + "/Predict_xgboost_dataset.csv", index=False)
 
 
 # 7.1.2 预测集基于xgboost_modify
@@ -4772,7 +4772,7 @@ def xgboost_default_predict(csvName,path):
         print("new output: ", y_New_prediction)
         NewData = pd.concat([x_New, y_New_prediction], axis=1)
         print("New total Data: ", NewData)
-        NewData.to_csv(path+"/New_prediction_total_xgboost_modify.csv")
+        NewData.to_csv(path+"/New_prediction_total_xgboost_modify.csv", index=False)
         return x_New,y_New_prediction, NewData
 
     except Exception as e:
@@ -4786,7 +4786,7 @@ def xgboost_modify_predict(csvName,path):
     # print(featureData2)
     predict = clf_xgboost_modify.predict(featureData1)
     predict_Ef = pd.DataFrame(predict)
-    predict_Ef.to_csv(path + "/Predict_xgboost_dataset_modify.csv")"""
+    predict_Ef.to_csv(path + "/Predict_xgboost_dataset_modify.csv", index=False)"""
 
     import pickle
     import pandas as pd
@@ -4830,7 +4830,7 @@ def rnd_search_cv_xgboost_predict(csvName,path):
     print("new output: ", y_New_prediction)
     NewData = pd.concat([x_New, y_New_prediction], axis=1)
     print("New total Data: ", NewData)
-    NewData.to_csv(path+"/New_prediction_total_rnd_search_cv_xgboost.csv")
+    NewData.to_csv(path+"/New_prediction_total_rnd_search_cv_xgboost.csv", index=False)
 
     return x_New,y_New_prediction, NewData
 
@@ -4844,7 +4844,7 @@ def randomforest_default_predict(csvName,path):
     # print(featureData2)
     predict = clf_rf_default.predict(featureData1)
     predict_Ef = pd.DataFrame(predict)
-    predict_Ef.to_csv(path + "/Predict_rf_dataset.csv")
+    predict_Ef.to_csv(path + "/Predict_rf_dataset.csv", index=False)
 
 
 # 10.1
@@ -5051,7 +5051,7 @@ def extratrees_classifier(a, b, c, d, e, f,path,csvName):
 
     X = data.values[:, 1:-1]
     y = data.values[:, -1]
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=1)
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=1)
 
     for i in range(X_train.shape[1]):
         X_train[:, [i]] = preprocessing.MinMaxScaler().fit_transform(X_train[:, [i]])
