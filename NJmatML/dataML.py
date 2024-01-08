@@ -1585,7 +1585,7 @@ def RandomForest_modify(a, b, c, d, e,path,csvname):
 
     data = pd.DataFrame(pd.read_csv(csvname))
 
-    X = data.values[:, 1:-1]
+    X = data.values[:, :-1]
     y = data.values[:, -1]
     X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=42)
     # 数据归一化
@@ -2067,7 +2067,7 @@ def Bagging_modify(a, b, c,path,csvname):
     # 数据切分
     data = pd.DataFrame(pd.read_csv(csvname))
 
-    X = data.values[:, 1:-1]
+    X = data.values[:, :-1]
     y = data.values[:, -1]
     X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=42)
     # 数据归一化
@@ -2381,7 +2381,7 @@ def AdaBoost_modify(a, b, c,path,csvname):
     # 数据切分
     data = pd.DataFrame(pd.read_csv(csvname))
 
-    X = data.values[:, 1:-1]
+    X = data.values[:, :-1]
     y = data.values[:, -1]
     X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=42)
     # 数据归一化
@@ -2710,7 +2710,7 @@ def GradientBoosting_modify(a, b, c,d,e,path,csvname):
 
     data = pd.DataFrame(pd.read_csv(csvname))
 
-    X = data.values[:, 1:-1]
+    X = data.values[:, :-1]
     y = data.values[:, -1]
     X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=42)
     # 数据归一化
@@ -3027,7 +3027,7 @@ def ExtraTree_modify(a, b, c,e,path,csvname):
 
     data = pd.DataFrame(pd.read_csv(csvname))
 
-    X = data.values[:, 1:-1]
+    X = data.values[:, :-1]
     y = data.values[:, -1]
     X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=42)
     # 数据归一化
@@ -3365,7 +3365,7 @@ def Svm_modify(a, b,path,csvname):
 
     data = pd.DataFrame(pd.read_csv(csvname))
 
-    X = data.values[:, 1:-1]
+    X = data.values[:, :-1]
     y = data.values[:, -1]
     X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=42)
     # 数据归一化
@@ -3515,156 +3515,156 @@ def Svm_modify(a, b,path,csvname):
 # 6.8 DecisionTree机器学习建模
 
 # 6.8.1 DecisionTree默认超参数建模画图
-def DecisionTree_default(path):
-    from sklearn import preprocessing
-    from sklearn.model_selection import KFold
-    from sklearn.metrics import mean_squared_error
-    from matplotlib.ticker import MultipleLocator, FormatStrFormatter
-    import matplotlib.pyplot as plt
-    from sklearn.model_selection import train_test_split
-    # 数据切分
-    X = s_rfe
-    y = target
-    X = X.values[:, :]
-    y = y.values[:, :]
-    X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=42)
-    # 数据归一化
-    for i in range(X_train.shape[1]):
-        X_train[:, [i]] = preprocessing.MinMaxScaler().fit_transform(X_train[:, [i]])
-    for i in range(X_test.shape[1]):
-        X_test[:, [i]] = preprocessing.MinMaxScaler().fit_transform(X_test[:, [i]])
-    #机器学习建模
-    from sklearn import tree
-    clf = tree.DecisionTreeRegressor()
-    clf.fit(X_train, y_train)
-    y_prediction=clf.predict(X_test)
-    # 打印准确率
-    mse = mean_squared_error(y_test, y_prediction)
-    rmse = mse ** (1/2)
-    from sklearn.metrics import mean_absolute_error
-    MAE = mean_absolute_error(y_test, y_prediction)
-    print("RMSE:",rmse)
-    print("MAE:",MAE)
-    from sklearn.metrics import r2_score
-    from sklearn.metrics import mean_squared_error
-    R2 = r2_score(y_test, y_prediction)
-    MSE = mean_squared_error(y_test, y_prediction)
-    print("R2:",R2)
-    print("MSE:",MSE)
-    str1 = "RMSE:" + str(rmse) + '\n' + "MAE:" + str(MAE) + '\n' + "R2:" + str(R2) + '\n' + "MSE:" + str(MSE) + '\n'
-
-    #plot图
-    plt.yticks(fontproperties = 'Times New Roman', size = 14)
-    plt.xticks(fontproperties = 'Times New Roman', size = 14)
-    plt.rcParams['font.sans-serif'] = 'Roman'
-    plt.rcParams['xtick.direction'] = 'in'
-    plt.rcParams['ytick.direction'] = 'in'
-    plt.plot(y_test, y_test, label='Real Data')
-    plt.scatter(y_test, y_prediction, label='Predict', c='r')
-    ax=plt.gca()
-    ax.spines['bottom'].set_linewidth(2);###设置底部坐标轴的粗细
-    ax.spines['left'].set_linewidth(2);####设置左边坐标轴的粗细
-    ax.spines['right'].set_linewidth(2);###设置右边坐标轴的粗细
-    ax.spines['top'].set_linewidth(2)
-    plt.tick_params(width=2)
-    ax.xaxis.set_tick_params(labelsize=24)
-    plt.tick_params(which='major',length=8)
-    plt.tick_params(which='minor',length=4,width=2)
-    ax.yaxis.set_tick_params(labelsize=24)
-    xminorLocator   = MultipleLocator(1000)
-    yminorLocator   = MultipleLocator(1000)
-    ax.xaxis.set_minor_locator(xminorLocator)
-    ax.yaxis.set_minor_locator(yminorLocator)
-    plt.minorticks_on()
-    plt.xlabel("True", fontproperties = 'Times New Roman', size = 20)
-    plt.ylabel("Prediction", fontproperties = 'Times New Roman', size = 20)
-    plt.text(.05, .2, 'MAE = %.3f \nMSE =  %.3f \nR2 =  %.3f \n' % (MAE, MSE, R2), fontproperties = 'Times New Roman', size = 20, horizontalalignment='center')
-    plt.savefig(path+'/DecisionTree-default.png', dpi=300, bbox_inches = 'tight')
-    plt.close()
-    # 使用KFold交叉验证建模
-    from sklearn.model_selection import cross_val_score
-    kfold = KFold(n_splits=10)
-    scores = cross_val_score(clf, X_train, y_train, scoring='r2', cv=kfold)
-    # scoring='neg_mean_squared_error'
-    print("scores:", scores)
-    scores_fold = []
-    for i in range(len(scores)):
-        scores_mean = scores[:i + 1].mean()
-        print(i + 1, "scores_mean:", scores_mean)
-        scores_fold.append(scores_mean)
-    # 使用KFold交叉验证plot图
-    plt.yticks(fontproperties='Times New Roman', size=14)
-    plt.xticks(fontproperties='Times New Roman', size=14)
-    plt.rcParams['font.sans-serif'] = 'Roman'
-    plt.rcParams['xtick.direction'] = 'in'
-    plt.rcParams['ytick.direction'] = 'in'
-    plt.plot(range(1, 11), scores_fold, c='r')
-    plt.scatter(range(1, 11), scores_fold, c='r')
-    ax.spines['bottom'].set_linewidth(2);  ###设置底部坐标轴的粗细
-    ax.spines['left'].set_linewidth(2);  ####设置左边坐标轴的粗细
-    ax.spines['right'].set_linewidth(2);  ###设置右边坐标轴的粗细
-    ax.spines['top'].set_linewidth(2)
-    plt.tick_params(width=2)
-    ax.xaxis.set_tick_params(labelsize=24)
-    plt.tick_params(which='major', length=8)
-    plt.tick_params(which='minor', length=4, width=2)
-    ax.yaxis.set_tick_params(labelsize=24)
-    ax.xaxis.set_minor_locator(xminorLocator)
-    ax.yaxis.set_minor_locator(yminorLocator)
-    x_major_locator = MultipleLocator(1)  # 把x轴的刻度间隔设置为1，并存在变量里
-    ax.xaxis.set_major_locator(x_major_locator)  # 把x轴的主刻度设置为1的倍数
-    y_major_locator = MultipleLocator(0.2)  # 把y轴的刻度间隔设置为10，并存在变量里
-    ax.yaxis.set_major_locator(y_major_locator)  # 把y轴的主刻度设置为10的倍数
-    plt.ylim(0, 1.2)
-    plt.xlabel("k", fontproperties='Times New Roman', size=24)
-    plt.ylabel("score", fontproperties='Times New Roman', size=24)
-    plt.savefig(path+'/DecisionTree-default-10-fold-crossvalidation.png', dpi=300, bbox_inches='tight')
-    plt.close()
-    # 训练集也可以打印准确率并plot图
-    y_train_prediction = clf.predict(X_train)
-    mse_train = mean_squared_error(y_train, y_train_prediction)
-    rmse_train = mse_train ** (1/2)
-    from sklearn.metrics import mean_absolute_error
-    MAE_train = mean_absolute_error(y_train, y_train_prediction)
-    print("RMSE:", rmse_train)
-    print("MAE:", MAE_train)
-    from sklearn.metrics import r2_score
-    from sklearn.metrics import mean_squared_error
-    R2_train = r2_score(y_train, y_train_prediction)
-    MSE_train = mean_squared_error(y_train, y_train_prediction)
-    print("R2:",R2_train)
-    print("MSE:",MSE_train)
-    str2 = "RMSE:" + str(rmse_train) + '\n' + "MAE:" + str(MAE_train) + '\n' + "R2:" + str(R2_train) + '\n' \
-           + "MSE:" + str(MSE_train) + '\n'
-
-    plt.yticks(fontproperties = 'Times New Roman', size = 14)
-    plt.xticks(fontproperties = 'Times New Roman', size = 14)
-    plt.rcParams['font.sans-serif'] = 'Roman'
-    plt.rcParams['xtick.direction'] = 'in'
-    plt.rcParams['ytick.direction'] = 'in'
-    plt.plot(y_train, y_train, label='Real Data')
-    plt.scatter(y_train, y_train_prediction, label='Predict', c='r')
-    ax=plt.gca()
-    ax.spines['bottom'].set_linewidth(2);###设置底部坐标轴的粗细
-    ax.spines['left'].set_linewidth(2);####设置左边坐标轴的粗细
-    ax.spines['right'].set_linewidth(2);###设置右边坐标轴的粗细
-    ax.spines['top'].set_linewidth(2)
-    plt.tick_params(width=2)
-    ax.xaxis.set_tick_params(labelsize=24)
-    plt.tick_params(which='major',length=8)
-    plt.tick_params(which='minor',length=4,width=2)
-    ax.yaxis.set_tick_params(labelsize=24)
-    xminorLocator   = MultipleLocator(1000)
-    yminorLocator   = MultipleLocator(1000)
-    ax.xaxis.set_minor_locator(xminorLocator)
-    ax.yaxis.set_minor_locator(yminorLocator)
-    plt.minorticks_on()
-    plt.xlabel("True", fontproperties = 'Times New Roman', size = 20)
-    plt.ylabel("Prediction", fontproperties = 'Times New Roman', size = 20)
-    plt.text(.05, .2, 'MAE = %.3f \nMSE =  %.3f \nR2 =  %.3f \n' % (MAE_train, MSE_train, R2_train), fontproperties = 'Times New Roman', size = 20, horizontalalignment='center')
-    plt.savefig(path+'/DecisionTree-default-train.png', dpi=300, bbox_inches = 'tight')
-    plt.close()
-    return str1, scores, str2
+# def DecisionTree_default(path):
+#     from sklearn import preprocessing
+#     from sklearn.model_selection import KFold
+#     from sklearn.metrics import mean_squared_error
+#     from matplotlib.ticker import MultipleLocator, FormatStrFormatter
+#     import matplotlib.pyplot as plt
+#     from sklearn.model_selection import train_test_split
+#     # 数据切分
+#     X = s_rfe
+#     y = target
+#     X = X.values[:, :]
+#     y = y.values[:, :]
+#     X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=42)
+#     # 数据归一化
+#     for i in range(X_train.shape[1]):
+#         X_train[:, [i]] = preprocessing.MinMaxScaler().fit_transform(X_train[:, [i]])
+#     for i in range(X_test.shape[1]):
+#         X_test[:, [i]] = preprocessing.MinMaxScaler().fit_transform(X_test[:, [i]])
+#     #机器学习建模
+#     from sklearn import tree
+#     clf = tree.DecisionTreeRegressor()
+#     clf.fit(X_train, y_train)
+#     y_prediction=clf.predict(X_test)
+#     # 打印准确率
+#     mse = mean_squared_error(y_test, y_prediction)
+#     rmse = mse ** (1/2)
+#     from sklearn.metrics import mean_absolute_error
+#     MAE = mean_absolute_error(y_test, y_prediction)
+#     print("RMSE:",rmse)
+#     print("MAE:",MAE)
+#     from sklearn.metrics import r2_score
+#     from sklearn.metrics import mean_squared_error
+#     R2 = r2_score(y_test, y_prediction)
+#     MSE = mean_squared_error(y_test, y_prediction)
+#     print("R2:",R2)
+#     print("MSE:",MSE)
+#     str1 = "RMSE:" + str(rmse) + '\n' + "MAE:" + str(MAE) + '\n' + "R2:" + str(R2) + '\n' + "MSE:" + str(MSE) + '\n'
+#
+#     #plot图
+#     plt.yticks(fontproperties = 'Times New Roman', size = 14)
+#     plt.xticks(fontproperties = 'Times New Roman', size = 14)
+#     plt.rcParams['font.sans-serif'] = 'Roman'
+#     plt.rcParams['xtick.direction'] = 'in'
+#     plt.rcParams['ytick.direction'] = 'in'
+#     plt.plot(y_test, y_test, label='Real Data')
+#     plt.scatter(y_test, y_prediction, label='Predict', c='r')
+#     ax=plt.gca()
+#     ax.spines['bottom'].set_linewidth(2);###设置底部坐标轴的粗细
+#     ax.spines['left'].set_linewidth(2);####设置左边坐标轴的粗细
+#     ax.spines['right'].set_linewidth(2);###设置右边坐标轴的粗细
+#     ax.spines['top'].set_linewidth(2)
+#     plt.tick_params(width=2)
+#     ax.xaxis.set_tick_params(labelsize=24)
+#     plt.tick_params(which='major',length=8)
+#     plt.tick_params(which='minor',length=4,width=2)
+#     ax.yaxis.set_tick_params(labelsize=24)
+#     xminorLocator   = MultipleLocator(1000)
+#     yminorLocator   = MultipleLocator(1000)
+#     ax.xaxis.set_minor_locator(xminorLocator)
+#     ax.yaxis.set_minor_locator(yminorLocator)
+#     plt.minorticks_on()
+#     plt.xlabel("True", fontproperties = 'Times New Roman', size = 20)
+#     plt.ylabel("Prediction", fontproperties = 'Times New Roman', size = 20)
+#     plt.text(.05, .2, 'MAE = %.3f \nMSE =  %.3f \nR2 =  %.3f \n' % (MAE, MSE, R2), fontproperties = 'Times New Roman', size = 20, horizontalalignment='center')
+#     plt.savefig(path+'/DecisionTree-default.png', dpi=300, bbox_inches = 'tight')
+#     plt.close()
+#     # 使用KFold交叉验证建模
+#     from sklearn.model_selection import cross_val_score
+#     kfold = KFold(n_splits=10)
+#     scores = cross_val_score(clf, X_train, y_train, scoring='r2', cv=kfold)
+#     # scoring='neg_mean_squared_error'
+#     print("scores:", scores)
+#     scores_fold = []
+#     for i in range(len(scores)):
+#         scores_mean = scores[:i + 1].mean()
+#         print(i + 1, "scores_mean:", scores_mean)
+#         scores_fold.append(scores_mean)
+#     # 使用KFold交叉验证plot图
+#     plt.yticks(fontproperties='Times New Roman', size=14)
+#     plt.xticks(fontproperties='Times New Roman', size=14)
+#     plt.rcParams['font.sans-serif'] = 'Roman'
+#     plt.rcParams['xtick.direction'] = 'in'
+#     plt.rcParams['ytick.direction'] = 'in'
+#     plt.plot(range(1, 11), scores_fold, c='r')
+#     plt.scatter(range(1, 11), scores_fold, c='r')
+#     ax.spines['bottom'].set_linewidth(2);  ###设置底部坐标轴的粗细
+#     ax.spines['left'].set_linewidth(2);  ####设置左边坐标轴的粗细
+#     ax.spines['right'].set_linewidth(2);  ###设置右边坐标轴的粗细
+#     ax.spines['top'].set_linewidth(2)
+#     plt.tick_params(width=2)
+#     ax.xaxis.set_tick_params(labelsize=24)
+#     plt.tick_params(which='major', length=8)
+#     plt.tick_params(which='minor', length=4, width=2)
+#     ax.yaxis.set_tick_params(labelsize=24)
+#     ax.xaxis.set_minor_locator(xminorLocator)
+#     ax.yaxis.set_minor_locator(yminorLocator)
+#     x_major_locator = MultipleLocator(1)  # 把x轴的刻度间隔设置为1，并存在变量里
+#     ax.xaxis.set_major_locator(x_major_locator)  # 把x轴的主刻度设置为1的倍数
+#     y_major_locator = MultipleLocator(0.2)  # 把y轴的刻度间隔设置为10，并存在变量里
+#     ax.yaxis.set_major_locator(y_major_locator)  # 把y轴的主刻度设置为10的倍数
+#     plt.ylim(0, 1.2)
+#     plt.xlabel("k", fontproperties='Times New Roman', size=24)
+#     plt.ylabel("score", fontproperties='Times New Roman', size=24)
+#     plt.savefig(path+'/DecisionTree-default-10-fold-crossvalidation.png', dpi=300, bbox_inches='tight')
+#     plt.close()
+#     # 训练集也可以打印准确率并plot图
+#     y_train_prediction = clf.predict(X_train)
+#     mse_train = mean_squared_error(y_train, y_train_prediction)
+#     rmse_train = mse_train ** (1/2)
+#     from sklearn.metrics import mean_absolute_error
+#     MAE_train = mean_absolute_error(y_train, y_train_prediction)
+#     print("RMSE:", rmse_train)
+#     print("MAE:", MAE_train)
+#     from sklearn.metrics import r2_score
+#     from sklearn.metrics import mean_squared_error
+#     R2_train = r2_score(y_train, y_train_prediction)
+#     MSE_train = mean_squared_error(y_train, y_train_prediction)
+#     print("R2:",R2_train)
+#     print("MSE:",MSE_train)
+#     str2 = "RMSE:" + str(rmse_train) + '\n' + "MAE:" + str(MAE_train) + '\n' + "R2:" + str(R2_train) + '\n' \
+#            + "MSE:" + str(MSE_train) + '\n'
+#
+#     plt.yticks(fontproperties = 'Times New Roman', size = 14)
+#     plt.xticks(fontproperties = 'Times New Roman', size = 14)
+#     plt.rcParams['font.sans-serif'] = 'Roman'
+#     plt.rcParams['xtick.direction'] = 'in'
+#     plt.rcParams['ytick.direction'] = 'in'
+#     plt.plot(y_train, y_train, label='Real Data')
+#     plt.scatter(y_train, y_train_prediction, label='Predict', c='r')
+#     ax=plt.gca()
+#     ax.spines['bottom'].set_linewidth(2);###设置底部坐标轴的粗细
+#     ax.spines['left'].set_linewidth(2);####设置左边坐标轴的粗细
+#     ax.spines['right'].set_linewidth(2);###设置右边坐标轴的粗细
+#     ax.spines['top'].set_linewidth(2)
+#     plt.tick_params(width=2)
+#     ax.xaxis.set_tick_params(labelsize=24)
+#     plt.tick_params(which='major',length=8)
+#     plt.tick_params(which='minor',length=4,width=2)
+#     ax.yaxis.set_tick_params(labelsize=24)
+#     xminorLocator   = MultipleLocator(1000)
+#     yminorLocator   = MultipleLocator(1000)
+#     ax.xaxis.set_minor_locator(xminorLocator)
+#     ax.yaxis.set_minor_locator(yminorLocator)
+#     plt.minorticks_on()
+#     plt.xlabel("True", fontproperties = 'Times New Roman', size = 20)
+#     plt.ylabel("Prediction", fontproperties = 'Times New Roman', size = 20)
+#     plt.text(.05, .2, 'MAE = %.3f \nMSE =  %.3f \nR2 =  %.3f \n' % (MAE_train, MSE_train, R2_train), fontproperties = 'Times New Roman', size = 20, horizontalalignment='center')
+#     plt.savefig(path+'/DecisionTree-default-train.png', dpi=300, bbox_inches = 'tight')
+#     plt.close()
+#     return str1, scores, str2
 
 # 6.8.2 DecisionTree自定义超参数建模画图
 def DecisionTree_modify(a, b,c,d,e,f,path,csvname):
@@ -3682,7 +3682,7 @@ def DecisionTree_modify(a, b,c,d,e,f,path,csvname):
 
     data = pd.DataFrame(pd.read_csv(csvname))
 
-    X = data.values[:, 1:-1]
+    X = data.values[:, :-1]
     y = data.values[:, -1]
     X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=42)
     # 数据归一化
@@ -4026,7 +4026,7 @@ def LinearRegression_modify(a, b,c,d,path,csvname):
 
     data = pd.DataFrame(pd.read_csv(csvname))
 
-    X = data.values[:, 1:-1]
+    X = data.values[:, :-1]
     y = data.values[:, -1]
     X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=42)
     # 数据归一化
@@ -4362,7 +4362,7 @@ def Ridge_modify(a, b,c,d,e,path,csvname):
 
     data = pd.DataFrame(pd.read_csv(csvname))
 
-    X = data.values[:, 1:-1]
+    X = data.values[:, :-1]
     y = data.values[:, -1]
     X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=42)
     # 数据归一化
@@ -4537,8 +4537,8 @@ def MLP_default(path):
     # 数据切分
     X = s_rfe
     y = target
-    X = X.values[:, :]
-    y = y.values[:, :]
+    X = X.values[:, :-1]
+    y = y.values[:, -1]
     X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=42)
     # 数据归一化
     for i in range(X_train.shape[1]):
@@ -4695,7 +4695,7 @@ def MLP_modify(l,a,m,ha,hb,path,csvname):
 
     data = pd.DataFrame(pd.read_csv(csvname))
 
-    X = data.values[:, 1:-1]
+    X = data.values[:, :-1]
     y = data.values[:, -1]
     X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=42)
     # 数据归一化
@@ -5271,7 +5271,7 @@ def randomforest_Classifier(a, b, c, d, e, f,path,csvName):
     data = pd.DataFrame(pd.read_csv(csvName))
 
 
-    X = data.values[:, 1:-1]
+    X = data.values[:, :-1]
     y = data.values[:, -1]
 
 
@@ -5442,7 +5442,7 @@ def extratrees_classifier(a, b, c, d, e, f,path,csvName):
 
     data = pd.DataFrame(pd.read_csv(csvName))
 
-    X = data.values[:, 1:-1]
+    X = data.values[:, :-1]
     y = data.values[:, -1]
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=1)
 
@@ -5623,7 +5623,7 @@ def GaussianProcess_classifier(a, b, c, d, e,path,csvName):
 
     data = pd.DataFrame(pd.read_csv(csvName))
 
-    X = data.values[:, 1:-1]
+    X = data.values[:, :-1]
     y = data.values[:, -1]
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=1)
 
@@ -5888,7 +5888,7 @@ def DecisionTree_classifier(a, b, c, d, e,path,csvName):
 
     data = pd.DataFrame(pd.read_csv(csvName))
 
-    X = data.values[:, 1:-1]
+    X = data.values[:, :-1]
     y = data.values[:, -1]
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=1)
 
@@ -6074,7 +6074,7 @@ def SVM_classifier(a, b, c, d,e,path,csvName):
 
     data = pd.DataFrame(pd.read_csv(csvName))
 
-    X = data.values[:, 1:-1]
+    X = data.values[:, :-1]
     y = data.values[:, -1]
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=1)
 
