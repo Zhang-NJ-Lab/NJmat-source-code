@@ -57,7 +57,7 @@
      <x>0</x>
      <y>0</y>
      <width>1848</width>
-     <height>23</height>
+     <height>41</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu">
@@ -94,14 +94,55 @@
     <property name="title">
      <string>Machine learning</string>
     </property>
-    <addaction name="action_13"/>
+    <widget class="QMenu" name="menuAlgorithms">
+     <property name="title">
+      <string>Algorithms</string>
+     </property>
+     <widget class="QMenu" name="menuRegression">
+      <property name="title">
+       <string>Regression</string>
+      </property>
+      <addaction name="actionXgboost"/>
+      <addaction name="actionRandom_Forest"/>
+      <addaction name="actionBagging"/>
+      <addaction name="actionAdaBoost"/>
+      <addaction name="actionGradient_Boosting"/>
+      <addaction name="actionExtra_Tree"/>
+      <addaction name="actionSvm"/>
+      <addaction name="actionDecision_Tree"/>
+      <addaction name="actionLinear_Regression"/>
+      <addaction name="actionRidge"/>
+      <addaction name="actionMLP"/>
+     </widget>
+     <widget class="QMenu" name="menuClassification">
+      <property name="title">
+       <string>Classification</string>
+      </property>
+      <addaction name="actionRamdom_Forest"/>
+      <addaction name="actionExtra_Tree_2"/>
+      <addaction name="actionGaussian_Process"/>
+      <addaction name="actionKNeighbors"/>
+      <addaction name="actionDecision_Tree_2"/>
+      <addaction name="actionSVM"/>
+     </widget>
+     <addaction name="menuRegression"/>
+     <addaction name="menuClassification"/>
+    </widget>
+    <addaction name="menuAlgorithms"/>
    </widget>
    <widget class="QMenu" name="menu_7">
     <property name="title">
      <string>Prediction</string>
     </property>
+    <widget class="QMenu" name="menuImport_no_featurizer_no_label">
+     <property name="title">
+      <string>Import and generate (recommend)</string>
+     </property>
+     <addaction name="actionImport_2"/>
+     <addaction name="actionFeaturize"/>
+    </widget>
+    <addaction name="menuImport_no_featurizer_no_label"/>
     <addaction name="action_15"/>
-    <addaction name="action_16"/>
     <addaction name="actionSelect_machine_learning_model"/>
     <addaction name="action_18"/>
     <addaction name="actionPrediction_visualization"/>
@@ -122,6 +163,7 @@
       <string>Organic descriptor</string>
      </property>
      <addaction name="action_smiles_2"/>
+     <addaction name="actionpydel"/>
      <addaction name="actionrdkit_2"/>
     </widget>
     <widget class="QMenu" name="menu_16">
@@ -138,6 +180,14 @@
      <addaction name="actionImport_magpie_formula"/>
      <addaction name="actionGenerate_magpie"/>
     </widget>
+    <widget class="QMenu" name="menuHybrid_inorganic_organic_2in1">
+     <property name="title">
+      <string>Hybrid inorganic organic (2in1)</string>
+     </property>
+     <addaction name="actionImport"/>
+     <addaction name="actionGenerate"/>
+    </widget>
+    <addaction name="menuHybrid_inorganic_organic_2in1"/>
     <addaction name="menu_15"/>
     <addaction name="menu_16"/>
     <addaction name="menuInorganic_descriptor_matminer"/>
@@ -528,7 +578,7 @@
   </action>
   <action name="action_16">
    <property name="text">
-    <string>* Prediction construction (without label)</string>
+    <string>Prediction construction (without label)</string>
    </property>
   </action>
   <action name="actionshap">
@@ -638,17 +688,12 @@
   </action>
   <action name="action_21">
    <property name="text">
-    <string>Path</string>
+    <string>Import</string>
    </property>
   </action>
   <action name="action_22">
    <property name="text">
-    <string>Import and visualize</string>
-   </property>
-  </action>
-  <action name="action_13">
-   <property name="text">
-    <string>Algorithms</string>
+    <string>Visualize</string>
    </property>
   </action>
   <action name="action_14">
@@ -832,6 +877,111 @@
   <action name="action3_number_of_columns_in_the_prediction_csv_RFE_remaining_number_you_entered_in_the_software">
    <property name="text">
     <string>3. number of columns in prediction csv = remaining RFE number you entered in the software!</string>
+   </property>
+  </action>
+  <action name="actionXgboost">
+   <property name="text">
+    <string>Xgboost</string>
+   </property>
+  </action>
+  <action name="actionRandom_Forest">
+   <property name="text">
+    <string>Random Forest</string>
+   </property>
+  </action>
+  <action name="actionBagging">
+   <property name="text">
+    <string>Bagging</string>
+   </property>
+  </action>
+  <action name="actionAdaBoost">
+   <property name="text">
+    <string>AdaBoost</string>
+   </property>
+  </action>
+  <action name="actionGradient_Boosting">
+   <property name="text">
+    <string>Gradient Boosting</string>
+   </property>
+  </action>
+  <action name="actionExtra_Tree">
+   <property name="text">
+    <string>Extra Tree</string>
+   </property>
+  </action>
+  <action name="actionSvm">
+   <property name="text">
+    <string>SVM</string>
+   </property>
+  </action>
+  <action name="actionDecision_Tree">
+   <property name="text">
+    <string>Decision Tree</string>
+   </property>
+  </action>
+  <action name="actionLinear_Regression">
+   <property name="text">
+    <string>Linear Regression</string>
+   </property>
+  </action>
+  <action name="actionRidge">
+   <property name="text">
+    <string>Ridge</string>
+   </property>
+  </action>
+  <action name="actionMLP">
+   <property name="text">
+    <string>MLP</string>
+   </property>
+  </action>
+  <action name="actionRamdom_Forest">
+   <property name="text">
+    <string>Ramdom Forest</string>
+   </property>
+  </action>
+  <action name="actionExtra_Tree_2">
+   <property name="text">
+    <string>Extra Tree</string>
+   </property>
+  </action>
+  <action name="actionGaussian_Process">
+   <property name="text">
+    <string>Gaussian Process</string>
+   </property>
+  </action>
+  <action name="actionKNeighbors">
+   <property name="text">
+    <string>*KNeighbors</string>
+   </property>
+  </action>
+  <action name="actionDecision_Tree_2">
+   <property name="text">
+    <string>Decision Tree</string>
+   </property>
+  </action>
+  <action name="actionSVM">
+   <property name="text">
+    <string>SVM</string>
+   </property>
+  </action>
+  <action name="actionImport">
+   <property name="text">
+    <string>Import</string>
+   </property>
+  </action>
+  <action name="actionGenerate">
+   <property name="text">
+    <string>Featurize</string>
+   </property>
+  </action>
+  <action name="actionImport_2">
+   <property name="text">
+    <string>Import</string>
+   </property>
+  </action>
+  <action name="actionFeaturize">
+   <property name="text">
+    <string>Generate</string>
    </property>
   </action>
  </widget>

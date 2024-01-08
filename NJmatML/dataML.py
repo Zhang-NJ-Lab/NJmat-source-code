@@ -20,20 +20,20 @@ def smiles_csv_pydel(name2):
     return data2
 
 # 0.1.1.2 pydel描述符生成
-# def pydel_featurizer(path):
-#     from padelpy import from_smiles
-#     import pandas as pd
-#     data2a = data2.iloc[:,0].map(lambda x : from_smiles(x).values())
-#     data2a = pd.DataFrame(data2a)
-#     data2b = data2a.iloc[:,0].apply(pd.Series)
-#     #写入列名
-#     data2c = data2.iloc[:,0].map(lambda x : from_smiles(x).keys())
-#     col2c = data2c.iloc[0]
-#     data2b.columns = col2c
-#     print(data2b)
-#     # 特征存入pydel_featurizer.csv
-#     data2b.to_csv(path+"/pydel_featurizer_output.csv", index=False)
-#     return data2b
+def pydel_featurizer(path):
+    from padelpy import from_smiles
+    import pandas as pd
+    data2a = data2.iloc[:,0].map(lambda x : from_smiles(x).values())
+    data2a = pd.DataFrame(data2a)
+    data2b = data2a.iloc[:,0].apply(pd.Series)
+    #写入列名
+    data2c = data2.iloc[:,0].map(lambda x : from_smiles(x).keys())
+    col2c = data2c.iloc[0]
+    data2b.columns = col2c
+    print(data2b)
+    # 特征存入pydel_featurizer.csv
+    data2b.to_csv(path+"/pydel_featurizer_output.csv")
+    return data2b
 
 # !pip install padelpy
 # from padelpy import from_smiles
@@ -97,20 +97,28 @@ def drawMolecule(smiles):
 
 # 0.2 无机材料描述符 (NJmatML参考Matminer使用类独热编码方式特征化无机化学式)
 # 0.2.1 导入含有无机材料化学式的csv
-def inorganic_csv(name4):                        # one-hot matiminer import
+def inorganic_csv(name4):
     import pandas as pd
     global data4
     data4 = pd.read_csv(name4)
     print(data4)
     return data4
 
+# 0.2.1 用于magpie,导入含有无机材料化学式的csv
+def inorganic_magpie_csv(name20):
+    import pandas as pd
+    global data20
+    data20 = pd.read_csv(name20)
+    print(data20)
+    return data20
 
 # 0.2.2 matminer无机材料（类独热编码）描述符生成，102维
 # 例如(Fe2AgCu2)O3, Fe2O3, Cs3PbI3, MoS2, CuInGaSe, Si, TiO2等
-def inorganic_featurizer(path):                     # one-hot matiminer featurization
+def inorganic_featurizer(path):
     import pandas as pd
     from matminer.featurizers.composition.element import ElementFraction
     from pymatgen.core import Composition
+
     ef = ElementFraction()
     list4 = list(map(lambda x: Composition(x), data4.iloc[:,0]))
     data7 = pd.DataFrame()
@@ -126,20 +134,12 @@ def inorganic_featurizer(path):                     # one-hot matiminer featuriz
     data8.to_csv(path+"/inorganic_featurizer_output.csv",index=None)
     return data8,element_fraction_labels
 
-
-# 0.2.3 用于magpie,导入含有无机材料化学式的csv
-def inorganic_magpie_csv(name20):
-    import pandas as pd
-    global data20
-    data20 = pd.read_csv(name20)
-    print(data20)
-    return data20
-
-# 0.2.4 magpie（matminer)无机材料描述符生成
+# 0.2.3 magpie（matminer)无机材料描述符生成
 def inorganic_magpie_featurizer(path):
     from matminer.featurizers.conversions import StrToComposition
     from matminer.featurizers.composition import ElementProperty
     import pandas as pd
+
     str_to_comp = StrToComposition(target_col_id='composition')
     df_comp = str_to_comp.featurize_dataframe(data20, col_id='formula')   #此处规定csv中第一列列名必须是 formula  否则软件闪退！！！！！
     features = ['Number', 'MendeleevNumber', 'AtomicWeight', 'MeltingT',
@@ -159,6 +159,201 @@ def inorganic_magpie_featurizer(path):
     df_features.to_csv(path+"/1_magpie.csv",index=None)
     return df_features
 
+# 2in1
+def two_in_one(path,csvpath):
+    import pandas as pd
+    def select_columns_by_suffix(df, suffix):
+        filtered_columns = df.filter(regex=f'{suffix}$')
+        return filtered_columns
+
+    def extract_and_store_columns(csv_file, suffixes):
+        # 读取 CSV 文件
+        df = pd.read_csv(csv_file)
+
+        selected_columns = {}
+        for suffix in suffixes:
+            selected_columns[suffix] = select_columns_by_suffix(df, suffix)
+            print('********************************************************************************')
+            print(f"Columns ending with '{suffix}':")
+            print('********************************************************************************')
+            print(selected_columns[suffix])
+            # 如果需要保存到新的DataFrame中，取消注释下一行
+            #global df_selected
+            df_selected = pd.concat(selected_columns, axis=1)
+            # df_combined = pd.concat(selected_columns.values(), axis=1)
+            # df_combined.to_csv('selected_columns.csv', index=False)
+            selected_columns[suffix].to_csv(path+'/'+f'{suffix}_selected_columns.csv', index=False)
+
+        # 获取未被选中的列
+        unselected_columns = df.drop(columns=[col for cols in selected_columns.values() for col in cols.columns])
+
+        # 保存未被选中的列到 CSV 文件
+        unselected_columns.to_csv(path+'/'+'unselected_columns.csv', index=False)
+
+        return selected_columns
+
+    # 用法示例
+    file_path = csvpath
+    suffixes = ['InorganicFormula', 'OrganicSmiles']
+    selected_columns = extract_and_store_columns(file_path, suffixes)
+
+    original_data = pd.DataFrame(pd.read_csv(path+'/InorganicFormula_selected_columns.csv'))
+
+    import pandas as pd
+
+    # 假设 original_data 是您的原始数据集
+    # 创建一个空字典，用于存储新的数据集
+    new_datasets = {}
+
+    # 遍历原始数据集的每一列
+    for col_name in original_data.columns:
+        # 创建新的数据集，将当前列命名为 'Name'
+        new_dataset = pd.DataFrame({'Name': original_data[col_name]})
+
+        # 将新数据集存储在字典中，字典的键是 'data1'，'data2'，依此类推
+        new_datasets['data' + str(len(new_datasets) + 1)] = new_dataset
+
+    # 打印或使用新的数据集
+    for key, value in new_datasets.items():
+        print(f"{key}:\n{value}\n")
+
+    import pandas as pd
+    from matminer.featurizers.conversions import StrToComposition
+    from matminer.featurizers.composition.orbital import AtomicOrbitals
+    from matminer.featurizers.composition import ElementProperty
+    from matminer.featurizers.composition.element import ElementFraction
+    from pymatgen.core import Composition
+
+    # 假设 new_datasets 是包含拆分数据集的字典，如 'data1', 'data2', ...
+    # 每个数据集中应该有 'Name' 列
+
+    # 初始化 StrToComposition
+    str_to_comp = StrToComposition(target_col_id='composition')
+
+    # 初始化 AtomicOrbitals
+    comp_to_orbital = AtomicOrbitals()
+
+    # 初始化 ElementProperty
+    features_element_property = ['Number', 'MendeleevNumber', 'AtomicWeight', 'MeltingT',
+                                 'Column', 'Row', 'CovalentRadius', 'Electronegativity',
+                                 'NsValence', 'NpValence', 'NdValence', 'NfValence', 'NValence',
+                                 'NsUnfilled', 'NpUnfilled', 'NdUnfilled', 'NfUnfilled', 'NUnfilled',
+                                 'GSvolume_pa', 'GSbandgap', 'GSmagmom', 'SpaceGroupNumber']
+    stats_element_property = ['mean', 'minimum', 'maximum', 'range', 'avg_dev', 'mode']
+    element_property_featurizer = ElementProperty(data_source='magpie', features=features_element_property,
+                                                  stats=stats_element_property)
+
+    # 初始化 ElementFraction
+    element_fraction = ElementFraction()
+
+    # 用于存储特征转换后的数据集
+    result_datasets = {}
+
+    # 遍历拆分的数据集
+    for i, (key, dataset) in enumerate(new_datasets.items(), start=1):
+        # 特征转换1: StrToComposition
+        df_comp = str_to_comp.featurize_dataframe(dataset, col_id='Name')
+
+        # 特征转换2: AtomicOrbitals
+        orbital_features = comp_to_orbital.featurize_dataframe(df_comp, col_id='composition')
+        orbital_features = orbital_features.iloc[:, [4, 7, 8]]  # 选择感兴趣的列
+
+        # 特征转换3: ElementProperty
+        element_property_features = element_property_featurizer.featurize_dataframe(df_comp, col_id='composition')
+        element_property_features = element_property_features.iloc[:, 2:-1]  # 选择感兴趣的列
+
+        # 特征转换4: ElementFraction
+        element_fraction_features = element_fraction.featurize_dataframe(df_comp, col_id='composition')
+        element_fraction_features = element_fraction_features.iloc[:, 2:-1]  # 选择感兴趣的列
+
+        # 添加前缀
+        prefix_orbital = f'inorganic_formula_{i}_orbital_'
+        orbital_features = orbital_features.add_prefix(prefix_orbital)
+
+        prefix_element_property = f'inorganic_formula_{i}_element_property_'
+        element_property_features = element_property_features.add_prefix(prefix_element_property)
+
+        prefix_element_fraction = f'inorganic_formula_{i}_element_fraction_'
+        element_fraction_features = element_fraction_features.add_prefix(prefix_element_fraction)
+
+        # 合并特征转换后的数据集
+        result_datasets[key] = pd.concat([orbital_features, element_property_features, element_fraction_features],
+                                         axis=1)
+
+    # 合并所有数据集
+    merged_result = pd.concat(result_datasets.values(), axis=1)
+
+    # 将合并后的结果保存为 CSV 文件
+    merged_result.to_csv(path+'/merged_result.csv', index=False)
+
+    # 打印或使用合并后的结果
+    print(merged_result)
+
+    # 有机部分
+    original_data2 = pd.DataFrame(pd.read_csv(path+'/OrganicSmiles_selected_columns.csv'))
+
+    new_datasets2 = {}
+
+    # 遍历原始数据集的每一列
+    for col_name in original_data2.columns:
+        # 创建新的数据集，将当前列命名为 'Name'
+        new_dataset2 = pd.DataFrame({'Name': original_data2[col_name]})
+
+        # 将新数据集存储在字典中，字典的键是 'organic_data1'，'organic_data2'，依此类推
+        new_datasets2['organic_data' + str(len(new_datasets2) + 1)] = new_dataset2
+
+    # 打印或使用新的数据集
+    for key, value in new_datasets2.items():
+        print(f"{key}:\n{value}\n")
+
+    import pandas as pd
+    import numpy as np
+    from rdkit import Chem
+    from rdkit.Chem import AllChem
+
+    # 假设 new_datasets2 是包含拆分数据集的字典，如 'organic_data1', 'organic_data2', ...
+    # 每个数据集中应该有 'Name' 列
+
+    # 用于存储 RDKit 特征化后的数据集
+    rdkit_datasets = {}
+
+    # 遍历拆分的数据集
+    for key, dataset in new_datasets2.items():
+        # 特征化 RDKit
+        rdkit_features = dataset['Name'].apply(
+            lambda x: AllChem.GetMorganFingerprintAsBitVect(Chem.MolFromSmiles(x), 2))
+
+        # 将 RDKit 指纹转换为 DataFrame
+        rdkit_features_df = pd.DataFrame(
+            list(rdkit_features.apply(lambda x: np.frombuffer(x.ToBinary(), dtype=np.uint8))))
+
+        # 添加前缀
+        prefix_rdkit = f'{key}_rdkit_'
+        rdkit_features_df = rdkit_features_df.add_prefix(prefix_rdkit)
+
+        # 存储特征化后的数据集
+        rdkit_datasets[key] = rdkit_features_df
+
+    # 合并 RDKit 特征化后的数据集
+    merged_rdkit_result = pd.concat(rdkit_datasets.values(), axis=1)
+    merged_rdkit_result.fillna(0, inplace=True)
+    # 将合并后的结果保存为 CSV 文件
+    merged_rdkit_result.to_csv(path+'/merged_rdkit_result.csv', index=False)
+
+    # 打印或使用合并后的 RDKit 特征化结果
+    print(merged_rdkit_result)
+
+    unselected_columns = pd.DataFrame(pd.read_csv(path+'/unselected_columns.csv'))
+    # 合并前重置索引
+    merged_result.reset_index(drop=True, inplace=True)
+    merged_rdkit_result.reset_index(drop=True, inplace=True)
+    unselected_columns.reset_index(drop=True, inplace=True)
+
+    # 合并三个数据集
+    all_merged_data = pd.concat([merged_result, merged_rdkit_result, unselected_columns], axis=1)
+
+    # 将合并后的结果保存为 CSV 文件
+    all_merged_data.to_csv(path+'/test_train_dataset.csv', index=False)
 
 # 9 遗传算法设计新特征
 ## 9.1 普通默认运算符
@@ -277,7 +472,7 @@ def file_name(name,path):
     import pandas as pd
     global data
     data = pd.read_csv(name)
-    data.to_csv(path+"/data.csv", index=False)
+    data.to_csv(path+"/data.csv",index=None)
     print(data)
     return data
 
@@ -300,7 +495,7 @@ def heatmap_before(path):
     featureData=data.iloc[:,:]
     global corMat
     corMat = pd.DataFrame(featureData.corr())  #corr 求相关系数矩阵
-    corMat.to_csv(path+'/heatmap-before.csv', index=False)
+    corMat.to_csv(path+'/heatmap-before.csv')
     plt.figure(figsize=(20, 30))
     sns.heatmap(corMat, annot=False, vmax=1, square=True, cmap="Blues",linewidths=0)
     plt.savefig(path+'/heatmap-before.png', dpi=300, bbox_inches = 'tight')
@@ -327,8 +522,8 @@ def feature_rfe_select1(remain_number,path):
     model = RandomForestRegressor()
     rfe = RFE(estimator=model, n_features_to_select=remain_number, step=1)
     rfe_X = rfe.fit_transform(X, y)
-    print("特征是否被选中：\n", rfe.support_)                                          # ndarray
-    print("获取的数据特征尺寸:", rfe_X.shape)                                           # tuple
+    print("Whether the feature is selected：\n", rfe.support_)                                          # ndarray
+    print("Number of remaining features:", rfe_X.shape)                                           # tuple
     list1 = rfe.support_.tolist()
 
     # 打印rfe后的特征，但可能包含空值
@@ -348,9 +543,9 @@ def feature_rfe_select1(remain_number,path):
     # target = pd.DataFrame(data, columns=['Potential (v)'])
     global data_rfe
     data_rfe = pd.concat([s_rfe,target], axis=1)
-    print("最后的特征s_rfe:", r.Features.values)                                        # ndarray
-    print("目标target:", target)
-    print("rfe后的总数据data_rfe:", data_rfe)
+    print("Final features after feature selection (s_rfe):", r.Features.values)                                        # ndarray
+    print("Target:", target)
+    print("Final data after feature selection (data_rfe):", data_rfe)
 
     list2 = r.Features.values.tolist()
 
@@ -367,8 +562,8 @@ def feature_rfe_select1(remain_number,path):
         f.write("\nS_rfe(Final feature)：\n")
         for i in range(len(list2)):
             f.write(str(list2[i]) + '\n')
-    target.to_csv(path + "/target.csv", index=False)
-    data_rfe.to_csv(path + "/data_rfe.csv", index=False)
+    target.to_csv(path + "/target.csv",index=None)
+    data_rfe.to_csv(path + "/data_rfe.csv",index=None)
     return target,data_rfe
 
 #4.1 画rfe特征选择后的热图
@@ -377,7 +572,7 @@ def heatmap_afterRFE(path):
     import seaborn as sns
     import matplotlib.pyplot as plt
     data_rfe_corMat = pd.DataFrame(data_rfe.corr())  #corr 求相关系数矩阵
-    data_rfe_corMat.to_csv(path+'/heatmap-afterRFE.csv', index=False)
+    data_rfe_corMat.to_csv(path+'/heatmap-afterRFE.csv')
     plt.figure(figsize=(20, 30))
     sns.heatmap(data_rfe_corMat, annot=False, vmax=1, square=True, cmap="Blues",linewidths=0)
     plt.savefig(path+'/heatmap-afterRFE.png', dpi=300, bbox_inches = 'tight')
@@ -654,7 +849,7 @@ def xgboost_modify(a, b, c, d, e, f, g,path,csvName):
     y = y.values[:, :]"""
     data = pd.DataFrame(pd.read_csv(csvName))
 
-    X = data.values[:, 1:-1]
+    X = data.values[:, :-1]
     y = data.values[:, -1]
 
     X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=42)
@@ -3686,7 +3881,7 @@ def LinearRegression_default(path):
     y_prediction=clf.predict(X_test)
     # datasave = pd.DataFrame([[y_test], [y_prediction]])
     # datasave = pd.DataFrame({'y_test': y_test, 'y_prediction': y_prediction})
-    # datasave.to_csv("LR-test.csv", index=False)
+    # datasave.to_csv("LR-test.csv")
     # 打印准确率
     mse = mean_squared_error(y_test, y_prediction)
     rmse = mse ** (1/2)
@@ -3865,7 +4060,7 @@ def LinearRegression_modify(a, b,c,d,path,csvname):
     y_prediction=clf.predict(X_test)
     # datasave = pd.DataFrame([[y_test], [y_prediction]])
     # datasave = pd.DataFrame({'y_test': y_test, 'y_prediction': y_prediction})
-    # datasave.to_csv("LR-test.csv", index=False)
+    # datasave.to_csv("LR-test.csv")
     # 打印准确率
     mse = mean_squared_error(y_test, y_prediction)
     rmse = mse ** (1/2)
@@ -4660,7 +4855,7 @@ def model_modify_predict(csvName,path,model_path):
     # print(featureData2)
     predict = clf_xgboost_modify.predict(featureData1)
     predict_Ef = pd.DataFrame(predict)
-    predict_Ef.to_csv(path + "/Predict_xgboost_dataset_modify.csv", index=False)"""
+    predict_Ef.to_csv(path + "/Predict_xgboost_dataset_modify.csv")"""
 
     import pickle
     import os
@@ -4682,10 +4877,209 @@ def model_modify_predict(csvName,path,model_path):
     tg = pd.DataFrame(target,columns=["Output"])
 
     prediction = pd.concat([data, tg], axis=1)
-    prediction.to_csv(path +"/"+ file_name, index=False)
+    prediction.to_csv(path +"/"+ file_name,index=None)
     return path +"/"+ file_name
 
 
+
+# 用户导入虚拟数据集(只有输入的smiles和化学式，无target)，自动生成输出结果(实际有2in1特征)
+def virtual_two_in_one(path,csvpath):
+    import pandas as pd
+    def select_columns_by_suffix(df, suffix):
+        filtered_columns = df.filter(regex=f'{suffix}$')
+        return filtered_columns
+
+    def extract_and_store_columns(csv_file, suffixes):
+        # 读取 CSV 文件
+        df = pd.read_csv(csv_file)
+
+        selected_columns = {}
+        for suffix in suffixes:
+            selected_columns[suffix] = select_columns_by_suffix(df, suffix)
+            print('********************************************************************************')
+            print(f"Columns ending with '{suffix}':")
+            print('********************************************************************************')
+            print(selected_columns[suffix])
+            # 如果需要保存到新的DataFrame中，取消注释下一行
+            # global df_selected
+            df_selected = pd.concat(selected_columns, axis=1)
+            # df_combined = pd.concat(selected_columns.values(), axis=1)
+            # df_combined.to_csv('selected_columns.csv', index=False)
+            selected_columns[suffix].to_csv(path + '/' + f'{suffix}_selected_columns.csv', index=False)
+
+        # 获取未被选中的列
+        unselected_columns = df.drop(columns=[col for cols in selected_columns.values() for col in cols.columns])
+
+        # 保存未被选中的列到 CSV 文件
+        unselected_columns.to_csv(path + '/' + 'unselected_columns.csv', index=False)
+
+        return selected_columns
+
+    # 用法示例
+    file_path = csvpath
+    suffixes = ['InorganicFormula', 'OrganicSmiles']
+    selected_columns = extract_and_store_columns(file_path, suffixes)
+
+    original_data = pd.DataFrame(pd.read_csv(path + '/InorganicFormula_selected_columns.csv'))
+
+    import pandas as pd
+
+    # 假设 original_data 是您的原始数据集
+    # 创建一个空字典，用于存储新的数据集
+    new_datasets = {}
+
+    # 遍历原始数据集的每一列
+    for col_name in original_data.columns:
+        # 创建新的数据集，将当前列命名为 'Name'
+        new_dataset = pd.DataFrame({'Name': original_data[col_name]})
+
+        # 将新数据集存储在字典中，字典的键是 'data1'，'data2'，依此类推
+        new_datasets['data' + str(len(new_datasets) + 1)] = new_dataset
+
+    # 打印或使用新的数据集
+    for key, value in new_datasets.items():
+        print(f"{key}:\n{value}\n")
+
+    import pandas as pd
+    from matminer.featurizers.conversions import StrToComposition
+    from matminer.featurizers.composition.orbital import AtomicOrbitals
+    from matminer.featurizers.composition import ElementProperty
+    from matminer.featurizers.composition.element import ElementFraction
+    from pymatgen.core import Composition
+
+    # 假设 new_datasets 是包含拆分数据集的字典，如 'data1', 'data2', ...
+    # 每个数据集中应该有 'Name' 列
+
+    # 初始化 StrToComposition
+    str_to_comp = StrToComposition(target_col_id='composition')
+
+    # 初始化 AtomicOrbitals
+    comp_to_orbital = AtomicOrbitals()
+
+    # 初始化 ElementProperty
+    features_element_property = ['Number', 'MendeleevNumber', 'AtomicWeight', 'MeltingT',
+                                 'Column', 'Row', 'CovalentRadius', 'Electronegativity',
+                                 'NsValence', 'NpValence', 'NdValence', 'NfValence', 'NValence',
+                                 'NsUnfilled', 'NpUnfilled', 'NdUnfilled', 'NfUnfilled', 'NUnfilled',
+                                 'GSvolume_pa', 'GSbandgap', 'GSmagmom', 'SpaceGroupNumber']
+    stats_element_property = ['mean', 'minimum', 'maximum', 'range', 'avg_dev', 'mode']
+    element_property_featurizer = ElementProperty(data_source='magpie', features=features_element_property,
+                                                  stats=stats_element_property)
+
+    # 初始化 ElementFraction
+    element_fraction = ElementFraction()
+
+    # 用于存储特征转换后的数据集
+    result_datasets = {}
+
+    # 遍历拆分的数据集
+    for i, (key, dataset) in enumerate(new_datasets.items(), start=1):
+        # 特征转换1: StrToComposition
+        df_comp = str_to_comp.featurize_dataframe(dataset, col_id='Name')
+
+        # 特征转换2: AtomicOrbitals
+        orbital_features = comp_to_orbital.featurize_dataframe(df_comp, col_id='composition')
+        orbital_features = orbital_features.iloc[:, [4, 7, 8]]  # 选择感兴趣的列
+
+        # 特征转换3: ElementProperty
+        element_property_features = element_property_featurizer.featurize_dataframe(df_comp, col_id='composition')
+        element_property_features = element_property_features.iloc[:, 2:-1]  # 选择感兴趣的列
+
+        # 特征转换4: ElementFraction
+        element_fraction_features = element_fraction.featurize_dataframe(df_comp, col_id='composition')
+        element_fraction_features = element_fraction_features.iloc[:, 2:-1]  # 选择感兴趣的列
+
+        # 添加前缀
+        prefix_orbital = f'inorganic_formula_{i}_orbital_'
+        orbital_features = orbital_features.add_prefix(prefix_orbital)
+
+        prefix_element_property = f'inorganic_formula_{i}_element_property_'
+        element_property_features = element_property_features.add_prefix(prefix_element_property)
+
+        prefix_element_fraction = f'inorganic_formula_{i}_element_fraction_'
+        element_fraction_features = element_fraction_features.add_prefix(prefix_element_fraction)
+
+        # 合并特征转换后的数据集
+        result_datasets[key] = pd.concat([orbital_features, element_property_features, element_fraction_features],
+                                         axis=1)
+
+    # 合并所有数据集
+    merged_result = pd.concat(result_datasets.values(), axis=1)
+
+    # 将合并后的结果保存为 CSV 文件
+    merged_result.to_csv(path + '/merged_result.csv', index=False)
+
+    # 打印或使用合并后的结果
+    print(merged_result)
+
+    # 有机部分
+    original_data2 = pd.DataFrame(pd.read_csv(path + '/OrganicSmiles_selected_columns.csv'))
+
+    new_datasets2 = {}
+
+    # 遍历原始数据集的每一列
+    for col_name in original_data2.columns:
+        # 创建新的数据集，将当前列命名为 'Name'
+        new_dataset2 = pd.DataFrame({'Name': original_data2[col_name]})
+
+        # 将新数据集存储在字典中，字典的键是 'organic_data1'，'organic_data2'，依此类推
+        new_datasets2['organic_data' + str(len(new_datasets2) + 1)] = new_dataset2
+
+    # 打印或使用新的数据集
+    for key, value in new_datasets2.items():
+        print(f"{key}:\n{value}\n")
+
+    import pandas as pd
+    import numpy as np
+    from rdkit import Chem
+    from rdkit.Chem import AllChem
+
+    # 假设 new_datasets2 是包含拆分数据集的字典，如 'organic_data1', 'organic_data2', ...
+    # 每个数据集中应该有 'Name' 列
+
+    # 用于存储 RDKit 特征化后的数据集
+    rdkit_datasets = {}
+
+    # 遍历拆分的数据集
+    for key, dataset in new_datasets2.items():
+        # 特征化 RDKit
+        rdkit_features = dataset['Name'].apply(
+            lambda x: AllChem.GetMorganFingerprintAsBitVect(Chem.MolFromSmiles(x), 2))
+
+        # 将 RDKit 指纹转换为 DataFrame
+        rdkit_features_df = pd.DataFrame(
+            list(rdkit_features.apply(lambda x: np.frombuffer(x.ToBinary(), dtype=np.uint8))))
+
+        # 添加前缀
+        prefix_rdkit = f'{key}_rdkit_'
+        rdkit_features_df = rdkit_features_df.add_prefix(prefix_rdkit)
+
+        # 存储特征化后的数据集
+        rdkit_datasets[key] = rdkit_features_df
+
+    # 合并 RDKit 特征化后的数据集
+    merged_rdkit_result = pd.concat(rdkit_datasets.values(), axis=1)
+    merged_rdkit_result.fillna(0, inplace=True)
+    # 将合并后的结果保存为 CSV 文件
+    merged_rdkit_result.to_csv(path + '/merged_rdkit_result.csv', index=False)
+
+    # 打印或使用合并后的 RDKit 特征化结果
+    print(merged_rdkit_result)
+
+    unselected_columns = pd.DataFrame(pd.read_csv(path + '/unselected_columns.csv'))
+    # 合并前重置索引
+    merged_result.reset_index(drop=True, inplace=True)
+    merged_rdkit_result.reset_index(drop=True, inplace=True)
+    unselected_columns.reset_index(drop=True, inplace=True)
+
+    # 合并三个数据集
+    all_merged_data = pd.concat([merged_result, merged_rdkit_result, unselected_columns], axis=1)
+
+    # 将合并后的结果保存为 CSV 文件
+    all_merged_data.to_csv(path + '/test_train_dataset.csv', index=False)
+
+    selected_columns = all_merged_data.loc[:, s_rfe.columns]
+    selected_columns.to_csv(path+'/virtual_generate_final.csv', index=False)
 
 
 
@@ -4722,7 +5116,7 @@ def model_modify_predict(csvName,path,model_path):
     print("new output: ", y_New_prediction)
     NewData = pd.concat([x_New, y_New_prediction], axis=1)
     print("New total Data: ", NewData)
-    NewData.to_csv(path+"/New_prediction_total_xgboost_default.csv", index=False)
+    NewData.to_csv(path+"/New_prediction_total_xgboost_default.csv")
     return x_New,y_New_prediction, NewData"""
 
 def xgboost_default_predict(csvName,path):
@@ -4734,7 +5128,7 @@ def xgboost_default_predict(csvName,path):
     # print(featureData2)
     predict = clf_xgboost_default.predict(featureData1)
     predict_Ef = pd.DataFrame(predict)
-    predict_Ef.to_csv(path + "/Predict_xgboost_dataset.csv", index=False)
+    predict_Ef.to_csv(path + "/Predict_xgboost_dataset.csv")
 
 
 # 7.1.2 预测集基于xgboost_modify
@@ -4772,7 +5166,7 @@ def xgboost_default_predict(csvName,path):
         print("new output: ", y_New_prediction)
         NewData = pd.concat([x_New, y_New_prediction], axis=1)
         print("New total Data: ", NewData)
-        NewData.to_csv(path+"/New_prediction_total_xgboost_modify.csv", index=False)
+        NewData.to_csv(path+"/New_prediction_total_xgboost_modify.csv")
         return x_New,y_New_prediction, NewData
 
     except Exception as e:
@@ -4786,7 +5180,7 @@ def xgboost_modify_predict(csvName,path):
     # print(featureData2)
     predict = clf_xgboost_modify.predict(featureData1)
     predict_Ef = pd.DataFrame(predict)
-    predict_Ef.to_csv(path + "/Predict_xgboost_dataset_modify.csv", index=False)"""
+    predict_Ef.to_csv(path + "/Predict_xgboost_dataset_modify.csv")"""
 
     import pickle
     import pandas as pd
@@ -4830,7 +5224,7 @@ def rnd_search_cv_xgboost_predict(csvName,path):
     print("new output: ", y_New_prediction)
     NewData = pd.concat([x_New, y_New_prediction], axis=1)
     print("New total Data: ", NewData)
-    NewData.to_csv(path+"/New_prediction_total_rnd_search_cv_xgboost.csv", index=False)
+    NewData.to_csv(path+"/New_prediction_total_rnd_search_cv_xgboost.csv")
 
     return x_New,y_New_prediction, NewData
 
@@ -4844,7 +5238,7 @@ def randomforest_default_predict(csvName,path):
     # print(featureData2)
     predict = clf_rf_default.predict(featureData1)
     predict_Ef = pd.DataFrame(predict)
-    predict_Ef.to_csv(path + "/Predict_rf_dataset.csv", index=False)
+    predict_Ef.to_csv(path + "/Predict_rf_dataset.csv")
 
 
 # 10.1
@@ -4881,7 +5275,7 @@ def randomforest_Classifier(a, b, c, d, e, f,path,csvName):
     y = data.values[:, -1]
 
 
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=1)
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=1)
 
     for i in range(X_train.shape[1]):
         X_train[:, [i]] = preprocessing.MinMaxScaler().fit_transform(X_train[:, [i]])
@@ -4918,11 +5312,11 @@ def randomforest_Classifier(a, b, c, d, e, f,path,csvName):
 
     clf = RandomForestClassifier(max_depth=a, random_state=b, min_samples_leaf=c, max_features=d, min_samples_split=e,
                                  n_estimators=f)
-    clf.fit(X, y)
-    Classified_two_RF = clf.fit(X, y)
+    # clf.fit(X_train, y_train)
+    Classified_two_RF = clf.fit(X_train, y_train)
 
     # 画出ROC曲线 RandomForest test
-    y_score = clf.fit(X, y).predict_proba(X_test)
+    y_score = Classified_two_RF.predict_proba(X_test)
     fpr, tpr, threshold = roc_curve(y_test, y_score[:, 1])
     roc_auc = auc(fpr, tpr)
     plt.figure()
@@ -4949,8 +5343,8 @@ def randomforest_Classifier(a, b, c, d, e, f,path,csvName):
     plt.close()
 
     # 画出混淆矩阵 RandomForest test
-    clf.fit(X, y)
-    prey = clf.predict(X_test)
+    # clf.fit(X, y)
+    prey = Classified_two_RF.predict(X_test)
     true = 0
     for i in range(0, len(y_test)):
         if prey[i] == y_test[i]:
@@ -4971,7 +5365,7 @@ def randomforest_Classifier(a, b, c, d, e, f,path,csvName):
     str2 = "fpr:"+str(fpr) + '\n' + "tpr:"+str(tpr)+"\n"+"true:"+str(true)
 
     # 画出ROC曲线 RandomForest train的AUC
-    y_score = clf.fit(X, y).predict_proba(X_train)
+    y_score = Classified_two_RF.predict_proba(X_train)
     fpr, tpr, threshold = roc_curve(y_train, y_score[:, 1])
     roc_auc = auc(fpr, tpr)
     plt.figure()
@@ -4995,8 +5389,7 @@ def randomforest_Classifier(a, b, c, d, e, f,path,csvName):
     plt.close()
 
     # 画出混淆矩阵 RandomForest train 混淆矩阵
-    clf.fit(X, y)
-    prey = clf.predict(X_train)
+    prey = Classified_two_RF.predict(X_train)
     true = 0
     for i in range(0, len(y_train)):
         if prey[i] == y_train[i]:
@@ -5051,7 +5444,7 @@ def extratrees_classifier(a, b, c, d, e, f,path,csvName):
 
     X = data.values[:, 1:-1]
     y = data.values[:, -1]
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=1)
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=1)
 
     for i in range(X_train.shape[1]):
         X_train[:, [i]] = preprocessing.MinMaxScaler().fit_transform(X_train[:, [i]])
@@ -5232,7 +5625,7 @@ def GaussianProcess_classifier(a, b, c, d, e,path,csvName):
 
     X = data.values[:, 1:-1]
     y = data.values[:, -1]
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=1)
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=1)
 
     for i in range(X_train.shape[1]):
         X_train[:, [i]] = preprocessing.MinMaxScaler().fit_transform(X_train[:, [i]])
@@ -5270,10 +5663,10 @@ def GaussianProcess_classifier(a, b, c, d, e,path,csvName):
     if e==0:
         clf = GaussianProcessClassifier(kernel=a * RBF(length_scale=b), max_iter_predict=c, n_restarts_optimizer=d,
                                         optimizer='fmin_l_bfgs_b')
-    Classified_two_GaussianProcess = clf.fit(X, y)
+    Classified_two_GaussianProcess = clf.fit(X_train, y_train)
 
     # 画出ROC曲线 GaussianProcess test
-    y_score = clf.fit(X, y).predict_proba(X_test)
+    y_score = Classified_two_GaussianProcess.predict_proba(X_test)
     fpr, tpr, threshold = roc_curve(y_test, y_score[:, 1])
     roc_auc = auc(fpr, tpr)
     plt.figure()
@@ -5298,8 +5691,7 @@ def GaussianProcess_classifier(a, b, c, d, e,path,csvName):
     plt.close()
 
     # 画出混淆矩阵 GaussianProcess test
-    clf.fit(X, y)
-    prey = clf.predict(X_test)
+    prey = Classified_two_GaussianProcess.predict(X_test)
     true = 0
     for i in range(0, len(y_test)):
         if prey[i] == y_test[i]:
@@ -5319,7 +5711,7 @@ def GaussianProcess_classifier(a, b, c, d, e,path,csvName):
     str2 = "fpr:" + str(fpr) + '\n' + "tpr:" + str(tpr) + "\n" + "true:" + str(true)
 
     # 画出ROC曲线 GaussianProcess train
-    y_score = clf.fit(X, y).predict_proba(X_train)
+    y_score = Classified_two_GaussianProcess.predict_proba(X_train)
     fpr, tpr, threshold = roc_curve(y_train, y_score[:, 1])
     roc_auc = auc(fpr, tpr)
     plt.figure()
@@ -5343,8 +5735,7 @@ def GaussianProcess_classifier(a, b, c, d, e,path,csvName):
     plt.close()
 
     # 画出混淆矩阵 GaussianProcess train
-    clf.fit(X, y)
-    prey = clf.predict(X_train)
+    prey = Classified_two_GaussianProcess.predict(X_train)
     true = 0
     for i in range(0, len(y_train)):
         if prey[i] == y_train[i]:
@@ -5434,7 +5825,7 @@ def KNeighbors_classifier(a, b, c, d, e, f,csvName,path):
     plt.show()
 
     # 画出混淆矩阵 KNeighbors test
-    clf.fit(X, y)
+    clf.fit(X_train, y_train)
     prey = clf.predict(X_test)
     true = 0
     for i in range(0, len(y_test)):
@@ -5558,11 +5949,10 @@ def DecisionTree_classifier(a, b, c, d, e,path,csvName):
 
     clf = DecisionTreeClassifier(criterion=criterion, max_depth=max_depth1, max_features=max_features_1, min_samples_leaf=d,
                                  min_samples_split=e)
-    clf.fit(X, y)
-    Classified_two_DecisionTree = clf.fit(X, y)
+    Classified_two_DecisionTree = clf.fit(X_train, y_train)
 
     # 画出ROC曲线 DecisionTree test
-    y_score = clf.fit(X, y).predict_proba(X_test)
+    y_score = Classified_two_DecisionTree.predict_proba(X_test)
     fpr, tpr, threshold = roc_curve(y_test, y_score[:, 1])
     roc_auc = auc(fpr, tpr)
     plt.figure()
@@ -5587,8 +5977,7 @@ def DecisionTree_classifier(a, b, c, d, e,path,csvName):
     plt.close()
 
     # 画出混淆矩阵 DecisionTreeClassifier test
-    clf.fit(X, y)
-    prey = clf.predict(X_test)
+    prey = Classified_two_DecisionTree.predict(X_test)
     true = 0
     for i in range(0, len(y_test)):
         if prey[i] == y_test[i]:
@@ -5609,7 +5998,7 @@ def DecisionTree_classifier(a, b, c, d, e,path,csvName):
     str2 = "fpr:" + str(fpr) + '\n' + "tpr:" + str(tpr) + "\n" + "true:" + str(true)
 
     # 画出ROC曲线 DecisionTreeClassifier train
-    y_score = clf.fit(X, y).predict_proba(X_train)
+    y_score = Classified_two_DecisionTree.fit(X, y).predict_proba(X_train)
     fpr, tpr, threshold = roc_curve(y_train, y_score[:, 1])
     roc_auc = auc(fpr, tpr)
     plt.figure()
@@ -5631,8 +6020,7 @@ def DecisionTree_classifier(a, b, c, d, e,path,csvName):
     plt.close()
 
     # 画出混淆矩阵 DecisionTree train
-    clf.fit(X, y)
-    prey = clf.predict(X_train)
+    prey = Classified_two_DecisionTree.predict(X_train)
     true = 0
     for i in range(0, len(y_train)):
         if prey[i] == y_train[i]:
@@ -5741,20 +6129,19 @@ def SVM_classifier(a, b, c, d,e,path,csvName):
 
     if e==0:
         clf = SVC(degree=a, kernel=kernel1, C=c, gamma=gamma1, probability=True)
-    clf.fit(X, y)
-    Classified_two_SVM = clf.fit(X, y)
+    Classified_two_SVM = clf.fit(X_train, y_train)
 
-    svc_predictions = clf.predict(X_test)
+    svc_predictions = Classified_two_SVM.predict(X_test)
     print("Accuracy of SVM using optimized parameters:", accuracy_score(y_test, svc_predictions) * 100)
     print("Report:", classification_report(y_test, svc_predictions))
-    print("Score:", clf.score(X_test, y_test))
+    print("Score:", Classified_two_SVM.score(X_test, y_test))
     str4 = "Accuracy of SVM using optimized parameters:" + str(accuracy_score(y_test, svc_predictions) * 100) + \
            '\n' + "Report:" + str(classification_report(y_test, svc_predictions)) + \
-           "\n" + "Score:" + str(clf.score(X_test, y_test))
+           "\n" + "Score:" + str(Classified_two_SVM.score(X_test, y_test))
 
 
     # 画出ROC曲线 SVM test
-    y_score = clf.fit(X, y).predict_proba(X_test)
+    y_score = Classified_two_SVM.fit(X, y).predict_proba(X_test)
     fpr, tpr, threshold = roc_curve(y_test, y_score[:, 1])
     roc_auc = auc(fpr, tpr)
     plt.figure()
@@ -5781,8 +6168,7 @@ def SVM_classifier(a, b, c, d,e,path,csvName):
     plt.close()
 
     # 画出混淆矩阵 SVM
-    clf.fit(X, y)
-    prey = clf.predict(X_test)
+    prey = Classified_two_SVM.predict(X_test)
     true = 0
     for i in range(0, len(y_test)):
         if prey[i] == y_test[i]:
@@ -5803,7 +6189,7 @@ def SVM_classifier(a, b, c, d,e,path,csvName):
     str2 = "fpr:" + str(fpr) + '\n' + "tpr:" + str(tpr) + "\n" + "true:" + str(true)
 
     # 画出ROC曲线 SVM train
-    y_score = clf.fit(X, y).predict_proba(X_train)
+    y_score = Classified_two_SVM.predict_proba(X_train)
     fpr, tpr, threshold = roc_curve(y_train, y_score[:, 1])
     roc_auc = auc(fpr, tpr)
     plt.figure()
@@ -5825,8 +6211,7 @@ def SVM_classifier(a, b, c, d,e,path,csvName):
     plt.close()
 
     # 画出混淆矩阵  SVM train
-    clf.fit(X, y)
-    prey = clf.predict(X_train)
+    prey = Classified_two_SVM.predict(X_train)
     true = 0
     for i in range(0, len(y_train)):
         if prey[i] == y_train[i]:
@@ -5890,7 +6275,7 @@ def Visualization_for_classification(csvname,path,column_name):
         # 如果出现KeyError异常，说明data[column_name]不存在
         return False
 
-#11.1.遗传算法回归
+
 def Symbolicregression_Modelconstruction(csvname,path):
     import pickle
     import matplotlib.pyplot as plot
@@ -5918,7 +6303,7 @@ def Symbolicregression_Modelconstruction(csvname,path):
     import pydotplus
     import graphviz
     from io import StringIO
-    # from IPython.display import Image
+    from IPython.display import Image
 
 
     data = pd.DataFrame(pd.read_csv(csvname))
@@ -5936,10 +6321,10 @@ def Symbolicregression_Modelconstruction(csvname,path):
     feature_names = list(data.columns[:-1])
 
     # 定义符号回归模型，并使用训练数据拟合模型
-    reg = SymbolicRegressor(population_size=5000, generations=50, verbose=1,
+    reg = SymbolicRegressor(population_size=5000, generations=5, verbose=1,
                             function_set=['add', 'sub', 'mul', 'div', 'sqrt', 'log', 'abs', 'neg',
                                           'inv', 'max', 'min', 'sin', 'cos', 'tan'],
-                            metric='mean absolute error', stopping_criteria=0.0,
+                            metric='mean absolute error', stopping_criteria=0.001,
                             random_state=0)
 
     Symbolic_Regression_Model=reg.fit(X_train, y_train)
@@ -5980,8 +6365,8 @@ def Symbolicregression_Modelconstruction(csvname,path):
     # 绘制预测值和真实值的散点图
     fig = plt.figure(dpi=300)
     plt.scatter(y_test, y_pred)
-    plt.xlabel('Test_True')
-    plt.ylabel('Test_Prediction')
+    plt.xlabel('True Values')
+    plt.ylabel('Predictions')
 
     # 绘制一条参考线，x=y，表示预测值等于真实值的情况
     plt.plot([plt.xlim()[0], plt.xlim()[1]], [plt.ylim()[0], plt.ylim()[1]], ls="--", c=".3")
@@ -6007,7 +6392,6 @@ def Symbolicregression_Modelconstruction(csvname,path):
 
     return mae
 
-#11.2.遗传算法分类
 def Symbolicclassification(csvname,path):
     import pickle
     import matplotlib.pyplot as plot
@@ -6035,7 +6419,7 @@ def Symbolicclassification(csvname,path):
     import pydotplus
     import graphviz
     from io import StringIO
-    # from IPython.display import Image
+    from IPython.display import Image
 
     data = pd.DataFrame(pd.read_csv(csvname))
 
@@ -6169,27 +6553,29 @@ def Result(csvname,path,model_path):
 
     # 加载预测数据集
     data = pd.read_csv(csvname)
-
+    print(1)
     import pickle  # 加载训练好的ExtraTreeClassifier模型
 
-    model = pickle.load(open(model_path, "rb"))
-
+    model1 = pickle.load(open(model_path, "rb"))
+    print(1)
     # 拟合模型
     #column_name=data.columns[-1]
     #X = data.drop(columns=[column_name])
     #y = data[column_name]
+    print(1)
 
     X = data.drop(columns=['Potential (v)'])
-    y = data(columns=['Potential (v)'])
+    y = data['Potential (v)']
 
-    # X = data.values[:,:-1]
-    # y = data.values[:,-1]
+
+
 
     # X = pd.DataFrame(data[:,:-1])
     # y = pd.DataFrame(data[:,-1])
 
+    print(1)
     # 初始化 SHAP explainer
-    explainer = shap.Explainer(model, X)
+    explainer = shap.Explainer(model1, X)
 
     print(1)
     # 计算 SHAP 值
@@ -6197,25 +6583,31 @@ def Result(csvname,path,model_path):
 
     print(1)
     # 将 shap 值转换为 pandas DataFrame
-    shap_df = pd.DataFrame(shap_values.values[:, :, 1], columns=X.columns)
+
+    #shap_df = pd.DataFrame(shap_values.values[:, :, 1], columns=X.columns)
+    shap_df = pd.DataFrame(shap_values.values[:, :], columns=X.columns)
 
     print(1)
-    import matplotlib
+    """import matplotlib
     matplotlib.use('TkAgg')
     print(1)
 
     import matplotlib
-    matplotlib.use('TkAgg')
+    matplotlib.use('TkAgg')"""
 
     # 绘制蜂群图
-    shap.summary_plot(shap_values.values[:, :, 1], X, show=False, plot_type='dot')
+    #shap.summary_plot(shap_values.values[:, :, 1], X, show=False, plot_type='dot')
+    shap.summary_plot(shap_values.values[:, :], X, show=False, plot_type='dot')
     plt.tight_layout()
     # 保存图表为 .png 格式的文件
     plt.savefig(path+'/summary_plot.png', format='png', dpi=300, bbox_inches='tight')
     plt.close()
 
     # 绘制第一个样本的活力图，绿色表示对目标分类的贡献，红色表示对其他分类的贡献
-    shap.force_plot(explainer.expected_value[1], shap_values.values[0, :, 1], X.iloc[0, :],
+    #shap.force_plot(explainer.expected_value[1], shap_values.values[0, :, 1], X.iloc[0, :],
+                    #matplotlib=True, show=False)
+
+    shap.force_plot(explainer.expected_value, shap_values.values[0, :], X.iloc[0, :],
                     matplotlib=True, show=False)
     plt.tight_layout()
     plt.savefig(path+'/Forceplot.png', bbox_inches='tight', dpi=300)

@@ -55,6 +55,12 @@ class mywindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.parser.add_argument("--origin_path_7", type=str,
                                  default="D:/project_zl/new_generate/Shapley/Model import/.dat",
                                  help="shapley_Model import")
+        self.parser.add_argument("--origin_path_8", type=str,
+                                 default="",
+                                 help="2in1")
+        self.parser.add_argument("--origin_path_9", type=str,
+                                 default="",
+                                 help="virtual_2in1")
         self.parser.add_argument("--prediction_visualization_path", type=str, default="",
                                  help="Prediction visualization默认文件路径")
         #D:\project_zl\new_generate\Machine Learning Modeling\Algorithms\Continuous data\Xgboost
@@ -76,7 +82,7 @@ class mywindow(QtWidgets.QMainWindow, Ui_MainWindow):
         # 文件
         self.action.triggered.connect(self.file_directory)
 
-        # 描述符生成
+        # 描述符导入生成
         self.action_smiles_2.triggered.connect(self.enter_organic_smiles)
         self.actionpydel.triggered.connect(self.Descriptorgeneration_Organicmoleculardescriptors_pydel)
         self.actionrdkit_2.triggered.connect(self.Descriptorgeneration_Organicmoleculardescriptors_rdkit)
@@ -89,6 +95,8 @@ class mywindow(QtWidgets.QMainWindow, Ui_MainWindow):
         # self.menu_16.addAction(self.actionmatminer_2)
         # self.menuInorganic_descriptor_matminer.addAction(self.actionImport_magpie_formula)
         # self.menuInorganic_descriptor_matminer.addAction(self.actionGenerate_magpie)
+        self.actionImport.triggered.connect(self.enter_2in1)
+        self.actionGenerate.triggered.connect(self.featurize_2in1)
 
 
 
@@ -107,13 +115,37 @@ class mywindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.action_4.triggered.connect(self.show_dialog_Preprocessing_Featureranking_Featureimportanceafterfeatureselection)
 
         # 机器学习建模
-        self.action_13.triggered.connect(self.show_dialog_Machinelearningmodeling_Algorithms)
+        #self.action_13.triggered.connect(self.show_dialog_Machinelearningmodeling_Algorithms)
+        self.actionXgboost.triggered.connect(self.show_dialog_continuous_data_Xgboost)
+        self.actionRandom_Forest.triggered.connect(self.show_dialog_continuous_data_Random_Forest)
+        self.actionBagging.triggered.connect(self.show_dialog_continuous_data_Bagging)
+        self.actionAdaBoost.triggered.connect(self.show_dialog_continuous_data_AdaBoost)
+        self.actionGradient_Boosting.triggered.connect(self.show_dialog_continuous_data_GradientBoosting)
+        self.actionExtra_Tree.triggered.connect(self.show_dialog_continuous_data_ExtraTree)
+        self.actionSvm.triggered.connect(self.show_dialog_continuous_data_Svm)
+        self.actionDecision_Tree.triggered.connect(self.show_dialog_continuous_data_DecisionTree)
+        self.actionLinear_Regression.triggered.connect(self.show_dialog_continuous_data_LinearRegression)
+        self.actionRidge.triggered.connect(self.show_dialog_continuous_data_Ridge)
+        self.actionMLP.triggered.connect(self.show_dialog_continuous_data_MLP)
+
+        self.actionRamdom_Forest.triggered.connect(self.show_dialog_classified_data_two_RandomForest)
+        self.actionExtra_Tree_2.triggered.connect(self.show_dialog_classified_data_two_ExtraTree)
+        self.actionGaussian_Process.triggered.connect(self.show_dialog_classified_data_two_GaussianProcess)
+        #self.actionKNeighbors.triggered.connect(self.show_dialog_continuous_data_MLP)
+        self.actionDecision_Tree_2.triggered.connect(self.show_dialog_classified_data_two_DecisionTree)
+        self.actionSVM.triggered.connect(self.show_dialog_classified_data_two_SVM)
+
+
+
+
 
         # 符号回归
         self.actionSymbolic_regression.triggered.connect(self.GP_Symbolicregression)
         self.actionsymbolic_classification.triggered.connect(self.GP_Symbolicclassification)
 
         # 预测集建立
+        self.actionImport_2.triggered.connect(self.enter_virtual_2in1)
+        self.actionFeaturize.triggered.connect(self.generate_virtual_2in1)
         self.actionSelect_machine_learning_model.triggered.connect(self.import_model_dat)
         self.action_15.triggered.connect(self.Prediction_Importvirtualdata)
 
@@ -130,10 +162,12 @@ class mywindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.enter_organic_smiles_state =self.opt.if_control
         self.enter_inorganic_fomula_state = self.opt.if_control
         self.Import_magpie_formula_state = self.opt.if_control
+        self.enter_2in1_state=self.opt.if_control
+        self.enter_virtual_2in1_state = self.opt.if_control
         self.enter_training_test_set_path_state=self.opt.if_control                      # 由于本电脑有默认导入文件路径，所以可由if_control控制，方便测试
 
 
-        self.training_test_set_path_state=self.opt.if_control                            # 控制按钮触发前后顺序
+        # 控制按钮触发前后顺序
         self.heatmap_state = self.opt.if_control
         self.rfe_feature_selection_state = self.opt.if_control
         self.import_model_dat_state=self.opt.if_control
@@ -143,7 +177,7 @@ class mywindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
     # 状态重置
     def clear_state(self):
-        self.training_test_set_path_state = self.opt.if_control
+
         self.heatmap_state = self.opt.if_control
         self.rfe_feature_selection_state = self.opt.if_control
         self.enter_training_test_set_path_state = self.opt.if_control
@@ -216,7 +250,7 @@ class mywindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
 
     # 描述符生成----------------------------------------------------------------------------------------------
-    # 2.11.导入有机smlies
+    # 导入有机smlies
     def enter_organic_smiles(self):
             directory_temp, filetype = QFileDialog.getOpenFileNames(self, "Select file")
             if len(directory_temp) > 0:
@@ -234,30 +268,41 @@ class mywindow(QtWidgets.QMainWindow, Ui_MainWindow):
                 QMessageBox.information(self, 'Hint', 'Please enter a file!', QMessageBox.Ok | QMessageBox.Close,
                                         QMessageBox.Close)
 
-    # 2.12.描述符生成--有机描述符--rdkit描述符     descriptor generation_Organic molecular descriptors_rdkit
-    def Descriptorgeneration_Organicmoleculardescriptors_rdkit(self):
-        if self.enter_organic_smiles_state == True:
-            path = self.opt.save_path + "/Descriptor generation/Organic molecular descriptors/rdkit"
-            if os.path.exists(path):
-                shutil.rmtree(path)
-            os.makedirs(path)
-
-            data3=dataML.smiles_csv_rdkit(self.opt.origin_path_3)
-            data5=dataML.rdkit_featurizer(path)
-            self.textBrowser_print_Pandas_DataFrame_table(data3,0,1)
-            self.textBrowser_print_Pandas_DataFrame_table(data5, 2, 1)
-            self.textBrowser.append("*" * 150)
-
-            QMessageBox.information(self, 'Hint', 'Completed!', QMessageBox.Ok | QMessageBox.Close,
-                                    QMessageBox.Close)
-            if self.opt.if_open == True:
-                str1 = (path+"/rdkit_featurizer_output.csv").replace("/", "\\")
-                os.startfile(str1)
-        else:
-            QMessageBox.information(self, 'Hint', 'Do "Import smiles"!', QMessageBox.Ok | QMessageBox.Close,
-                                    QMessageBox.Close)
+    # 导入无机化学式
+    def enter_inorganic_fomula(self):
+            directory_temp, filetype = QFileDialog.getOpenFileNames(self, "Select file")
+            if len(directory_temp) > 0:
+                str_root = str(directory_temp)
+                f_csv = str_root.rfind('.csv')
+                if f_csv != -1:                                           # 判断是不是.csv
+                    self.opt.origin_path_4= str((str_root.replace("\\", '/'))[2:-2])
+                    self.enter_inorganic_fomula_state = True
+                    QMessageBox.information(self, 'Hint', 'Completed!', QMessageBox.Ok | QMessageBox.Close,
+                                            QMessageBox.Close)
+                else:
+                    QMessageBox.information(self, 'Hint', 'Not .csv file, please re-enter!', QMessageBox.Ok | QMessageBox.Close,
+                                            QMessageBox.Close)
+            else:
+                QMessageBox.information(self, 'Hint', 'Please enter a file!', QMessageBox.Ok | QMessageBox.Close,
+                                        QMessageBox.Close)
 
 
+    def Import_magpie_formula(self):
+            directory_temp, filetype = QFileDialog.getOpenFileNames(self, "Select file")
+            if len(directory_temp) > 0:
+                str_root = str(directory_temp)
+                f_csv = str_root.rfind('.csv')
+                if f_csv != -1:                                           # 判断是不是.csv
+                    self.opt.origin_path_20= str((str_root.replace("\\", '/'))[2:-2])
+                    self.Import_magpie_formula_state = True
+                    QMessageBox.information(self, 'Hint', 'Completed!', QMessageBox.Ok | QMessageBox.Close,
+                                            QMessageBox.Close)
+                else:
+                    QMessageBox.information(self, 'Hint', 'Not .csv file, please re-enter!', QMessageBox.Ok | QMessageBox.Close,
+                                            QMessageBox.Close)
+            else:
+                QMessageBox.information(self, 'Hint', 'Please enter a file!', QMessageBox.Ok | QMessageBox.Close,
+                                        QMessageBox.Close)
 
         # self.action_Import_magpie_formula.triggered.connect(self.Import_magpie_formula)
         # self.actionGenerate_magpie.triggered.connect(self.Generate_magpie)
@@ -286,94 +331,129 @@ class mywindow(QtWidgets.QMainWindow, Ui_MainWindow):
             QMessageBox.information(self, 'Hint', 'Do "Import smiles"!', QMessageBox.Ok | QMessageBox.Close,
                                     QMessageBox.Close)
 
-
-#2.21.导入无机化学式为了matminer独热编码
-    def enter_inorganic_fomula(self):
-        directory_temp, filetype = QFileDialog.getOpenFileNames(self, "Select file")
-        if len(directory_temp) > 0:
-            str_root = str(directory_temp)
-            f_csv = str_root.rfind('.csv')
-            if f_csv != -1:  # 判断是不是.csv
-                self.opt.origin_path_4 = str((str_root.replace("\\", '/'))[2:-2])
-                self.enter_inorganic_fomula_state = True
-                QMessageBox.information(self, 'Hint', 'Completed!', QMessageBox.Ok | QMessageBox.Close,
-                                        QMessageBox.Close)
-            else:
-                QMessageBox.information(self, 'Hint', 'Not .csv file, please re-enter!',
-                                        QMessageBox.Ok | QMessageBox.Close,
-                                        QMessageBox.Close)
-        else:
-            QMessageBox.information(self, 'Hint', 'Please enter a file!', QMessageBox.Ok | QMessageBox.Close,
-                                    QMessageBox.Close)
-
-# 2.22 生成one-hot matminer独热编码
-    # 描述符生成--无机描述符--matminer无机材料描述符生成     descriptor generation_Inorganic molecular descriptors_matminer
-    def Descriptorgeneration_Inorganicmoleculardescriptors_matminers(self):
-        if self.enter_inorganic_fomula_state == True:
-            path = self.opt.save_path + "/Descriptor generation/Inorganic molecular descriptors/matminer"
+    # 描述符生成--有机描述符--rdkit描述符     descriptor generation_Organic molecular descriptors_rdkit
+    def Descriptorgeneration_Organicmoleculardescriptors_rdkit(self):
+        if self.enter_organic_smiles_state == True:
+            path = self.opt.save_path + "/Descriptor generation/Organic molecular descriptors/rdkit"
             if os.path.exists(path):
                 shutil.rmtree(path)
             os.makedirs(path)
 
-            data4=dataML.inorganic_csv(self.opt.origin_path_4)
-            data8,element_fraction_labels=dataML.inorganic_featurizer(path)
-            self.textBrowser_print_Pandas_DataFrame_table(data4, 2, 1)
-            self.textBrowser_print_Pandas_DataFrame_table(data8, 2, 1)
-            str1=""
-            for i in range(len(element_fraction_labels)):
-                str1=str1+str(element_fraction_labels[i])+" "
-            self.textBrowser.append(str1)
+            data3=dataML.smiles_csv_rdkit(self.opt.origin_path_3)
+            data5=dataML.rdkit_featurizer(path)
+            self.textBrowser_print_Pandas_DataFrame_table(data3,0,1)
+            self.textBrowser_print_Pandas_DataFrame_table(data5, 2, 1)
             self.textBrowser.append("*" * 150)
 
             QMessageBox.information(self, 'Hint', 'Completed!', QMessageBox.Ok | QMessageBox.Close,
                                     QMessageBox.Close)
             if self.opt.if_open == True:
-                str1 = (path+"/inorganic_featurizer_output.csv").replace("/", "\\")
-                os.startfile(str1)
-        else:
-            QMessageBox.information(self, 'Hint', 'Do "Import formula"!', QMessageBox.Ok | QMessageBox.Close,
-                                    QMessageBox.Close)
-
-#2.31 导入Magpie 无机化学式子
-    def Import_magpie_formula(self):
-        directory_temp, filetype = QFileDialog.getOpenFileNames(self, "Select file")
-        if len(directory_temp) > 0:
-            str_root = str(directory_temp)
-            f_csv = str_root.rfind('.csv')
-            if f_csv != -1:  # 判断是不是.csv
-                self.opt.origin_path_20 = str((str_root.replace("\\", '/'))[2:-2])
-                self.Import_magpie_formula_state = True
-                QMessageBox.information(self, 'Hint', 'Completed!', QMessageBox.Ok | QMessageBox.Close,
-                                        QMessageBox.Close)
-            else:
-                QMessageBox.information(self, 'Hint', 'Not .csv file, please re-enter!',
-                                        QMessageBox.Ok | QMessageBox.Close,
-                                        QMessageBox.Close)
-        else:
-            QMessageBox.information(self, 'Hint', 'Please enter a file!', QMessageBox.Ok | QMessageBox.Close,
-                                    QMessageBox.Close)
-# self.action_Import_magpie_formula.triggered.connect(self.Import_magpie_formula)
- # self.actionGenerate_magpie.triggered.connect(self.Generate_magpie)
-# 2.32.生成magpie描述符
-    def Generate_magpie(self):
-        if self.Import_magpie_formula_state == True:
-            path = self.opt.save_path + "/Descriptor generation/Inorganic molecular descriptors/magpie"
-            if os.path.exists(path):
-                shutil.rmtree(path)
-            os.makedirs(path)
-            data20=dataML.inorganic_magpie_csv(self.opt.origin_path_20)
-            data21=dataML.inorganic_magpie_featurizer(path)
-            self.textBrowser_print_Pandas_DataFrame_table(data20, 0, 1)
-            self.textBrowser_print_Pandas_DataFrame_table(data21, 2, 1)
-            self.textBrowser.append("*" * 150)
-            QMessageBox.information(self, 'Hint', 'Completed!', QMessageBox.Ok | QMessageBox.Close,
-                                    QMessageBox.Close)
-            if self.opt.if_open == True:
-                str1 = (path + "/1_magpie.csv").replace("/", "\\")
+                str1 = (path+"/rdkit_featurizer_output.csv").replace("/", "\\")
                 os.startfile(str1)
         else:
             QMessageBox.information(self, 'Hint', 'Do "Import smiles"!', QMessageBox.Ok | QMessageBox.Close,
                                     QMessageBox.Close)
+
+    # 描述符生成--无机描述符--matminer无机材料描述符生成     descriptor generation_Inorganic molecular descriptors_matminer
+    def Descriptorgeneration_Inorganicmoleculardescriptors_matminers(self):
+        try:
+            if self.enter_inorganic_fomula_state == True:
+                path = self.opt.save_path + "/Descriptor generation/Inorganic molecular descriptors/matminer"
+                if os.path.exists(path):
+                    shutil.rmtree(path)
+                os.makedirs(path)
+
+                data4=dataML.inorganic_csv(self.opt.origin_path_4)
+                data8,element_fraction_labels=dataML.inorganic_featurizer(path)
+                self.textBrowser_print_Pandas_DataFrame_table(data4, 2, 1)
+                self.textBrowser_print_Pandas_DataFrame_table(data8, 2, 1)
+                str1=""
+                for i in range(len(element_fraction_labels)):
+                    str1=str1+str(element_fraction_labels[i])+" "
+                self.textBrowser.append(str1)
+                self.textBrowser.append("*" * 150)
+
+                QMessageBox.information(self, 'Hint', 'Completed!', QMessageBox.Ok | QMessageBox.Close,
+                                        QMessageBox.Close)
+                if self.opt.if_open == True:
+                    str1 = (path+"/inorganic_featurizer_output.csv").replace("/", "\\")
+                    os.startfile(str1)
+            else:
+                QMessageBox.information(self, 'Hint', 'Do "Import formula"!', QMessageBox.Ok | QMessageBox.Close,
+                                        QMessageBox.Close)
+        except Exception as e:
+            print(e)
+
+    # self.action_Import_magpie_formula.triggered.connect(self.Import_magpie_formula)
+    # self.actionGenerate_magpie.triggered.connect(self.Generate_magpie)
+    # 生成magpie描述符
+    def Generate_magpie(self):
+        try:
+            if self.Import_magpie_formula_state == True:
+                path = self.opt.save_path + "/Descriptor generation/Inorganic molecular descriptors/magpie"
+                if os.path.exists(path):
+                    shutil.rmtree(path)
+                os.makedirs(path)
+
+                data20=dataML.inorganic_magpie_csv(self.opt.origin_path_20)
+
+                data21=dataML.inorganic_magpie_featurizer(path)
+                self.textBrowser_print_Pandas_DataFrame_table(data20, 0, 1)
+                self.textBrowser_print_Pandas_DataFrame_table(data21, 2, 1)
+                self.textBrowser.append("*" * 150)
+
+                QMessageBox.information(self, 'Hint', 'Completed!', QMessageBox.Ok | QMessageBox.Close,
+                                        QMessageBox.Close)
+                if self.opt.if_open == True:
+                    str1 = (path + "/1_magpie.csv").replace("/", "\\")
+                    os.startfile(str1)
+            else:
+                QMessageBox.information(self, 'Hint', 'Do "Import smiles"!', QMessageBox.Ok | QMessageBox.Close,
+                                        QMessageBox.Close)
+        except Exception as e:
+            print(e)
+
+    # 2in1
+    # 导入
+    def enter_2in1(self):
+        directory_temp, filetype = QFileDialog.getOpenFileNames(self, "Select file")
+        if len(directory_temp) > 0:
+            str_root = str(directory_temp)
+            f_csv = str_root.rfind('.csv')
+            if f_csv != -1:  # 判断是不是.csv
+                self.opt.origin_path_8 = str((str_root.replace("\\", '/'))[2:-2])
+                self.enter_2in1_state = True
+                QMessageBox.information(self, 'Hint', 'Completed!', QMessageBox.Ok | QMessageBox.Close,
+                                        QMessageBox.Close)
+            else:
+                QMessageBox.information(self, 'Hint', 'Not .csv file, please re-enter!',
+                                        QMessageBox.Ok | QMessageBox.Close,
+                                        QMessageBox.Close)
+        else:
+            QMessageBox.information(self, 'Hint', 'Please enter a file!', QMessageBox.Ok | QMessageBox.Close,
+                                    QMessageBox.Close)
+
+    # 生成
+    def featurize_2in1(self):
+        try:
+            if self.enter_2in1_state == True:
+                path = self.opt.save_path + "/Descriptor generation/Hybrid inorganic organic (2in1)"
+                if os.path.exists(path):
+                    shutil.rmtree(path)
+                os.makedirs(path)
+
+                dataML.two_in_one(path,self.opt.origin_path_8)
+
+                QMessageBox.information(self, 'Hint', 'Completed!', QMessageBox.Ok | QMessageBox.Close,
+                                        QMessageBox.Close)
+                if self.opt.if_open == True:
+                    str1 = (path+'/merged_result.csv').replace("/", "\\")
+                    os.startfile(str1)
+            else:
+                QMessageBox.information(self, 'Hint', 'Do "Import"!', QMessageBox.Ok | QMessageBox.Close,
+                                        QMessageBox.Close)
+        except Exception as e:
+            print(e)
 
     # 数据导入----------------------------------------------------------------------------------------
     # 数据测试集路径
@@ -386,8 +466,20 @@ class mywindow(QtWidgets.QMainWindow, Ui_MainWindow):
                     self.opt.origin_path_1 = str((str_root.replace("\\",'/'))[2:-2])
                     self.clear_state()
                     self.enter_training_test_set_path_state = True
+
+                    path = self.opt.save_path + "/Data importing/Training test set import and visualization/Import"
+                    if os.path.exists(path):  # 重做得删文件夹
+                        shutil.rmtree(path)
+                    os.makedirs(path)
+                    data = dataML.file_name(self.opt.origin_path_1, path)  # 打开csv并存到data中
+                    self.textBrowser_print_Pandas_DataFrame_table(data, 2, 1)
+                    self.textBrowser.append("*" * 150)
+
                     QMessageBox.information(self, 'Hint', 'Completed!', QMessageBox.Ok | QMessageBox.Close,
                                             QMessageBox.Close)
+                    if self.opt.if_open == True:
+                        str2 = (path + "/data.csv").replace("/", "\\")
+                        os.startfile(str2)
                 else:
                     QMessageBox.information(self, 'Hint', 'Not .csv file, please re-enter!', QMessageBox.Ok | QMessageBox.Close,
                                             QMessageBox.Close)
@@ -395,23 +487,19 @@ class mywindow(QtWidgets.QMainWindow, Ui_MainWindow):
                 QMessageBox.information(self, 'Hint', 'Please enter a file!', QMessageBox.Ok | QMessageBox.Close,
                                         QMessageBox.Close)
 
+
+
+
+
     # 数据导入--训练测试集导入与可视化--导入并可视化    Data importing_Training test set import and visualization_Import and visualization
     def Dataimporting_Trainingtestsetimportandvisualization_Importandvisualization(self):
         try:
             if self.enter_training_test_set_path_state == True:
                 self.textBrowser.clear()
 
-                self.training_test_set_path_state=True
-                path=self.opt.save_path+"/Data importing/Training test set import and visualization/Import and visualization"
-                if os.path.exists(path):                                       # 重做得删文件夹
-                    shutil.rmtree(path)
-                os.makedirs(path)
-                data=dataML.file_name(self.opt.origin_path_1,path)                  #打开csv并存到data中
+
                 dataML.hist(path)  #画所有列分布的柱状图，例如potential 在0.3 V最多
 
-                # textBrowser写入
-                self.textBrowser_print_Pandas_DataFrame_table(data,2,1)
-                self.textBrowser.append("*"*150)
 
                 QMessageBox.information(self, 'Hint', 'Completed!', QMessageBox.Ok | QMessageBox.Close,
                                         QMessageBox.Close)
@@ -419,17 +507,16 @@ class mywindow(QtWidgets.QMainWindow, Ui_MainWindow):
                 if self.opt.if_open==True:
                     str1= (path+'/hist_allFeatures.png').replace("/", "\\")
                     os.startfile(str1)
-                    str2 = (path + "/data.csv").replace("/", "\\")
-                    os.startfile(str2)
+
             else:
-                QMessageBox.information(self, 'Hint', 'Do "Path"!', QMessageBox.Ok | QMessageBox.Close,
+                QMessageBox.information(self, 'Hint', 'Do "Train/Test -> Import"!', QMessageBox.Ok | QMessageBox.Close,
                                         QMessageBox.Close)
         except Exception as e:
             print(e)
 
     #  数据导入-热图    Data importing_Heatmap
     def Dataimporting_Heatmap(self):
-        if self.training_test_set_path_state==True:
+        if self.enter_training_test_set_path_state==True:
             self.heatmap_state=True
             path = self.opt.save_path + "/Data importing/Heatmap"
             if os.path.exists(path):
@@ -445,7 +532,7 @@ class mywindow(QtWidgets.QMainWindow, Ui_MainWindow):
                 os.startfile(str2)
 
         else:
-            QMessageBox.information(self, 'Hint', 'Do "Import and visualize"!', QMessageBox.Ok | QMessageBox.Close,
+            QMessageBox.information(self, 'Hint', 'Do "Train/Test -> Import"!', QMessageBox.Ok | QMessageBox.Close,
                                     QMessageBox.Close)
 
     #  数据导入-更多可视化    Data importing_More visualization (only for classification)
@@ -473,7 +560,7 @@ class mywindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
             else:
 
-                QMessageBox.information(self, 'Hint', 'Do "Path"!', QMessageBox.Ok | QMessageBox.Close,
+                QMessageBox.information(self, 'Hint', 'Do "Train/Test -> Import"!', QMessageBox.Ok | QMessageBox.Close,
                                         QMessageBox.Close)
         except Exception as e:
             print(e)
@@ -482,7 +569,7 @@ class mywindow(QtWidgets.QMainWindow, Ui_MainWindow):
     # 预处理-rfe特征选择           Preprocessing_rfe feature selection
     def Preprocessing_Rfefeatureselection(self):
         # 后面四个数字的作用依次是 初始值 最小值 最大值 步幅
-        if self.training_test_set_path_state==True:
+        if self.enter_training_test_set_path_state==True:
 
             value, ok = QtWidgets.QInputDialog.getInt(self, "RFE feature selection",
                                                       "Enter the number of features you want to have left:", 37, -10000, 10000, 2)
@@ -522,12 +609,12 @@ class mywindow(QtWidgets.QMainWindow, Ui_MainWindow):
                     str3 = (path + "/data_rfe.csv").replace("/", "\\")
                     os.startfile(str3)
         else:
-            QMessageBox.information(self, 'Hint', 'Do "Import and visualize"!', QMessageBox.Ok | QMessageBox.Close,
+            QMessageBox.information(self, 'Hint', 'Do "Train/Test -> Import"!', QMessageBox.Ok | QMessageBox.Close,
                                     QMessageBox.Close)
 
     # 预处理-特征选择后数据可视化-画rfe特征选择后的热图         Preprocessing_Data visualization after feature selection_Heat map
     def Preprocessing_Datavisualizationafterfeatureselection_Heatmap(self):
-        if self.training_test_set_path_state == True:
+        if self.enter_training_test_set_path_state == True:
             if self.rfe_feature_selection_state == True:
                 path = self.opt.save_path + "/Preprocessing/Data visualization after feature selection/Heat map"
                 if os.path.exists(path):
@@ -545,29 +632,32 @@ class mywindow(QtWidgets.QMainWindow, Ui_MainWindow):
                 QMessageBox.information(self, 'Hint', 'Do "RFE feature selection"!', QMessageBox.Ok | QMessageBox.Close,
                                         QMessageBox.Close)
         else:
-            QMessageBox.information(self, 'Hint', 'Do "Import and visualize"!', QMessageBox.Ok | QMessageBox.Close,
+            QMessageBox.information(self, 'Hint', 'Do "Train/Test -> Import"!', QMessageBox.Ok | QMessageBox.Close,
                                     QMessageBox.Close)
 
     # 预处理-特征选择后数据可视化-画rfe特征选择后的pairplot图         Preprocessing_Data visualization after feature selection_Pairplot
     def Preprocessing_Datavisualizationafterfeatureselection_Pairplot(self):
-        if self.training_test_set_path_state == True:
-            if self.rfe_feature_selection_state == True:
-                path = self.opt.save_path + "/Preprocessing/Data visualization after feature selection/Pairplot"
-                if os.path.exists(path):
-                    shutil.rmtree(path)
-                os.makedirs(path)
-                dataML.pairplot_afterRFE(path)
-                QMessageBox.information(self, 'Hint', 'Completed!', QMessageBox.Ok | QMessageBox.Close,
-                                        QMessageBox.Close)
-                if self.opt.if_open == True:
-                    str1 = (path+'/sns-pairplot-remain.png').replace("/", "\\")
-                    os.startfile(str1)
+        try:
+            if self.enter_training_test_set_path_state == True:
+                if self.rfe_feature_selection_state == True:
+                    path = self.opt.save_path + "/Preprocessing/Data visualization after feature selection/Pairplot"
+                    if os.path.exists(path):
+                        shutil.rmtree(path)
+                    os.makedirs(path)
+                    dataML.pairplot_afterRFE(path)
+                    QMessageBox.information(self, 'Hint', 'Completed!', QMessageBox.Ok | QMessageBox.Close,
+                                            QMessageBox.Close)
+                    if self.opt.if_open == True:
+                        str1 = (path+'/sns-pairplot-remain.png').replace("/", "\\")
+                        os.startfile(str1)
+                else:
+                    QMessageBox.information(self, 'Hint', 'Do "RFE feature selection"!', QMessageBox.Ok | QMessageBox.Close,
+                                            QMessageBox.Close)
             else:
-                QMessageBox.information(self, 'Hint', 'Do "RFE feature selection"!', QMessageBox.Ok | QMessageBox.Close,
+                QMessageBox.information(self, 'Hint', 'Do "Train/Test -> Import"!', QMessageBox.Ok | QMessageBox.Close,
                                         QMessageBox.Close)
-        else:
-            QMessageBox.information(self, 'Hint', 'Do "Import and visualize"!', QMessageBox.Ok | QMessageBox.Close,
-                                    QMessageBox.Close)
+        except Exception as e:
+            print(e)
 
     # 预处理-重要性排名（皮尔逊系数）-特征选择之前的特征重要性               Preprocessing_Importance_ranking(Pearson)_Feature importance before feature selection
     def Preprocessing_Featureranking_Featureimportancebeforefeatureselection(self):
@@ -597,7 +687,7 @@ class mywindow(QtWidgets.QMainWindow, Ui_MainWindow):
             self.num_4 = d
 
             self.Preprocessing_Featureranking_Featureimportancebeforefeatureselection()
-        if self.training_test_set_path_state == True:
+        if self.enter_training_test_set_path_state == True:
             if self.heatmap_state == True:
                 if self.rfe_feature_selection_state == True:
                     self.di = QtWidgets.QDialog()
@@ -614,7 +704,7 @@ class mywindow(QtWidgets.QMainWindow, Ui_MainWindow):
                 QMessageBox.information(self, 'Hint', 'Do "Heat map"!', QMessageBox.Ok | QMessageBox.Close,
                                         QMessageBox.Close)
         else:
-            QMessageBox.information(self, 'Hint', 'Do "Import and visualize"!', QMessageBox.Ok | QMessageBox.Close,
+            QMessageBox.information(self, 'Hint', 'Do "Train/Test -> Import"!', QMessageBox.Ok | QMessageBox.Close,
                                     QMessageBox.Close)
 
     # 预处理-重要性排名（皮尔逊系数）-特征选择之后的特征重要性               Preprocessing_Importance_ranking(Pearson)_Feature importance after feature selection
@@ -645,7 +735,7 @@ class mywindow(QtWidgets.QMainWindow, Ui_MainWindow):
             self.num_4 = d
             self.Preprocessing_Featureranking_Featureimportanceafterfeatureselection()
 
-        if self.training_test_set_path_state == True:
+        if self.enter_training_test_set_path_state == True:
             if self.heatmap_state == True:
                 if self.rfe_feature_selection_state == True:
                     self.di = QtWidgets.QDialog()
@@ -663,7 +753,7 @@ class mywindow(QtWidgets.QMainWindow, Ui_MainWindow):
                 QMessageBox.information(self, 'Hint', 'Do "Heat map"!', QMessageBox.Ok | QMessageBox.Close,
                                         QMessageBox.Close)
         else:
-            QMessageBox.information(self, 'Hint', 'Do "Import and visualize"!', QMessageBox.Ok | QMessageBox.Close,
+            QMessageBox.information(self, 'Hint', 'Do "Train/Test -> Import"!', QMessageBox.Ok | QMessageBox.Close,
                                     QMessageBox.Close)
 
     # 机器学习建模--------------------------------------------------------------------------------------------------
@@ -709,7 +799,7 @@ class mywindow(QtWidgets.QMainWindow, Ui_MainWindow):
                     self.show_dialog_classified_data_two_DecisionTree()
                 elif text2 == "SVM":
                     self.show_dialog_classified_data_two_SVM()
-        if self.training_test_set_path_state == True:
+        if self.enter_training_test_set_path_state == True:
             if self.rfe_feature_selection_state == True:
                 self.di = QtWidgets.QDialog()
                 d = dialog_Machinelearningmodeling_Algorithms.Ui_Dialog()
@@ -721,34 +811,43 @@ class mywindow(QtWidgets.QMainWindow, Ui_MainWindow):
                 QMessageBox.information(self, 'Hint', 'Do "RFE feature selection"!', QMessageBox.Ok | QMessageBox.Close,
                                         QMessageBox.Close)
         else:
-            QMessageBox.information(self, 'Hint', 'Do "Import and visualize"!', QMessageBox.Ok | QMessageBox.Close,
+            QMessageBox.information(self, 'Hint', 'Do "Train/Test -> Import"!', QMessageBox.Ok | QMessageBox.Close,
                                     QMessageBox.Close)
 
     # 机器学习建模-模型选择-连续型-Xgboost                         Continuous data_Xgboost
     def Continuousdata_Xgboost(self):
-        path = self.opt.save_path + "/Machine Learning Modeling/Algorithms/Continuous data/Xgboost"
-        csvname = self.opt.save_path + "/Preprocessing/Rfe feature selection" + "/data_rfe.csv"
-        if os.path.exists(path):
-            shutil.rmtree(path)
-        os.makedirs(path)
-        self.di.close()
+        if self.enter_training_test_set_path_state == True:
+            if self.rfe_feature_selection_state == True:
+                path = self.opt.save_path + "/Machine Learning Modeling/Algorithms/Continuous data/Xgboost"
+                csvname = self.opt.save_path + "/Preprocessing/Rfe feature selection" + "/data_rfe.csv"
+                if os.path.exists(path):
+                    shutil.rmtree(path)
+                os.makedirs(path)
+                self.di.close()
 
-        str1, scores, str2 =dataML.xgboost_modify(int(self.num_1),int(self.num_2),self.num_3,self.num_4
-                              ,self.num_5,self.num_6,self.num_7,path,csvname)  # 三个图，第一个图测试集拟合，第二个图交叉验证，第三个图训练集的拟合（没什么用）
+                str1, scores, str2 =dataML.xgboost_modify(int(self.num_1),int(self.num_2),self.num_3,self.num_4
+                                      ,self.num_5,self.num_6,self.num_7,path,csvname)  # 三个图，第一个图测试集拟合，第二个图交叉验证，第三个图训练集的拟合（没什么用）
 
-        # (n_estimators=1000, max_depth=200, eta=0.2, gamma=0, subsample=0.9, colsample_bytree=0.8, learning_rate=0.2)
-        self.textBrowser_print_six(str1, scores, str2)
-        self.textBrowser.append("*" * 150)
+                # (n_estimators=1000, max_depth=200, eta=0.2, gamma=0, subsample=0.9, colsample_bytree=0.8, learning_rate=0.2)
+                self.textBrowser_print_six(str1, scores, str2)
+                self.textBrowser.append("*" * 150)
 
-        QMessageBox.information(self, 'Hint', 'Completed!', QMessageBox.Ok | QMessageBox.Close,
-                                QMessageBox.Close)
-        if self.opt.if_open == True:
-            str1 = (path+'/xgboost-modify.png').replace("/", "\\")
-            os.startfile(str1)
-            str2 = (path+'/xgboost_modify-10-fold-crossvalidation.png').replace("/", "\\")
-            os.startfile(str2)
-            str3 = (path+'/xgboost-modify-train-default.png').replace("/", "\\")
-            os.startfile(str3)
+                QMessageBox.information(self, 'Hint', 'Completed!', QMessageBox.Ok | QMessageBox.Close,
+                                        QMessageBox.Close)
+                if self.opt.if_open == True:
+                    str1 = (path+'/xgboost-modify.png').replace("/", "\\")
+                    os.startfile(str1)
+                    str2 = (path+'/xgboost_modify-10-fold-crossvalidation.png').replace("/", "\\")
+                    os.startfile(str2)
+                    str3 = (path+'/xgboost-modify-train-default.png').replace("/", "\\")
+                    os.startfile(str3)
+            else:
+                QMessageBox.information(self, 'Hint', 'Do "RFE feature selection"!', QMessageBox.Ok | QMessageBox.Close,
+                                        QMessageBox.Close)
+
+        else:
+            QMessageBox.information(self, 'Hint', 'Do "Train/Test -> Import"!', QMessageBox.Ok | QMessageBox.Close,
+                                    QMessageBox.Close)
     def show_dialog_continuous_data_Xgboost(self):
         def give(a,b,c,d,e,f,g):
             self.num_1=a
@@ -760,20 +859,27 @@ class mywindow(QtWidgets.QMainWindow, Ui_MainWindow):
             self.num_7 = g
             self.Continuousdata_Xgboost()
 
+        if self.enter_training_test_set_path_state == True:
+            if self.rfe_feature_selection_state == True:
 
+                self.di = QtWidgets.QDialog()
+                d = dialog_continuous_data_Xgboost.Ui_Dialog()
+                d.setupUi(self.di)
+                self.di.show()
 
-        self.di = QtWidgets.QDialog()
-        d = dialog_continuous_data_Xgboost.Ui_Dialog()
-        d.setupUi(self.di)
-        self.di.show()
+                d.buttonBox.accepted.connect(lambda :give(d.lineEdit.text(),d.lineEdit_2.text(),d.lineEdit_3.text(),d.lineEdit_4.text()
+                                                          ,d.lineEdit_5.text(),d.lineEdit_6.text(),d.lineEdit_7.text()))
+                d.buttonBox.rejected.connect(self.di.close)
+            else:
+                QMessageBox.information(self, 'Hint', 'Do "RFE feature selection"!', QMessageBox.Ok | QMessageBox.Close,
+                                        QMessageBox.Close)
 
-        d.buttonBox.accepted.connect(lambda :give(d.lineEdit.text(),d.lineEdit_2.text(),d.lineEdit_3.text(),d.lineEdit_4.text()
-                                                  ,d.lineEdit_5.text(),d.lineEdit_6.text(),d.lineEdit_7.text()))
-        d.buttonBox.rejected.connect(self.di.close)
+        else:
+            QMessageBox.information(self, 'Hint', 'Do "Train/Test -> Import"!', QMessageBox.Ok | QMessageBox.Close,
+                                    QMessageBox.Close)
 
     # 机器学习建模-模型选择-连续型-Random Forest                         Continuous data_Random Forest
     def Continuousdata_RandomForest(self):
-
             path = self.opt.save_path + "/Machine Learning Modeling/Algorithms/Continuous data/Random Forest"
             csvname = self.opt.save_path + "/Preprocessing/Rfe feature selection" + "/data_rfe.csv"
             if os.path.exists(path):
@@ -807,16 +913,24 @@ class mywindow(QtWidgets.QMainWindow, Ui_MainWindow):
             self.num_5 = e
             self.Continuousdata_RandomForest()
 
+        if self.enter_training_test_set_path_state == True:
+            if self.rfe_feature_selection_state == True:
+                self.six_state = True
+                self.di = QtWidgets.QDialog()
+                d = dialog_continuous_data_Random_Forest.Ui_Dialog()
+                d.setupUi(self.di)
+                self.di.show()
 
-        self.six_state = True
-        self.di = QtWidgets.QDialog()
-        d = dialog_continuous_data_Random_Forest.Ui_Dialog()
-        d.setupUi(self.di)
-        self.di.show()
+                d.buttonBox.accepted.connect(lambda :give(d.lineEdit_2.text(),d.lineEdit.text(),d.lineEdit_3.text(),d.lineEdit_4.text()
+                                                          ,d.lineEdit_5.text()))
+                d.buttonBox.rejected.connect(self.di.close)
+            else:
+                QMessageBox.information(self, 'Hint', 'Do "RFE feature selection"!', QMessageBox.Ok | QMessageBox.Close,
+                                        QMessageBox.Close)
 
-        d.buttonBox.accepted.connect(lambda :give(d.lineEdit_2.text(),d.lineEdit.text(),d.lineEdit_3.text(),d.lineEdit_4.text()
-                                                  ,d.lineEdit_5.text()))
-        d.buttonBox.rejected.connect(self.di.close)
+        else:
+            QMessageBox.information(self, 'Hint', 'Do "Train/Test -> Import"!', QMessageBox.Ok | QMessageBox.Close,
+                                    QMessageBox.Close)
 
     # 机器学习建模-模型选择-连续型-Bagging                         Continuous data_Bagging
     def Continuousdata_Bagging(self):
@@ -851,17 +965,27 @@ class mywindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
             self.Continuousdata_Bagging()
 
-        try:
-            self.di = QtWidgets.QDialog()
-            d = dialog_continuous_data_Bagging.Ui_Dialog()
-            d.setupUi(self.di)
-            self.di.show()
+        if self.enter_training_test_set_path_state == True:
+            if self.rfe_feature_selection_state == True:
+                try:
+                    self.di = QtWidgets.QDialog()
+                    d = dialog_continuous_data_Bagging.Ui_Dialog()
+                    d.setupUi(self.di)
+                    self.di.show()
 
-            d.buttonBox.accepted.connect(
-                lambda: give(d.lineEdit.text(), d.lineEdit_2.text(), d.lineEdit_3.text()))
-            d.buttonBox.rejected.connect(self.di.close)
-        except Exception as e:
-            print(e)
+                    d.buttonBox.accepted.connect(
+                        lambda: give(d.lineEdit.text(), d.lineEdit_2.text(), d.lineEdit_3.text()))
+                    d.buttonBox.rejected.connect(self.di.close)
+                except Exception as e:
+                    print(e)
+            else:
+                QMessageBox.information(self, 'Hint', 'Do "RFE feature selection"!', QMessageBox.Ok | QMessageBox.Close,
+                                        QMessageBox.Close)
+
+        else:
+            QMessageBox.information(self, 'Hint', 'Do "Train/Test -> Import"!', QMessageBox.Ok | QMessageBox.Close,
+                                    QMessageBox.Close)
+
 
     # 机器学习建模-模型选择-连续型-AdaBoost                         Continuous data_AdaBoost
     def Continuousdata_AdaBoost(self):
@@ -903,17 +1027,26 @@ class mywindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
             self.Continuousdata_AdaBoost()
 
-        try:
-            self.di = QtWidgets.QDialog()
-            d = dialog_continuous_data_AdaBoost.Ui_Dialog()
-            d.setupUi(self.di)
-            self.di.show()
+        if self.enter_training_test_set_path_state == True:
+            if self.rfe_feature_selection_state == True:
+                try:
+                    self.di = QtWidgets.QDialog()
+                    d = dialog_continuous_data_AdaBoost.Ui_Dialog()
+                    d.setupUi(self.di)
+                    self.di.show()
 
-            d.buttonBox.accepted.connect(
-                lambda: give(d.lineEdit.text(), d.lineEdit_2.text(), d.lineEdit_3.text()))
-            d.buttonBox.rejected.connect(self.di.close)
-        except Exception as e:
-            print(e)
+                    d.buttonBox.accepted.connect(
+                        lambda: give(d.lineEdit.text(), d.lineEdit_2.text(), d.lineEdit_3.text()))
+                    d.buttonBox.rejected.connect(self.di.close)
+                except Exception as e:
+                    print(e)
+            else:
+                QMessageBox.information(self, 'Hint', 'Do "RFE feature selection"!', QMessageBox.Ok | QMessageBox.Close,
+                                        QMessageBox.Close)
+
+        else:
+            QMessageBox.information(self, 'Hint', 'Do "Train/Test -> Import"!', QMessageBox.Ok | QMessageBox.Close,
+                                    QMessageBox.Close)
 
     # 机器学习建模-模型选择-连续型-Gradient Boosting                        Continuous data_Gradient Boosting
     def Continuousdata_GradientBoosting(self):
@@ -954,15 +1087,24 @@ class mywindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
             self.Continuousdata_GradientBoosting()
 
-        self.di = QtWidgets.QDialog()
-        d = dialog_continuous_data_GradientBoosting.Ui_Dialog()
-        d.setupUi(self.di)
-        self.di.show()
+        if self.enter_training_test_set_path_state == True:
+            if self.rfe_feature_selection_state == True:
+                self.di = QtWidgets.QDialog()
+                d = dialog_continuous_data_GradientBoosting.Ui_Dialog()
+                d.setupUi(self.di)
+                self.di.show()
 
-        d.buttonBox.accepted.connect(
-            lambda: give(d.lineEdit.text(), d.lineEdit_2.text(), d.lineEdit_3.text(), d.lineEdit_4.text(),
-                         d.lineEdit_7.text()))
-        d.buttonBox.rejected.connect(self.di.close)
+                d.buttonBox.accepted.connect(
+                    lambda: give(d.lineEdit.text(), d.lineEdit_2.text(), d.lineEdit_3.text(), d.lineEdit_4.text(),
+                                 d.lineEdit_7.text()))
+                d.buttonBox.rejected.connect(self.di.close)
+            else:
+                QMessageBox.information(self, 'Hint', 'Do "RFE feature selection"!', QMessageBox.Ok | QMessageBox.Close,
+                                        QMessageBox.Close)
+
+        else:
+            QMessageBox.information(self, 'Hint', 'Do "Train/Test -> Import"!', QMessageBox.Ok | QMessageBox.Close,
+                                    QMessageBox.Close)
 
     # 机器学习建模-模型选择-连续型-Extra Tree                         Continuous data_Extra Tree
     def Continuousdata_ExtraTree(self):
@@ -1018,14 +1160,23 @@ class mywindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
             self.Continuousdata_ExtraTree()
 
-        self.di = QtWidgets.QDialog()
-        d = dialog_continuous_data_ExtraTree.Ui_Dialog()
-        d.setupUi(self.di)
-        self.di.show()
-        d.buttonBox.accepted.connect(
-            lambda: give(d.lineEdit_2.text(), d.lineEdit.text(), d.lineEdit_3.text(),
-                         d.lineEdit_5.text()))
-        d.buttonBox.rejected.connect(self.di.close)
+        if self.enter_training_test_set_path_state == True:
+            if self.rfe_feature_selection_state == True:
+                self.di = QtWidgets.QDialog()
+                d = dialog_continuous_data_ExtraTree.Ui_Dialog()
+                d.setupUi(self.di)
+                self.di.show()
+                d.buttonBox.accepted.connect(
+                    lambda: give(d.lineEdit_2.text(), d.lineEdit.text(), d.lineEdit_3.text(),
+                                 d.lineEdit_5.text()))
+                d.buttonBox.rejected.connect(self.di.close)
+            else:
+                QMessageBox.information(self, 'Hint', 'Do "RFE feature selection"!', QMessageBox.Ok | QMessageBox.Close,
+                                        QMessageBox.Close)
+
+        else:
+            QMessageBox.information(self, 'Hint', 'Do "Train/Test -> Import"!', QMessageBox.Ok | QMessageBox.Close,
+                                    QMessageBox.Close)
 
     # 机器学习建模-模型选择-连续型-Svm                        Continuous data_Svm
     def Continuousdata_Svm(self):
@@ -1059,14 +1210,23 @@ class mywindow(QtWidgets.QMainWindow, Ui_MainWindow):
             self.num_2 = b
             self.Continuousdata_Svm()
 
-        self.di = QtWidgets.QDialog()
-        d = dialog_continuous_data_Svm.Ui_Dialog()
-        d.setupUi(self.di)
-        self.di.show()
+        if self.enter_training_test_set_path_state == True:
+            if self.rfe_feature_selection_state == True:
+                self.di = QtWidgets.QDialog()
+                d = dialog_continuous_data_Svm.Ui_Dialog()
+                d.setupUi(self.di)
+                self.di.show()
 
-        d.buttonBox.accepted.connect(
-            lambda: give(d.lineEdit_2.text(), d.lineEdit.text()))
-        d.buttonBox.rejected.connect(self.di.close)
+                d.buttonBox.accepted.connect(
+                    lambda: give(d.lineEdit_2.text(), d.lineEdit.text()))
+                d.buttonBox.rejected.connect(self.di.close)
+            else:
+                QMessageBox.information(self, 'Hint', 'Do "RFE feature selection"!', QMessageBox.Ok | QMessageBox.Close,
+                                        QMessageBox.Close)
+
+        else:
+            QMessageBox.information(self, 'Hint', 'Do "Train/Test -> Import"!', QMessageBox.Ok | QMessageBox.Close,
+                                    QMessageBox.Close)
 
     # 机器学习建模-模型选择-连续型-Decision Tree                        Continuous data_Decision Tree
     def Continuousdata_DecisionTree(self):
@@ -1125,15 +1285,24 @@ class mywindow(QtWidgets.QMainWindow, Ui_MainWindow):
                 self.num_6 = f
             self.Continuousdata_DecisionTree()
 
-        self.di = QtWidgets.QDialog()
-        d = dialog_continuous_data_DecisionTree.Ui_Dialog()
-        d.setupUi(self.di)
-        self.di.show()
+        if self.enter_training_test_set_path_state == True:
+            if self.rfe_feature_selection_state == True:
+                self.di = QtWidgets.QDialog()
+                d = dialog_continuous_data_DecisionTree.Ui_Dialog()
+                d.setupUi(self.di)
+                self.di.show()
 
-        d.buttonBox.accepted.connect(
-            lambda: give(d.lineEdit_2.text(), d.lineEdit.text(), d.lineEdit_3.text(), d.lineEdit_4.text()
-                         , d.lineEdit_5.text(), d.lineEdit_6.text()))
-        d.buttonBox.rejected.connect(self.di.close)
+                d.buttonBox.accepted.connect(
+                    lambda: give(d.lineEdit_2.text(), d.lineEdit.text(), d.lineEdit_3.text(), d.lineEdit_4.text()
+                                 , d.lineEdit_5.text(), d.lineEdit_6.text()))
+                d.buttonBox.rejected.connect(self.di.close)
+            else:
+                QMessageBox.information(self, 'Hint', 'Do "RFE feature selection"!', QMessageBox.Ok | QMessageBox.Close,
+                                        QMessageBox.Close)
+
+        else:
+            QMessageBox.information(self, 'Hint', 'Do "Train/Test -> Import"!', QMessageBox.Ok | QMessageBox.Close,
+                                    QMessageBox.Close)
 
     # 机器学习建模-模型选择-连续型-Linear Regression                         Continuous data_Linear Regression
     def Continuousdata_LinearRegression(self):
@@ -1184,14 +1353,23 @@ class mywindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
             self.Continuousdata_LinearRegression()
 
-        self.di = QtWidgets.QDialog()
-        d = dialog_continuous_data_LinearRegression.Ui_Dialog()
-        d.setupUi(self.di)
-        self.di.show()
+        if self.enter_training_test_set_path_state == True:
+            if self.rfe_feature_selection_state == True:
+                self.di = QtWidgets.QDialog()
+                d = dialog_continuous_data_LinearRegression.Ui_Dialog()
+                d.setupUi(self.di)
+                self.di.show()
 
-        d.buttonBox.accepted.connect(
-            lambda: give(d.lineEdit.text(), d.lineEdit_2.text(), d.lineEdit_3.text(), d.lineEdit_4.text()))
-        d.buttonBox.rejected.connect(self.di.close)
+                d.buttonBox.accepted.connect(
+                    lambda: give(d.lineEdit.text(), d.lineEdit_2.text(), d.lineEdit_3.text(), d.lineEdit_4.text()))
+                d.buttonBox.rejected.connect(self.di.close)
+            else:
+                QMessageBox.information(self, 'Hint', 'Do "RFE feature selection"!', QMessageBox.Ok | QMessageBox.Close,
+                                        QMessageBox.Close)
+
+        else:
+            QMessageBox.information(self, 'Hint', 'Do "Train/Test -> Import"!', QMessageBox.Ok | QMessageBox.Close,
+                                    QMessageBox.Close)
 
     # 机器学习建模-模型选择-连续型-Ridge                         Continuous data_Ridge
     def Continuousdata_Ridge(self):
@@ -1242,15 +1420,24 @@ class mywindow(QtWidgets.QMainWindow, Ui_MainWindow):
                 self.num_5 = e
             self.Continuousdata_Ridge()
 
-        self.di = QtWidgets.QDialog()
-        d = dialog_continuous_data_Ridge.Ui_Dialog()
-        d.setupUi(self.di)
-        self.di.show()
+        if self.enter_training_test_set_path_state == True:
+            if self.rfe_feature_selection_state == True:
+                self.di = QtWidgets.QDialog()
+                d = dialog_continuous_data_Ridge.Ui_Dialog()
+                d.setupUi(self.di)
+                self.di.show()
 
-        d.buttonBox.accepted.connect(
-            lambda: give(d.lineEdit.text(), d.lineEdit_2.text(), d.lineEdit_3.text(), d.lineEdit_4.text(),
-                         d.lineEdit_5.text()))
-        d.buttonBox.rejected.connect(self.di.close)
+                d.buttonBox.accepted.connect(
+                    lambda: give(d.lineEdit.text(), d.lineEdit_2.text(), d.lineEdit_3.text(), d.lineEdit_4.text(),
+                                 d.lineEdit_5.text()))
+                d.buttonBox.rejected.connect(self.di.close)
+            else:
+                QMessageBox.information(self, 'Hint', 'Do "RFE feature selection"!', QMessageBox.Ok | QMessageBox.Close,
+                                        QMessageBox.Close)
+
+        else:
+            QMessageBox.information(self, 'Hint', 'Do "Train/Test -> Import"!', QMessageBox.Ok | QMessageBox.Close,
+                                    QMessageBox.Close)
 
     # 机器学习建模-模型选择-连续型-MLP                         Continuous data_MLP
     def Continuousdata_MLP(self):
@@ -1288,15 +1475,23 @@ class mywindow(QtWidgets.QMainWindow, Ui_MainWindow):
             self.num_5 = e
             self.Continuousdata_MLP()
 
+        if self.enter_training_test_set_path_state == True:
+            if self.rfe_feature_selection_state == True:
+                self.di = QtWidgets.QDialog()
+                d = dialog_continuous_data_MLP.Ui_Dialog()
+                d.setupUi(self.di)
+                self.di.show()
 
-        self.di = QtWidgets.QDialog()
-        d = dialog_continuous_data_MLP.Ui_Dialog()
-        d.setupUi(self.di)
-        self.di.show()
+                d.buttonBox.accepted.connect(lambda :give(d.lineEdit.text(),d.lineEdit_2.text(),d.lineEdit_3.text(),d.lineEdit_4.text()
+                                                                  ,d.lineEdit_5.text()))
+                d.buttonBox.rejected.connect(self.di.close)
+            else:
+                QMessageBox.information(self, 'Hint', 'Do "RFE feature selection"!', QMessageBox.Ok | QMessageBox.Close,
+                                        QMessageBox.Close)
 
-        d.buttonBox.accepted.connect(lambda :give(d.lineEdit.text(),d.lineEdit_2.text(),d.lineEdit_3.text(),d.lineEdit_4.text()
-                                                          ,d.lineEdit_5.text()))
-        d.buttonBox.rejected.connect(self.di.close)
+        else:
+            QMessageBox.information(self, 'Hint', 'Do "Train/Test -> Import"!', QMessageBox.Ok | QMessageBox.Close,
+                                    QMessageBox.Close)
 
 
 
@@ -1344,15 +1539,23 @@ class mywindow(QtWidgets.QMainWindow, Ui_MainWindow):
             self.num_6 = f
             self.Classifieddata_Two_RandomForest()
 
+        if self.enter_training_test_set_path_state == True:
+            if self.rfe_feature_selection_state == True:
+                self.di = QtWidgets.QDialog()
+                d = dialog_classified_data_two_RandomForest.Ui_Dialog()
+                d.setupUi(self.di)
+                self.di.show()
 
-        self.di = QtWidgets.QDialog()
-        d = dialog_classified_data_two_RandomForest.Ui_Dialog()
-        d.setupUi(self.di)
-        self.di.show()
+                d.buttonBox.accepted.connect(lambda :give(d.lineEdit.text(),d.lineEdit_2.text(),d.lineEdit_3.text(),d.lineEdit_4.text()
+                                                              ,d.lineEdit_5.text(),d.lineEdit_6.text()))
+                d.buttonBox.rejected.connect(self.di.close)
+            else:
+                QMessageBox.information(self, 'Hint', 'Do "RFE feature selection"!', QMessageBox.Ok | QMessageBox.Close,
+                                        QMessageBox.Close)
 
-        d.buttonBox.accepted.connect(lambda :give(d.lineEdit.text(),d.lineEdit_2.text(),d.lineEdit_3.text(),d.lineEdit_4.text()
-                                                      ,d.lineEdit_5.text(),d.lineEdit_6.text()))
-        d.buttonBox.rejected.connect(self.di.close)
+        else:
+            QMessageBox.information(self, 'Hint', 'Do "Train/Test -> Import"!', QMessageBox.Ok | QMessageBox.Close,
+                                    QMessageBox.Close)
 
     # 机器学习建模-模型选择-二分类-Extra Tree                         Classified data_Two_Extra Tree
     def Classifieddata_Two_ExtraTree(self):
@@ -1413,15 +1616,23 @@ class mywindow(QtWidgets.QMainWindow, Ui_MainWindow):
             self.num_6 = f
             self.Classifieddata_Two_ExtraTree()
 
+        if self.enter_training_test_set_path_state == True:
+            if self.rfe_feature_selection_state == True:
+                self.di = QtWidgets.QDialog()
+                d = dialog_classified_data_two_ExtraTree.Ui_Dialog()
+                d.setupUi(self.di)
+                self.di.show()
 
-        self.di = QtWidgets.QDialog()
-        d = dialog_classified_data_two_ExtraTree.Ui_Dialog()
-        d.setupUi(self.di)
-        self.di.show()
+                d.buttonBox.accepted.connect(lambda :give(d.lineEdit.text(),d.lineEdit_2.text(),d.lineEdit_3.text(),d.lineEdit_4.text()
+                                                              ,d.lineEdit_5.text(),d.lineEdit_6.text()))
+                d.buttonBox.rejected.connect(self.di.close)
+            else:
+                QMessageBox.information(self, 'Hint', 'Do "RFE feature selection"!', QMessageBox.Ok | QMessageBox.Close,
+                                        QMessageBox.Close)
 
-        d.buttonBox.accepted.connect(lambda :give(d.lineEdit.text(),d.lineEdit_2.text(),d.lineEdit_3.text(),d.lineEdit_4.text()
-                                                      ,d.lineEdit_5.text(),d.lineEdit_6.text()))
-        d.buttonBox.rejected.connect(self.di.close)
+        else:
+            QMessageBox.information(self, 'Hint', 'Do "Train/Test -> Import"!', QMessageBox.Ok | QMessageBox.Close,
+                                    QMessageBox.Close)
 
 
     # 机器学习建模-模型选择-二分类-Gaussian Process                         Classified data_Two_Gaussian Process
@@ -1475,17 +1686,24 @@ class mywindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
             self.Classifieddata_Two_GaussianProcess()
 
+        if self.enter_training_test_set_path_state == True:
+            if self.rfe_feature_selection_state == True:
+                self.di = QtWidgets.QDialog()
+                d = dialog_classified_data_two_GaussianProcess.Ui_Dialog()
+                d.setupUi(self.di)
+                self.di.show()
 
+                d.buttonBox.accepted.connect(lambda :give(d.lineEdit.text(),d.lineEdit_2.text(),d.lineEdit_3.text(),d.lineEdit_4.text()
+                                                                  ,d.lineEdit_5.text()))
 
-        self.di = QtWidgets.QDialog()
-        d = dialog_classified_data_two_GaussianProcess.Ui_Dialog()
-        d.setupUi(self.di)
-        self.di.show()
+                d.buttonBox.rejected.connect(self.di.close)
+            else:
+                QMessageBox.information(self, 'Hint', 'Do "RFE feature selection"!', QMessageBox.Ok | QMessageBox.Close,
+                                        QMessageBox.Close)
 
-        d.buttonBox.accepted.connect(lambda :give(d.lineEdit.text(),d.lineEdit_2.text(),d.lineEdit_3.text(),d.lineEdit_4.text()
-                                                          ,d.lineEdit_5.text()))
-
-        d.buttonBox.rejected.connect(self.di.close)
+        else:
+            QMessageBox.information(self, 'Hint', 'Do "Train/Test -> Import"!', QMessageBox.Ok | QMessageBox.Close,
+                                    QMessageBox.Close)
 
 
     # 机器学习建模-模型选择-二分类-KNeighbors                         Classified data_Two_Random Forest
@@ -1554,16 +1772,23 @@ class mywindow(QtWidgets.QMainWindow, Ui_MainWindow):
             self.num_5 = e
             self.Classifieddata_Two_DecisionTree()
 
+        if self.enter_training_test_set_path_state == True:
+            if self.rfe_feature_selection_state == True:
+                self.di = QtWidgets.QDialog()
+                d = dialog_classified_data_two_DecisionTree.Ui_Dialog()
+                d.setupUi(self.di)
+                self.di.show()
 
+                d.buttonBox.accepted.connect(lambda :give(d.lineEdit.text(),d.lineEdit_2.text(),d.lineEdit_3.text(),d.lineEdit_4.text()
+                                                              ,d.lineEdit_5.text()))
+                d.buttonBox.rejected.connect(self.di.close)
+            else:
+                QMessageBox.information(self, 'Hint', 'Do "RFE feature selection"!', QMessageBox.Ok | QMessageBox.Close,
+                                        QMessageBox.Close)
 
-        self.di = QtWidgets.QDialog()
-        d = dialog_classified_data_two_DecisionTree.Ui_Dialog()
-        d.setupUi(self.di)
-        self.di.show()
-
-        d.buttonBox.accepted.connect(lambda :give(d.lineEdit.text(),d.lineEdit_2.text(),d.lineEdit_3.text(),d.lineEdit_4.text()
-                                                      ,d.lineEdit_5.text()))
-        d.buttonBox.rejected.connect(self.di.close)
+        else:
+            QMessageBox.information(self, 'Hint', 'Do "Train/Test -> Import"!', QMessageBox.Ok | QMessageBox.Close,
+                                    QMessageBox.Close)
 
     # 机器学习建模-模型选择-二分类-SVM                        Classified data_Two_SVM
     def Classifieddata_Two_SVM(self):
@@ -1632,15 +1857,23 @@ class mywindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
             self.Classifieddata_Two_SVM()
 
+        if self.enter_training_test_set_path_state == True:
+            if self.rfe_feature_selection_state == True:
+                self.di = QtWidgets.QDialog()
+                d = dialog_classified_data_two_SVM.Ui_Dialog()
+                d.setupUi(self.di)
+                self.di.show()
 
-        self.di = QtWidgets.QDialog()
-        d = dialog_classified_data_two_SVM.Ui_Dialog()
-        d.setupUi(self.di)
-        self.di.show()
+                d.buttonBox.accepted.connect(lambda :give(d.lineEdit.text(),d.lineEdit_2.text(),d.lineEdit_3.text(),d.lineEdit_4.text()
+                                                              ,d.lineEdit_5.text()))
+                d.buttonBox.rejected.connect(self.di.close)
+            else:
+                QMessageBox.information(self, 'Hint', 'Do "RFE feature selection"!', QMessageBox.Ok | QMessageBox.Close,
+                                        QMessageBox.Close)
 
-        d.buttonBox.accepted.connect(lambda :give(d.lineEdit.text(),d.lineEdit_2.text(),d.lineEdit_3.text(),d.lineEdit_4.text()
-                                                      ,d.lineEdit_5.text()))
-        d.buttonBox.rejected.connect(self.di.close)
+        else:
+            QMessageBox.information(self, 'Hint', 'Do "Train/Test -> Import"!', QMessageBox.Ok | QMessageBox.Close,
+                                    QMessageBox.Close)
 
     # GP-------------------------------------------------------------------------------------------------------
     # GP——符号回归                              GP_Symbolic regression
@@ -1731,6 +1964,47 @@ class mywindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
 
     # 预测集建立------------------------------------------------------------------------------------------------------
+    # 用户导入虚拟数据集
+    def enter_virtual_2in1(self):
+        directory_temp, filetype = QFileDialog.getOpenFileNames(self, "Select file")
+        if len(directory_temp) > 0:
+            str_root = str(directory_temp)
+            f_csv = str_root.rfind('.csv')
+            if f_csv != -1:  # 判断是不是.csv
+                self.opt.origin_path_9 = str((str_root.replace("\\", '/'))[2:-2])
+                self.enter_virtual_2in1_state = True
+                QMessageBox.information(self, 'Hint', 'Completed!', QMessageBox.Ok | QMessageBox.Close,
+                                        QMessageBox.Close)
+            else:
+                QMessageBox.information(self, 'Hint', 'Not .csv file, please re-enter!',
+                                        QMessageBox.Ok | QMessageBox.Close,
+                                        QMessageBox.Close)
+        else:
+            QMessageBox.information(self, 'Hint', 'Please enter a file!', QMessageBox.Ok | QMessageBox.Close,
+                                    QMessageBox.Close)
+
+    # 自动生成输出结果
+    def generate_virtual_2in1(self):
+        try:
+            if self.enter_virtual_2in1_state == True:
+                path = self.opt.save_path + "/Prediction/Import and generate (recommend)"
+                if os.path.exists(path):
+                    shutil.rmtree(path)
+                os.makedirs(path)
+
+                dataML.virtual_two_in_one(path,self.opt.origin_path_9)
+
+                QMessageBox.information(self, 'Hint', 'Completed!', QMessageBox.Ok | QMessageBox.Close,
+                                        QMessageBox.Close)
+                if self.opt.if_open == True:
+                    str1 = (path+'/virtual_generate_final.csv').replace("/", "\\")
+                    os.startfile(str1)
+            else:
+                QMessageBox.information(self, 'Hint', 'Do "Import"!', QMessageBox.Ok | QMessageBox.Close,
+                                        QMessageBox.Close)
+        except Exception as e:
+            print(e)
+
     # 预测集建立——导入预测集                          Prediction_Import virtual data (without label)
     def Prediction_Importvirtualdata(self):
         directory_temp, filetype = QFileDialog.getOpenFileNames(self, "Select file")

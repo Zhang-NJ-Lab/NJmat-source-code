@@ -1,0 +1,18 @@
+Whether the feature is selected:
+True True True True True True True True True True True True True 
+Acquired data feature size:
+(78,13)
+S_rfe(Final feature)£º
+inorganic_formula_1_element_property_MagpieData avg_dev AtomicWeight
+inorganic_formula_1_element_property_MagpieData avg_dev MeltingT
+inorganic_formula_1_element_property_MagpieData mean Electronegativity
+inorganic_formula_1_element_property_MagpieData avg_dev NValence
+inorganic_formula_1_element_fraction_N
+inorganic_formula_2_element_property_MagpieData mean MeltingT
+inorganic_formula_2_element_property_MagpieData avg_dev Row
+inorganic_formula_2_element_property_MagpieData mean CovalentRadius
+organic_data1_rdkit_12
+organic_data1_rdkit_14
+organic_data1_rdkit_15
+organic_data1_rdkit_16
+organic_data1_rdkit_22
