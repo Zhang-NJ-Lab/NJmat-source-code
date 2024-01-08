@@ -2274,6 +2274,8 @@ class mywindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
 
 if __name__ == "__main__":
+    import multiprocessing
+    multiprocessing.freeze_support()
     import sys
     app = QtWidgets.QApplication(sys.argv)
     ui = mywindow()
