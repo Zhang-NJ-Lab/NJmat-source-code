@@ -1,0 +1,9 @@
+,,,layer1,layer2,post,smiles
+MASnF2Cl+MASnI3+4-Bromophenyl acrylate,1,1,MASnF2Cl,MASnI3,C9H7BrO2,C1=CC(=CC(=C1)Br)/C=C/C(=O)O 
+CsSnClBr2+MASnI3+NH4Cl,1,1,CsSnClBr2,MASnI3,NH4Cl,[NH4+].[Cl-]
+MAPbI3+FASnI3+FAI,1,1,MAPbI3,FASnI3,FAI,C(=N)N.[I-]
+CsSnF2Cl+FASnI3+LiCl,1,1,CsSnF2Cl,FASnI3,LiCl,[Li+].[Cl-]
+FASnI3+MASnI3+NaCl,1,1,FASnI3,MASnI3,NaCl,[Na+].[Cl-]
+CsSnBr2I+CsPbI3+MgCl2,0,0,CsSnBr2I,CsPbI3,MgCl2,[Mg+2].[Cl-].[Cl-]
+CsSnBr2I+CsPbFCl2+KCl,0,0,CsSnBr2I,CsPbFCl2,KCl,[Cl-].[K+]
+,,,,,,
