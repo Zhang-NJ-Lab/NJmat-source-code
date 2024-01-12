@@ -57,7 +57,7 @@ def smiles_csv_rdkit(name3):
 
 
 
-# 0.1.2.2 rdkit描述符生成
+#0.1.2.2 rdkit描述符生成
 def rdkit_featurizer(path):
     import pandas as pd
     from rdkit import Chem
@@ -69,6 +69,7 @@ def rdkit_featurizer(path):
     # create molecular descriptor calculator
     mol_descriptor_calculator = MolecularDescriptorCalculator(chosen_descriptors)
     data4 = data3.iloc[:,0].map(lambda x : mol_descriptor_calculator.CalcDescriptors(Chem.MolFromSmiles(x)))
+    remain = pd.DataFrame(data3.iloc[:, 2:])
     data4 = pd.DataFrame(data4)
     data5 = pd.DataFrame()
     # split to 200 columns
@@ -76,10 +77,99 @@ def rdkit_featurizer(path):
         data5 = pd.concat([data5, data4.applymap(lambda x: x[i])], axis=1)
     data5.columns = chosen_descriptors
     print(data5)
-    # data5=pd.DataFrame(data5.iloc[:,0:-1])
     # 特征存入rdkit_featurizer.csv
     data5.to_csv(path+"/rdkit_featurizer_output.csv", index=False)
     return data5
+
+
+# def rdkit_featurizer(path):
+#     import pandas as pd
+#     from rdkit import Chem
+#     from rdkit.Chem import Draw
+#     from rdkit.Chem import rdDepictor
+#     from rdkit.ML.Descriptors.MoleculeDescriptors import MolecularDescriptorCalculator
+#     # choose 200 molecular descriptors
+#     chosen_descriptors = ['BalabanJ', 'BertzCT', 'Chi0', 'Chi0n', 'Chi0v', 'Chi1', 'Chi1n', 'Chi1v', 'Chi2n', 'Chi2v', 'Chi3n', 'Chi3v', 'Chi4n', 'Chi4v', 'EState_VSA1', 'EState_VSA10', 'EState_VSA11', 'EState_VSA2', 'EState_VSA3', 'EState_VSA4', 'EState_VSA5', 'EState_VSA6', 'EState_VSA7', 'EState_VSA8', 'EState_VSA9', 'ExactMolWt', 'FpDensityMorgan1', 'FpDensityMorgan2', 'FpDensityMorgan3', 'FractionCSP3', 'HallKierAlpha', 'HeavyAtomCount', 'HeavyAtomMolWt', 'Ipc', 'Kappa1', 'Kappa2', 'Kappa3', 'LabuteASA', 'MaxAbsEStateIndex', 'MaxAbsPartialCharge', 'MaxEStateIndex', 'MaxPartialCharge', 'MinAbsEStateIndex', 'MinAbsPartialCharge', 'MinEStateIndex', 'MinPartialCharge', 'MolLogP', 'MolMR', 'MolWt', 'NHOHCount', 'NOCount', 'NumAliphaticCarbocycles', 'NumAliphaticHeterocycles', 'NumAliphaticRings', 'NumAromaticCarbocycles', 'NumAromaticHeterocycles', 'NumAromaticRings', 'NumHAcceptors', 'NumHDonors', 'NumHeteroatoms', 'NumRadicalElectrons', 'NumRotatableBonds', 'NumSaturatedCarbocycles', 'NumSaturatedHeterocycles', 'NumSaturatedRings', 'NumValenceElectrons', 'PEOE_VSA1', 'PEOE_VSA10', 'PEOE_VSA11', 'PEOE_VSA12', 'PEOE_VSA13', 'PEOE_VSA14', 'PEOE_VSA2', 'PEOE_VSA3', 'PEOE_VSA4', 'PEOE_VSA5', 'PEOE_VSA6', 'PEOE_VSA7', 'PEOE_VSA8', 'PEOE_VSA9', 'RingCount', 'SMR_VSA1', 'SMR_VSA10', 'SMR_VSA2', 'SMR_VSA3', 'SMR_VSA4', 'SMR_VSA5', 'SMR_VSA6', 'SMR_VSA7', 'SMR_VSA8', 'SMR_VSA9', 'SlogP_VSA1', 'SlogP_VSA10', 'SlogP_VSA11', 'SlogP_VSA12', 'SlogP_VSA2', 'SlogP_VSA3', 'SlogP_VSA4', 'SlogP_VSA5', 'SlogP_VSA6', 'SlogP_VSA7', 'SlogP_VSA8', 'SlogP_VSA9', 'TPSA', 'VSA_EState1', 'VSA_EState10', 'VSA_EState2', 'VSA_EState3', 'VSA_EState4', 'VSA_EState5', 'VSA_EState6', 'VSA_EState7', 'VSA_EState8', 'VSA_EState9', 'fr_Al_COO', 'fr_Al_OH', 'fr_Al_OH_noTert', 'fr_ArN', 'fr_Ar_COO', 'fr_Ar_N', 'fr_Ar_NH', 'fr_Ar_OH', 'fr_COO', 'fr_COO2', 'fr_C_O', 'fr_C_O_noCOO', 'fr_C_S', 'fr_HOCCN', 'fr_Imine', 'fr_NH0', 'fr_NH1', 'fr_NH2', 'fr_N_O', 'fr_Ndealkylation1', 'fr_Ndealkylation2', 'fr_Nhpyrrole', 'fr_SH', 'fr_aldehyde', 'fr_alkyl_carbamate', 'fr_alkyl_halide', 'fr_allylic_oxid', 'fr_amide', 'fr_amidine', 'fr_aniline', 'fr_aryl_methyl', 'fr_azide', 'fr_azo', 'fr_barbitur', 'fr_benzene', 'fr_benzodiazepine', 'fr_bicyclic', 'fr_diazo', 'fr_dihydropyridine', 'fr_epoxide', 'fr_ester', 'fr_ether', 'fr_furan', 'fr_guanido', 'fr_halogen', 'fr_hdrzine', 'fr_hdrzone', 'fr_imidazole', 'fr_imide', 'fr_isocyan', 'fr_isothiocyan', 'fr_ketone', 'fr_ketone_Topliss', 'fr_lactam', 'fr_lactone', 'fr_methoxy', 'fr_morpholine', 'fr_nitrile', 'fr_nitro', 'fr_nitro_arom', 'fr_nitro_arom_nonortho', 'fr_nitroso', 'fr_oxazole', 'fr_oxime', 'fr_para_hydroxylation', 'fr_phenol', 'fr_phenol_noOrthoHbond', 'fr_phos_acid', 'fr_phos_ester', 'fr_piperdine', 'fr_piperzine', 'fr_priamide', 'fr_prisulfonamd', 'fr_pyridine', 'fr_quatN', 'fr_sulfide', 'fr_sulfonamd', 'fr_sulfone', 'fr_term_acetylene', 'fr_tetrazole', 'fr_thiazole', 'fr_thiocyan', 'fr_thiophene', 'fr_unbrch_alkane', 'fr_urea', 'qed']
+#     # create molecular descriptor calculator
+#     mol_descriptor_calculator = MolecularDescriptorCalculator(chosen_descriptors)
+#     data4 = data3.iloc[:,0].map(lambda x : mol_descriptor_calculator.CalcDescriptors(Chem.MolFromSmiles(x)))
+#     remain = pd.DataFrame(data3.iloc[:, 2:])
+#     data4 = pd.DataFrame(data4)
+#     data5 = pd.DataFrame()
+#     # split to 200 columns
+#     for i in range(0, 200):
+#         data5 = pd.concat([data5, data4.applymap(lambda x: x[i])], axis=1)
+#     data5.columns = chosen_descriptors
+#     print(data5)
+#     # 特征存入rdkit_featurizer.csv
+#     data5.to_csv(path+"/rdkit_featurizer_output1.csv", index=False)
+#
+#
+#
+#     data4 = data3.iloc[:,1].map(lambda x : mol_descriptor_calculator.CalcDescriptors(Chem.MolFromSmiles(x)))
+#     data4 = pd.DataFrame(data4)
+#     data5 = pd.DataFrame()
+#     # split to 200 columns
+#     for i in range(0, 200):
+#         data5 = pd.concat([data5, data4.applymap(lambda x: x[i])], axis=1)
+#     data5.columns = chosen_descriptors
+#     print(data5)
+#     # 特征存入rdkit_featurizer.csv
+#     data5.to_csv(path+"/rdkit_featurizer_output2.csv", index=False)
+#
+#
+#
+#     # 读取第一个 CSV 文件
+#     data6 = pd.read_csv(path+"/rdkit_featurizer_output1.csv")
+#     # 读取第二个 CSV 文件
+#     data7 = pd.read_csv(path+"/rdkit_featurizer_output2.csv")
+#     # 合并两个数据集到一个 DataFrame
+#     merged_data = pd.concat([data6, data7, remain], axis=1)  # 如果需要保留原始索引，去掉 ignore_index=True
+#     merged_data.to_csv(path+"/rdkit_featurizer_output.csv", index=False)
+#     # 打印合并后的 DataFrame
+#     print(merged_data)
+#     return merged_data
+# #
+# def rdkit_featurizer(path):
+#     import pandas as pd
+#     from rdkit import Chem
+#     from rdkit.Chem import Descriptors
+#     from rdkit.ML.Descriptors.MoleculeDescriptors import MolecularDescriptorCalculator
+#     # 假设data4是你的数据集，包含了多列，其中有些是以 "Smiles" 结尾的 SMILES 列，最后一列是输出
+#     # 示例数据
+#     data4 = data3
+#     # 通过尾缀名为 "Smiles" 的列筛选出 SMILES 列
+#     smiles_columns = data4.filter(like='Smiles').columns
+#
+#     # 初始化一个空的列表，用于存储所有的描述符
+#     desc_list = []
+#     # 处理 SMILES 列，并生成所有描述符
+#     for col in smiles_columns:
+#         smiles_col = data4[col]
+#         mol_objects = smiles_col.apply(lambda x: Chem.MolFromSmiles(x) if isinstance(x, str) else None)
+#         descriptors = mol_objects.apply(lambda x: [Descriptors.descName[i](x) for i in range(len(Descriptors.descName))] if x is not None else [None]*len(Descriptors.descName))
+#         desc_list.append(descriptors)
+#
+#     # 将所有描述符列合并为一个 DataFrame
+#     desc_df = pd.DataFrame(desc_list)
+#
+#     # 将生成的描述符 DataFrame 与输出列合并
+#     result_df = pd.concat([desc_df, data4.iloc[:, -1]], axis=1)
+#
+#     # 使用 iloc 选取输出列
+#     output_col = result_df.iloc[:, -1]
+#
+#     # 使用 iloc 选取描述符列（这里假设描述符列是从第0列到倒数第2列）
+#     desc_cols = result_df.iloc[:, :-1]
+#     print(111)
+#     # 特征存入rdkit_featurizer.csv
+#     desc_cols.to_csv(path+"/rdkit_inputs.csv", index=False)
+#     print(desc_cols)
+#     print(222)
+#     output_col.to_csv(path+"/rdkit_featurizer_output.csv", index=False)
+#     print(333)
+#     print(output_col)
+#     return output_col
 
 # 0.1.2.3 从smiles码画分子
 def drawMolecule(smiles):
@@ -112,9 +202,10 @@ def inorganic_magpie_csv(name20):
     print(data20)
     return data20
 
-# 0.2.2 matminer无机材料（类独热编码）描述符生成，102维
+# 0.2.2 one-hot matminer无机材料（类独热编码）描述符生成，102维
 # 例如(Fe2AgCu2)O3, Fe2O3, Cs3PbI3, MoS2, CuInGaSe, Si, TiO2等
 def inorganic_featurizer(path):
+    #one-hot
     import pandas as pd
     from matminer.featurizers.composition.element import ElementFraction
     from pymatgen.core import Composition
@@ -136,9 +227,11 @@ def inorganic_featurizer(path):
 
 # 0.2.3 magpie（matminer)无机材料描述符生成
 def inorganic_magpie_featurizer(path):
+    #magpie from matminer
     from matminer.featurizers.conversions import StrToComposition
     from matminer.featurizers.composition import ElementProperty
     import pandas as pd
+
 
     str_to_comp = StrToComposition(target_col_id='composition')
     df_comp = str_to_comp.featurize_dataframe(data20, col_id='formula')   #此处规定csv中第一列列名必须是 formula  否则软件闪退！！！！！
@@ -159,8 +252,10 @@ def inorganic_magpie_featurizer(path):
     df_features.to_csv(path+"/1_magpie.csv",index=None)
     return df_features
 
+
 # 2in1
 def two_in_one(path,csvpath):
+    #magpie (matminer) and rdkit, 2in1
     import pandas as pd
     def select_columns_by_suffix(df, suffix):
         filtered_columns = df.filter(regex=f'{suffix}$')
@@ -194,10 +289,10 @@ def two_in_one(path,csvpath):
 
     # 用法示例
     file_path = csvpath
-    suffixes = ['InorganicFormula', 'OrganicSmiles']
+    suffixes = ['Formula', 'Smiles']
     selected_columns = extract_and_store_columns(file_path, suffixes)
 
-    original_data = pd.DataFrame(pd.read_csv(path+'/InorganicFormula_selected_columns.csv'))
+    original_data = pd.DataFrame(pd.read_csv(path+'/Formula_selected_columns.csv'))
 
     import pandas as pd
 
@@ -217,6 +312,9 @@ def two_in_one(path,csvpath):
     for key, value in new_datasets.items():
         print(f"{key}:\n{value}\n")
 
+
+
+
     import pandas as pd
     from matminer.featurizers.conversions import StrToComposition
     from matminer.featurizers.composition.orbital import AtomicOrbitals
@@ -224,6 +322,7 @@ def two_in_one(path,csvpath):
     from matminer.featurizers.composition.element import ElementFraction
     from pymatgen.core import Composition
 
+    ignore_errors = True
     # 假设 new_datasets 是包含拆分数据集的字典，如 'data1', 'data2', ...
     # 每个数据集中应该有 'Name' 列
 
@@ -252,6 +351,7 @@ def two_in_one(path,csvpath):
     # 遍历拆分的数据集
     for i, (key, dataset) in enumerate(new_datasets.items(), start=1):
         # 特征转换1: StrToComposition
+
         df_comp = str_to_comp.featurize_dataframe(dataset, col_id='Name')
 
         # 特征转换2: AtomicOrbitals
@@ -267,13 +367,13 @@ def two_in_one(path,csvpath):
         element_fraction_features = element_fraction_features.iloc[:, 2:-1]  # 选择感兴趣的列
 
         # 添加前缀
-        prefix_orbital = f'inorganic_formula_{i}_orbital_'
+        prefix_orbital = f'_formula_{i}_orbital_'
         orbital_features = orbital_features.add_prefix(prefix_orbital)
 
-        prefix_element_property = f'inorganic_formula_{i}_element_property_'
+        prefix_element_property = f'_formula_{i}_element_property_'
         element_property_features = element_property_features.add_prefix(prefix_element_property)
 
-        prefix_element_fraction = f'inorganic_formula_{i}_element_fraction_'
+        prefix_element_fraction = f'_formula_{i}_element_fraction_'
         element_fraction_features = element_fraction_features.add_prefix(prefix_element_fraction)
 
         # 合并特征转换后的数据集
@@ -290,7 +390,7 @@ def two_in_one(path,csvpath):
     print(merged_result)
 
     # 有机部分
-    original_data2 = pd.DataFrame(pd.read_csv(path+'/OrganicSmiles_selected_columns.csv'))
+    original_data2 = pd.DataFrame(pd.read_csv(path+'/Smiles_selected_columns.csv'))
 
     new_datasets2 = {}
 
@@ -353,97 +453,164 @@ def two_in_one(path,csvpath):
     all_merged_data = pd.concat([merged_result, merged_rdkit_result, unselected_columns], axis=1)
 
     # 将合并后的结果保存为 CSV 文件
-    all_merged_data.to_csv(path+'/test_train_dataset.csv', index=False)
+    all_merged_data.to_csv(path+'/train_test_dataset.csv', index=False)
+#原来的文件保存-------------------------------------------------------------------------------↑----------------
+
+
+
+
+
+# multiple rdkit smiles columns
+def featurize_Multicolumn_Smiles(path,csvpath):
+    #magpie (matminer) and rdkit, 2in1
+    import pandas as pd
+    def select_columns_by_suffix(df, suffix):
+        filtered_columns = df.filter(regex=f'{suffix}$')
+        return filtered_columns
+
+    def extract_and_store_columns(csv_file, suffixes):
+        # 读取 CSV 文件
+        df = pd.read_csv(csv_file)
+
+        selected_columns = {}
+        for suffix in suffixes:
+            selected_columns[suffix] = select_columns_by_suffix(df, suffix)
+            print('********************************************************************************')
+            print(f"Columns ending with '{suffix}':")
+            print('********************************************************************************')
+            print(selected_columns[suffix])
+            # 如果需要保存到新的DataFrame中，取消注释下一行
+            #global df_selected
+            df_selected = pd.concat(selected_columns, axis=1)
+            # df_combined = pd.concat(selected_columns.values(), axis=1)
+            # df_combined.to_csv('selected_columns.csv', index=False)
+            selected_columns[suffix].to_csv(path+'/'+f'{suffix}_selected_columns.csv', index=False)
+
+        # 获取未被选中的列
+        unselected_columns = df.drop(columns=[col for cols in selected_columns.values() for col in cols.columns])
+
+        # 保存未被选中的列到 CSV 文件
+        unselected_columns.to_csv(path+'/'+'unselected_columns.csv', index=False)
+
+        return selected_columns
+
+    # 用法示例
+    file_path = csvpath
+    # suffixes = ['Formula', 'Smiles']
+    suffixes = ['Smiles']
+    selected_columns = extract_and_store_columns(file_path, suffixes)
+
+    original_data = pd.DataFrame(pd.read_csv(path+'/Smiles_selected_columns.csv'))
+
+    import pandas as pd
+
+    # 假设 original_data 是您的原始数据集
+    # 创建一个空字典，用于存储新的数据集
+    new_datasets = {}
+    print(1)
+    # 遍历原始数据集的每一列
+    for col_name in original_data.columns:
+        # 创建新的数据集，将当前列命名为 'Name'
+        new_dataset = pd.DataFrame({'Name': original_data[col_name]})
+        print(6)
+        # 将新数据集存储在字典中，字典的键是 'data1'，'data2'，依此类推
+        new_datasets['data' + str(len(new_datasets) + 1)] = new_dataset
+    print(2)
+    # 打印或使用新的数据集
+    for key, value in new_datasets.items():
+        print(f"{key}:\n{value}\n")
+
+
+    # 用于存储特征转换后的数据集
+    result_datasets = {}
+
+
+    # 合并所有数据集
+    merged_result = result_datasets
+
+    # 将合并后的结果保存为 CSV 文件
+    # merged_result.to_csv(path+'/merged_result.csv', index=False)
+
+    # 打印或使用合并后的结果
+    # print(merged_result)
+
+    # 有机部分
+    original_data2 = pd.DataFrame(pd.read_csv(path+'/Smiles_selected_columns.csv'))
+
+    new_datasets2 = {}
+
+    # 遍历原始数据集的每一列
+    for col_name in original_data2.columns:
+        # 创建新的数据集，将当前列命名为 'Name'
+        new_dataset2 = pd.DataFrame({'Name': original_data2[col_name]})
+
+        # 将新数据集存储在字典中，字典的键是 'organic_data1'，'organic_data2'，依此类推
+        new_datasets2['organic_data' + str(len(new_datasets2) + 1)] = new_dataset2
+
+    # 打印或使用新的数据集
+    for key, value in new_datasets2.items():
+        print(f"{key}:\n{value}\n")
+
+    import pandas as pd
+    import numpy as np
+    from rdkit import Chem
+    from rdkit.Chem import AllChem
+
+    # 假设 new_datasets2 是包含拆分数据集的字典，如 'organic_data1', 'organic_data2', ...
+    # 每个数据集中应该有 'Name' 列
+
+    # 用于存储 RDKit 特征化后的数据集
+    rdkit_datasets = {}
+
+    # 遍历拆分的数据集
+    for key, dataset in new_datasets2.items():
+        # 特征化 RDKit
+        rdkit_features = dataset['Name'].apply(
+            lambda x: AllChem.GetMorganFingerprintAsBitVect(Chem.MolFromSmiles(x), 2))
+
+        # 将 RDKit 指纹转换为 DataFrame
+        rdkit_features_df = pd.DataFrame(
+            list(rdkit_features.apply(lambda x: np.frombuffer(x.ToBinary(), dtype=np.uint8))))
+
+        # 添加前缀
+        prefix_rdkit = f'{key}_rdkit_'
+        rdkit_features_df = rdkit_features_df.add_prefix(prefix_rdkit)
+
+        # 存储特征化后的数据集
+        rdkit_datasets[key] = rdkit_features_df
+
+    # 合并 RDKit 特征化后的数据集
+    merged_rdkit_result = pd.concat(rdkit_datasets.values(), axis=1)
+    merged_rdkit_result.fillna(0, inplace=True)
+    # 将合并后的结果保存为 CSV 文件
+    merged_rdkit_result.to_csv(path+'/merged_rdkit_result.csv', index=False)
+
+    # 打印或使用合并后的 RDKit 特征化结果
+    print(merged_rdkit_result)
+
+    unselected_columns = pd.DataFrame(pd.read_csv(path+'/unselected_columns.csv'))
+    # 合并前重置索引
+    # merged_result.reset_index(drop=True, inplace=True)
+    merged_rdkit_result.reset_index(drop=True, inplace=True)
+    unselected_columns.reset_index(drop=True, inplace=True)
+
+    # 合并三个数据集
+    all_merged_data = pd.concat([merged_rdkit_result, unselected_columns], axis=1)
+
+    # 将合并后的结果保存为 CSV 文件
+    all_merged_data.to_csv(path+'/train_test_dataset.csv', index=False)
+
+
+
+
 
 # 9 遗传算法设计新特征
 ## 9.1 普通默认运算符
-def gp_default(r_thresh):  ## 输入参数为皮尔森阈值 ：例如输入0.6后，大于0.6的才显示
-    import numpy as np
-    from sklearn import preprocessing
-    from gplearn import genetic
-    X = data.values[:,:-1]
-    y = data.values[:,-1]
-    for i in range(X.shape[1]):
-        X[:,[i]] = preprocessing.MinMaxScaler().fit_transform(X[:,[i]])
-    est_gp = genetic.SymbolicTransformer(population_size=1000,
-                               generations=91, stopping_criteria=0.01,
-                               p_crossover=0.8, p_subtree_mutation=0.05,
-                               p_hoist_mutation=0.05, p_point_mutation=0.05,
-                               max_samples=0.9, verbose=1,
-                               parsimony_coefficient=0.01, random_state=None,n_components=100)
-    V=est_gp.fit(X, y)
-    px=V.transform(X)
-    str1=""
-    for i in range(0,50):
-        pear=np.corrcoef(px[:,i], y)
-        pea=pear[0,1]
-        if pea>r_thresh:
-            print(pea,i,V[i])
-            str1=str1+str(pea)+"  "+str(i)+"  "+str(V[i])+"\n"
-    print('\n***************************')
-    for i in range(len(data.columns.values.tolist())):
-        print(i, data.columns.values.tolist()[i])
-    return str1,data
 
-## 9.2 更多运算符
-def gp_tan(r_thresh):
-    import numpy as np
-    from sklearn import preprocessing
-    from gplearn import genetic
-    X = data.values[:, :-1]
-    y = data.values[:, -1]
-    for i in range(X.shape[1]):
-        X[:, [i]] = preprocessing.MinMaxScaler().fit_transform(X[:, [i]])
-    function_set = ['add', 'sub', 'mul', 'div', 'log', 'sqrt', 'abs', 'neg','inv','sin','cos','tan', 'max', 'min']
-    est_gp = genetic.SymbolicTransformer(population_size=1000,
-                               generations=91, stopping_criteria=0.01,
-                               p_crossover=0.8, p_subtree_mutation=0.05,
-                               p_hoist_mutation=0.05, p_point_mutation=0.05,
-                               max_samples=0.9, verbose=1,function_set=function_set,
-                               parsimony_coefficient=0.01, random_state=None,n_components=100)
-    V=est_gp.fit(X, y)
-    px=V.transform(X)
-    str1 = ""
-    for i in range(0,50):
-        pear=np.corrcoef(px[:,i], y)
-        pea=pear[0,1]
-        if pea>r_thresh:
-            print(pea,i,V[i])
-            str1 = str1 + str(pea) + "  " + str(i) + "  " + str(V[i]) + "\n"
-    print('\n***************************')
-    for i in range(len(data.columns.values.tolist())):
-        print(i, data.columns.values.tolist()[i])
-    return str1, data
 
-## 9.3 tSR默认形式为(X[:,i]-X[:,j])*(X[:,k]-X[:,n])
-def tSR_default(r_thresh,path):
-    import numpy as np
-    X = data_rfe.values[:, :-1]
-    y = data_rfe.values[:, -1]
-    for i in range(0,(data_rfe.shape[1]-1)):
-         for j in range(0,(data_rfe.shape[1]-1)):
-              for k in range(0,(data_rfe.shape[1]-1)):
-                    for n in range(0,(data_rfe.shape[1]-1)):
-                         px=(X[:,i]-X[:,j])*(X[:,k]-X[:,n])
-                         per=np.corrcoef(px, y)
-                         if per[0,1]>r_thresh or per[0,1]< -1 * r_thresh:
-                              print(per[0,1])
-                              print(i,j,k,n)
-                              print(data_rfe.columns.values.tolist()[i],data_rfe.columns.values.tolist()[j],data_rfe.columns.values.tolist()[k],data_rfe.columns.values.tolist()[n])
-                              print('(',data_rfe.columns.values.tolist()[i],'-',data_rfe.columns.values.tolist()[j],')','*','(',data_rfe.columns.values.tolist()[k],'-',data_rfe.columns.values.tolist()[n],')')
-                              print('**********************************************')
-                              with open(path+"/data.txt", "a+") as f:
-                                  f.write(str(per[0,1])+"\n")
-                                  f.write(str(i)+" "+str(j)+" "+str(k)+" "+str(n)+"\n")
-                                  f.write(str(data_rfe.columns.values.tolist()[i])+" "
-                                          +str(data_rfe.columns.values.tolist()[j])+" "
-                                          +str(data_rfe.columns.values.tolist()[k])+" "
-                                          +str(data_rfe.columns.values.tolist()[n])+"\n")
-                                  f.write("( "+str(data_rfe.columns.values.tolist()[i]) + " - "
-                                          + str(data_rfe.columns.values.tolist()[j]) + " ) * ("
-                                          + str(data_rfe.columns.values.tolist()[k]) + " - "
-                                          + str(data_rfe.columns.values.tolist()[n]) + " )\n")
-                                  f.write('**********************************************\n')
+
+#Genetic algorithm-----------------
+
 
 # ## 9.4 tSR更多运算符，默认形式为(X[:,i]-X[:,j])*(X[:,k]-X[:,n]) 可能删去，没有用处
 # def tSR_tan(r_thresh):
@@ -911,9 +1078,11 @@ def xgboost_modify(a, b, c, d, e, f, g,path,csvName):
     plt.minorticks_on()
     plt.xlabel("True", fontproperties='Times New Roman', size=20)
     plt.ylabel("Prediction", fontproperties='Times New Roman', size=20)
-    plt.text(.05, .2, 'MAE = %.3f \nMSE =  %.3f \nR2 =  %.3f \n' % (MAE, MSE, R2), fontproperties='Times New Roman',
+    # plt.gcf().text(.05, .2, 'MAE = %.3f \nMSE =  %.3f \nR2 =  %.3f \n' % (MAE, MSE, R2), fontproperties='Times New Roman',
+    #          size=20, horizontalalignment='center')
+    plt.gcf().text(0.0, -0.3, 'MAE = %.3f \nMSE =  %.3f \nR2 =  %.3f \n' % (MAE, MSE, R2), fontproperties='Times New Roman',
              size=20, horizontalalignment='center')
-    plt.savefig(path+'/xgboost-modify.png', dpi=300, bbox_inches='tight')
+    plt.savefig(path+'/xgboost-modify-test.png', dpi=300, bbox_inches='tight')
     plt.close()
 
     # 使用KFold交叉验证建模
@@ -1003,7 +1172,7 @@ def xgboost_modify(a, b, c, d, e, f, g,path,csvName):
     plt.minorticks_on()
     plt.xlabel("True", fontproperties = 'Times New Roman', size = 20)
     plt.ylabel("Prediction", fontproperties = 'Times New Roman', size = 20)
-    plt.text(.05, .2, 'MAE = %.3f \nMSE =  %.3f \nR2 =  %.3f \n' % (MAE_train, MSE_train, R2_train), fontproperties = 'Times New Roman', size = 20, horizontalalignment='center')
+    plt.gcf().text(0.0, -0.3, 'MAE = %.3f \nMSE =  %.3f \nR2 =  %.3f \n' % (MAE_train, MSE_train, R2_train), fontproperties = 'Times New Roman', size = 20, horizontalalignment='center')
     plt.savefig(path+'/xgboost-modify-train-default.png', dpi=300, bbox_inches = 'tight')
     plt.close()
     import pickle
@@ -1102,7 +1271,7 @@ def xgboost_RandomSearchCV(path):
     plt.xlabel("True", fontproperties='Times New Roman', size=20)
     plt.ylabel("Prediction", fontproperties='Times New Roman', size=20)
 
-    plt.text(.05, .2, 'MAE = %.3f \nMSE =  %.3f \nR2 =  %.3f \n' % (MAE, MSE, R2), fontproperties='Times New Roman',
+    plt.gcf().text(0.0, -0.3, 'MAE = %.3f \nMSE =  %.3f \nR2 =  %.3f \n' % (MAE, MSE, R2), fontproperties='Times New Roman',
              size=20, horizontalalignment='center')
     plt.savefig(path+'/xgboost-RandomizedSearchCV.png', dpi=300, bbox_inches='tight')
     plt.close()
@@ -1194,7 +1363,7 @@ def xgboost_RandomSearchCV(path):
     plt.minorticks_on()
     plt.xlabel("True", fontproperties = 'Times New Roman', size = 20)
     plt.ylabel("Prediction", fontproperties = 'Times New Roman', size = 20)
-    plt.text(.05, .2, 'MAE = %.3f \nMSE =  %.3f \nR2 =  %.3f \n' % (MAE_train, MSE_train, R2_train), fontproperties = 'Times New Roman', size = 20, horizontalalignment='center')
+    pplt.gcf().text(0.0, -0.3, 'MAE = %.3f \nMSE =  %.3f \nR2 =  %.3f \n' % (MAE_train, MSE_train, R2_train), fontproperties = 'Times New Roman', size = 20, horizontalalignment='center')
     plt.savefig(path+'/xgboost-train-randomSearch.png', dpi=300, bbox_inches = 'tight')
     plt.close()
     return str1, scores, str2
@@ -1290,7 +1459,7 @@ def xgboost_GridSearchCV(path):
     plt.xlabel("True", fontproperties='Times New Roman', size=20)
     plt.ylabel("Prediction", fontproperties='Times New Roman', size=20)
 
-    plt.text(.05, .2, 'MAE = %.3f \nMSE =  %.3f \nR2 =  %.3f \n' % (MAE, MSE, R2), fontproperties='Times New Roman',
+    plt.gcf().text(0.0, -0.3, 'MAE = %.3f \nMSE =  %.3f \nR2 =  %.3f \n' % (MAE, MSE, R2), fontproperties='Times New Roman',
              size=20, horizontalalignment='center')
     plt.savefig(path+'/xgboost-GridSearchCV.png', dpi=300, bbox_inches='tight')
     plt.close()
@@ -1382,7 +1551,7 @@ def xgboost_GridSearchCV(path):
     plt.minorticks_on()
     plt.xlabel("True", fontproperties = 'Times New Roman', size = 20)
     plt.ylabel("Prediction", fontproperties = 'Times New Roman', size = 20)
-    plt.text(.05, .2, 'MAE = %.3f \nMSE =  %.3f \nR2 =  %.3f \n' % (MAE_train, MSE_train, R2_train), fontproperties = 'Times New Roman', size = 20, horizontalalignment='center')
+    plt.gcf().text(0.0, -0.3, 'MAE = %.3f \nMSE =  %.3f \nR2 =  %.3f \n' % (MAE_train, MSE_train, R2_train), fontproperties = 'Times New Roman', size = 20, horizontalalignment='center')
     plt.savefig(path+'/Xgboost-grid_search_train.png', dpi=300, bbox_inches = 'tight')
     plt.close()
     return str1, scores, str2
@@ -1467,7 +1636,7 @@ def RandomForest_default(path):
     plt.xlabel("True", fontproperties = 'Times New Roman', size = 20)
     plt.ylabel("Prediction", fontproperties = 'Times New Roman', size = 20)
 
-    plt.text(.05, .2, 'MAE = %.3f \nMSE =  %.3f \nR2 =  %.3f \n' % (MAE, MSE, R2), fontproperties = 'Times New Roman', size = 20, horizontalalignment='center')
+    plt.gcf().text(0.0, -0.3, 'MAE = %.3f \nMSE =  %.3f \nR2 =  %.3f \n' % (MAE, MSE, R2), fontproperties = 'Times New Roman', size = 20, horizontalalignment='center')
     plt.savefig(path+'/randomForest-default.png', dpi=300, bbox_inches = 'tight')
     plt.close()
 
@@ -1559,7 +1728,7 @@ def RandomForest_default(path):
     plt.minorticks_on()
     plt.xlabel("True", fontproperties = 'Times New Roman', size = 20)
     plt.ylabel("Prediction", fontproperties = 'Times New Roman', size = 20)
-    plt.text(.05, .2, 'MAE = %.3f \nMSE =  %.3f \nR2 =  %.3f \n' % (MAE_train, MSE_train, R2_train), fontproperties = 'Times New Roman', size = 20, horizontalalignment='center')
+    plt.gcf().text(0.0, -0.3, 'MAE = %.3f \nMSE =  %.3f \nR2 =  %.3f \n' % (MAE_train, MSE_train, R2_train), fontproperties = 'Times New Roman', size = 20, horizontalalignment='center')
     plt.savefig(path+'/randomForest-default-train.png', dpi=300, bbox_inches = 'tight')
     plt.close()
     return str1, scores, str2
@@ -1644,9 +1813,9 @@ def RandomForest_modify(a, b, c, d, e,path,csvname):
     plt.minorticks_on()
     plt.xlabel("True", fontproperties='Times New Roman', size=20)
     plt.ylabel("Prediction", fontproperties='Times New Roman', size=20)
-    plt.text(.05, .2, 'MAE = %.3f \nMSE =  %.3f \nR2 =  %.3f \n' % (MAE, MSE, R2), fontproperties='Times New Roman',
+    plt.gcf().text(0.0, -0.3, 'MAE = %.3f \nMSE =  %.3f \nR2 =  %.3f \n' % (MAE, MSE, R2), fontproperties='Times New Roman',
              size=20, horizontalalignment='center')
-    plt.savefig(path+'/RandomForest-modify.png', dpi=300, bbox_inches='tight')
+    plt.savefig(path+'/RandomForest-modify-test.png', dpi=300, bbox_inches='tight')
     plt.close()
     # 使用KFold交叉验证建模
     from sklearn.model_selection import cross_val_score
@@ -1728,7 +1897,7 @@ def RandomForest_modify(a, b, c, d, e,path,csvname):
     plt.minorticks_on()
     plt.xlabel("True", fontproperties = 'Times New Roman', size = 20)
     plt.ylabel("Prediction", fontproperties = 'Times New Roman', size = 20)
-    plt.text(.05, .2, 'MAE = %.3f \nMSE =  %.3f \nR2 =  %.3f \n' % (MAE_train, MSE_train, R2_train), fontproperties = 'Times New Roman', size = 20, horizontalalignment='center')
+    plt.gcf().text(0.0, -0.3, 'MAE = %.3f \nMSE =  %.3f \nR2 =  %.3f \n' % (MAE_train, MSE_train, R2_train), fontproperties = 'Times New Roman', size = 20, horizontalalignment='center')
     plt.savefig(path+'/RandomForest-modify-train.png', dpi=300, bbox_inches = 'tight')
     plt.close()
     import pickle
@@ -1809,7 +1978,7 @@ def RandomForest_RandomSearchCV(path):
     plt.minorticks_on()
     plt.xlabel("True", fontproperties='Times New Roman', size=20)
     plt.ylabel("Prediction", fontproperties='Times New Roman', size=20)
-    plt.text(.05, .2, 'MAE = %.3f \nMSE =  %.3f \nR2 =  %.3f \n' % (MAE, MSE, R2), fontproperties='Times New Roman',
+    plt.gcf().text(0.0, -0.3, 'MAE = %.3f \nMSE =  %.3f \nR2 =  %.3f \n' % (MAE, MSE, R2), fontproperties='Times New Roman',
              size=20, horizontalalignment='center')
     plt.savefig(path+'/RandomForest-RandomizedSearchCV.png', dpi=300, bbox_inches='tight')
     plt.close()
@@ -1893,7 +2062,7 @@ def RandomForest_RandomSearchCV(path):
     plt.minorticks_on()
     plt.xlabel("True", fontproperties = 'Times New Roman', size = 20)
     plt.ylabel("Prediction", fontproperties = 'Times New Roman', size = 20)
-    plt.text(.05, .2, 'MAE = %.3f \nMSE =  %.3f \nR2 =  %.3f \n' % (MAE_train, MSE_train, R2_train), fontproperties = 'Times New Roman', size = 20, horizontalalignment='center')
+    plt.gcf().text(0.0, -0.3, 'MAE = %.3f \nMSE =  %.3f \nR2 =  %.3f \n' % (MAE_train, MSE_train, R2_train), fontproperties = 'Times New Roman', size = 20, horizontalalignment='center')
     plt.savefig(path+'/RandomForest-train-randomSearchCV.png', dpi=300, bbox_inches = 'tight')
     plt.close()
     return str1, scores, str2
@@ -1967,7 +2136,7 @@ def Bagging_default(path):
     plt.minorticks_on()
     plt.xlabel("True", fontproperties = 'Times New Roman', size = 20)
     plt.ylabel("Prediction", fontproperties = 'Times New Roman', size = 20)
-    plt.text(.05, .2, 'MAE = %.3f \nMSE =  %.3f \nR2 =  %.3f \n' % (MAE, MSE, R2), fontproperties = 'Times New Roman', size = 20, horizontalalignment='center')
+    plt.gcf().text(0.0, -0.3, 'MAE = %.3f \nMSE =  %.3f \nR2 =  %.3f \n' % (MAE, MSE, R2), fontproperties = 'Times New Roman', size = 20, horizontalalignment='center')
     plt.savefig(path+'/Bagging-default.png', dpi=300, bbox_inches = 'tight')
     plt.close()
     # 使用KFold交叉验证建模
@@ -2050,7 +2219,7 @@ def Bagging_default(path):
     plt.minorticks_on()
     plt.xlabel("True", fontproperties = 'Times New Roman', size = 20)
     plt.ylabel("Prediction", fontproperties = 'Times New Roman', size = 20)
-    plt.text(.05, .2, 'MAE = %.3f \nMSE =  %.3f \nR2 =  %.3f \n' % (MAE_train, MSE_train, R2_train), fontproperties = 'Times New Roman', size = 20, horizontalalignment='center')
+    plt.gcf().text(0.0, -0.3, 'MAE = %.3f \nMSE =  %.3f \nR2 =  %.3f \n' % (MAE_train, MSE_train, R2_train), fontproperties = 'Times New Roman', size = 20, horizontalalignment='center')
     plt.savefig(path+'/Bagging-default-train.png', dpi=300, bbox_inches = 'tight')
     plt.close()
     return str1, scores, str2
@@ -2121,9 +2290,9 @@ def Bagging_modify(a, b, c,path,csvname):
     plt.minorticks_on()
     plt.xlabel("True", fontproperties='Times New Roman', size=20)
     plt.ylabel("Prediction", fontproperties='Times New Roman', size=20)
-    plt.text(.05, .2, 'MAE = %.3f \nMSE =  %.3f \nR2 =  %.3f \n' % (MAE, MSE, R2), fontproperties='Times New Roman',
+    plt.gcf().text(0.0, -0.3, 'MAE = %.3f \nMSE =  %.3f \nR2 =  %.3f \n' % (MAE, MSE, R2), fontproperties='Times New Roman',
              size=20, horizontalalignment='center')
-    plt.savefig(path + '/Bagging-modify.png', dpi=300, bbox_inches='tight')
+    plt.savefig(path + '/Bagging-modify-test.png', dpi=300, bbox_inches='tight')
     plt.close()
     # 使用KFold交叉验证建模
     from sklearn.model_selection import cross_val_score
@@ -2205,7 +2374,7 @@ def Bagging_modify(a, b, c,path,csvname):
     plt.minorticks_on()
     plt.xlabel("True", fontproperties='Times New Roman', size=20)
     plt.ylabel("Prediction", fontproperties='Times New Roman', size=20)
-    plt.text(.05, .2, 'MAE = %.3f \nMSE =  %.3f \nR2 =  %.3f \n' % (MAE_train, MSE_train, R2_train),
+    plt.gcf().text(0.0, -0.3, 'MAE = %.3f \nMSE =  %.3f \nR2 =  %.3f \n' % (MAE_train, MSE_train, R2_train),
              fontproperties='Times New Roman', size=20, horizontalalignment='center')
     plt.savefig(path + '/Bagging-modify-train.png', dpi=300, bbox_inches='tight')
     plt.close()
@@ -2281,7 +2450,7 @@ def AdaBoost_default(path):
     plt.minorticks_on()
     plt.xlabel("True", fontproperties = 'Times New Roman', size = 20)
     plt.ylabel("Prediction", fontproperties = 'Times New Roman', size = 20)
-    plt.text(.05, .2, 'MAE = %.3f \nMSE =  %.3f \nR2 =  %.3f \n' % (MAE, MSE, R2), fontproperties = 'Times New Roman', size = 20, horizontalalignment='center')
+    plt.gcf().text(0.0, -0.3, 'MAE = %.3f \nMSE =  %.3f \nR2 =  %.3f \n' % (MAE, MSE, R2), fontproperties = 'Times New Roman', size = 20, horizontalalignment='center')
     plt.savefig(path+'/AdaBoost-default.png', dpi=300, bbox_inches = 'tight')
     plt.close()
     # 使用KFold交叉验证建模
@@ -2364,7 +2533,7 @@ def AdaBoost_default(path):
     plt.minorticks_on()
     plt.xlabel("True", fontproperties = 'Times New Roman', size = 20)
     plt.ylabel("Prediction", fontproperties = 'Times New Roman', size = 20)
-    plt.text(.05, .2, 'MAE = %.3f \nMSE =  %.3f \nR2 =  %.3f \n' % (MAE_train, MSE_train, R2_train), fontproperties = 'Times New Roman', size = 20, horizontalalignment='center')
+    plt.gcf().text(0.0, -0.3, 'MAE = %.3f \nMSE =  %.3f \nR2 =  %.3f \n' % (MAE_train, MSE_train, R2_train), fontproperties = 'Times New Roman', size = 20, horizontalalignment='center')
     plt.savefig(path+'/AdaBoost-default-train.png', dpi=300, bbox_inches = 'tight')
     plt.close()
     return str1, scores, str2
@@ -2446,7 +2615,7 @@ def AdaBoost_modify(a, b, c,path,csvname):
     plt.minorticks_on()
     plt.xlabel("True", fontproperties='Times New Roman', size=20)
     plt.ylabel("Prediction", fontproperties='Times New Roman', size=20)
-    plt.text(.05, .2, 'MAE = %.3f \nMSE =  %.3f \nR2 =  %.3f \n' % (MAE, MSE, R2), fontproperties='Times New Roman',
+    plt.gcf().text(0.0, -0.3, 'MAE = %.3f \nMSE =  %.3f \nR2 =  %.3f \n' % (MAE, MSE, R2), fontproperties='Times New Roman',
              size=20, horizontalalignment='center')
     plt.savefig(path + '/AdaBoost-modify.png', dpi=300, bbox_inches='tight')
     plt.close()
@@ -2530,7 +2699,7 @@ def AdaBoost_modify(a, b, c,path,csvname):
     plt.minorticks_on()
     plt.xlabel("True", fontproperties='Times New Roman', size=20)
     plt.ylabel("Prediction", fontproperties='Times New Roman', size=20)
-    plt.text(.05, .2, 'MAE = %.3f \nMSE =  %.3f \nR2 =  %.3f \n' % (MAE_train, MSE_train, R2_train),
+    plt.gcf().text(0.0, -0.3, 'MAE = %.3f \nMSE =  %.3f \nR2 =  %.3f \n' % (MAE_train, MSE_train, R2_train),
              fontproperties='Times New Roman', size=20, horizontalalignment='center')
     plt.savefig(path + '/AdaBoost-modify-train.png', dpi=300, bbox_inches='tight')
     plt.close()
@@ -2606,7 +2775,7 @@ def GradientBoosting_default(path):
     plt.minorticks_on()
     plt.xlabel("True", fontproperties = 'Times New Roman', size = 20)
     plt.ylabel("Prediction", fontproperties = 'Times New Roman', size = 20)
-    plt.text(.05, .2, 'MAE = %.3f \nMSE =  %.3f \nR2 =  %.3f \n' % (MAE, MSE, R2), fontproperties = 'Times New Roman', size = 20, horizontalalignment='center')
+    plt.gcf().text(0.0, -0.3, 'MAE = %.3f \nMSE =  %.3f \nR2 =  %.3f \n' % (MAE, MSE, R2), fontproperties = 'Times New Roman', size = 20, horizontalalignment='center')
     plt.savefig(path+'/GradientBoosting-default.png', dpi=300, bbox_inches = 'tight')
     plt.close()
     # 使用KFold交叉验证建模
@@ -2689,7 +2858,7 @@ def GradientBoosting_default(path):
     plt.minorticks_on()
     plt.xlabel("True", fontproperties = 'Times New Roman', size = 20)
     plt.ylabel("Prediction", fontproperties = 'Times New Roman', size = 20)
-    plt.text(.05, .2, 'MAE = %.3f \nMSE =  %.3f \nR2 =  %.3f \n' % (MAE_train, MSE_train, R2_train), fontproperties = 'Times New Roman', size = 20, horizontalalignment='center')
+    plt.gcf().text(0.0, -0.3, 'MAE = %.3f \nMSE =  %.3f \nR2 =  %.3f \n' % (MAE_train, MSE_train, R2_train), fontproperties = 'Times New Roman', size = 20, horizontalalignment='center')
     plt.savefig(path+'/GradientBoosting-default-train.png', dpi=300, bbox_inches = 'tight')
     plt.close()
     return str1, scores, str2
@@ -2765,7 +2934,7 @@ def GradientBoosting_modify(a, b, c,d,e,path,csvname):
     plt.minorticks_on()
     plt.xlabel("True", fontproperties='Times New Roman', size=20)
     plt.ylabel("Prediction", fontproperties='Times New Roman', size=20)
-    plt.text(.05, .2, 'MAE = %.3f \nMSE =  %.3f \nR2 =  %.3f \n' % (MAE, MSE, R2), fontproperties='Times New Roman',
+    plt.gcf().text(0.0, -0.3, 'MAE = %.3f \nMSE =  %.3f \nR2 =  %.3f \n' % (MAE, MSE, R2), fontproperties='Times New Roman',
              size=20, horizontalalignment='center')
     plt.savefig(path + '/GradientBoosting-modify.png', dpi=300, bbox_inches='tight')
     plt.close()
@@ -2849,7 +3018,7 @@ def GradientBoosting_modify(a, b, c,d,e,path,csvname):
     plt.minorticks_on()
     plt.xlabel("True", fontproperties='Times New Roman', size=20)
     plt.ylabel("Prediction", fontproperties='Times New Roman', size=20)
-    plt.text(.05, .2, 'MAE = %.3f \nMSE =  %.3f \nR2 =  %.3f \n' % (MAE_train, MSE_train, R2_train),
+    plt.gcf().text(0.0, -0.3, 'MAE = %.3f \nMSE =  %.3f \nR2 =  %.3f \n' % (MAE_train, MSE_train, R2_train),
              fontproperties='Times New Roman', size=20, horizontalalignment='center')
     plt.savefig(path + '/GradientBoosting-modify-train.png', dpi=300, bbox_inches='tight')
     plt.close()
@@ -2923,7 +3092,7 @@ def ExtraTree_default(path):
     plt.minorticks_on()
     plt.xlabel("True", fontproperties = 'Times New Roman', size = 20)
     plt.ylabel("Prediction", fontproperties = 'Times New Roman', size = 20)
-    plt.text(.05, .2, 'MAE = %.3f \nMSE =  %.3f \nR2 =  %.3f \n' % (MAE, MSE, R2), fontproperties = 'Times New Roman', size = 20, horizontalalignment='center')
+    plt.gcf().text(0.0, -0.3, 'MAE = %.3f \nMSE =  %.3f \nR2 =  %.3f \n' % (MAE, MSE, R2), fontproperties = 'Times New Roman', size = 20, horizontalalignment='center')
     plt.savefig(path+'/ExtraTree-default.png', dpi=300, bbox_inches = 'tight')
     plt.close()
     # 使用KFold交叉验证建模
@@ -3006,7 +3175,7 @@ def ExtraTree_default(path):
     plt.minorticks_on()
     plt.xlabel("True", fontproperties = 'Times New Roman', size = 20)
     plt.ylabel("Prediction", fontproperties = 'Times New Roman', size = 20)
-    plt.text(.05, .2, 'MAE = %.3f \nMSE =  %.3f \nR2 =  %.3f \n' % (MAE_train, MSE_train, R2_train), fontproperties = 'Times New Roman', size = 20, horizontalalignment='center')
+    plt.gcf().text(0.0, -0.3, 'MAE = %.3f \nMSE =  %.3f \nR2 =  %.3f \n' % (MAE_train, MSE_train, R2_train), fontproperties = 'Times New Roman', size = 20, horizontalalignment='center')
     plt.savefig(path+'/ExtraTree-modify-train.png', dpi=300, bbox_inches = 'tight')
     plt.close()
     return str1, scores, str2
@@ -3102,7 +3271,7 @@ def ExtraTree_modify(a, b, c,e,path,csvname):
     plt.minorticks_on()
     plt.xlabel("True", fontproperties='Times New Roman', size=20)
     plt.ylabel("Prediction", fontproperties='Times New Roman', size=20)
-    plt.text(.05, .2, 'MAE = %.3f \nMSE =  %.3f \nR2 =  %.3f \n' % (MAE, MSE, R2), fontproperties='Times New Roman',
+    plt.gcf().text(0.0, -0.3, 'MAE = %.3f \nMSE =  %.3f \nR2 =  %.3f \n' % (MAE, MSE, R2), fontproperties='Times New Roman',
              size=20, horizontalalignment='center')
     plt.savefig(path + '/ExtraTree-modify.png', dpi=300, bbox_inches='tight')
     plt.close()
@@ -3186,7 +3355,7 @@ def ExtraTree_modify(a, b, c,e,path,csvname):
     plt.minorticks_on()
     plt.xlabel("True", fontproperties='Times New Roman', size=20)
     plt.ylabel("Prediction", fontproperties='Times New Roman', size=20)
-    plt.text(.05, .2, 'MAE = %.3f \nMSE =  %.3f \nR2 =  %.3f \n' % (MAE_train, MSE_train, R2_train),
+    plt.gcf().text(0.0, -0.3, 'MAE = %.3f \nMSE =  %.3f \nR2 =  %.3f \n' % (MAE_train, MSE_train, R2_train),
              fontproperties='Times New Roman', size=20, horizontalalignment='center')
     plt.savefig(path + '/ExtraTree-modify-train.png', dpi=300, bbox_inches='tight')
     plt.close()
@@ -3261,7 +3430,7 @@ def svm_default(path):
     plt.minorticks_on()
     plt.xlabel("True", fontproperties = 'Times New Roman', size = 20)
     plt.ylabel("Prediction", fontproperties = 'Times New Roman', size = 20)
-    plt.text(.05, .2, 'MAE = %.3f \nMSE =  %.3f \nR2 =  %.3f \n' % (MAE, MSE, R2), fontproperties = 'Times New Roman', size = 20, horizontalalignment='center')
+    plt.gcf().text(0.0, -0.3, 'MAE = %.3f \nMSE =  %.3f \nR2 =  %.3f \n' % (MAE, MSE, R2), fontproperties = 'Times New Roman', size = 20, horizontalalignment='center')
     plt.savefig(path+'/svm-default.png', dpi=300, bbox_inches = 'tight')
     plt.close()
     # 使用KFold交叉验证建模
@@ -3344,7 +3513,7 @@ def svm_default(path):
     plt.minorticks_on()
     plt.xlabel("True", fontproperties = 'Times New Roman', size = 20)
     plt.ylabel("Prediction", fontproperties = 'Times New Roman', size = 20)
-    plt.text(.05, .2, 'MAE = %.3f \nMSE =  %.3f \nR2 =  %.3f \n' % (MAE_train, MSE_train, R2_train), fontproperties = 'Times New Roman', size = 20, horizontalalignment='center')
+    plt.gcf().text(0.0, -0.3, 'MAE = %.3f \nMSE =  %.3f \nR2 =  %.3f \n' % (MAE_train, MSE_train, R2_train), fontproperties = 'Times New Roman', size = 20, horizontalalignment='center')
     plt.savefig(path+'/svm-default-train.png', dpi=300, bbox_inches = 'tight')
     plt.close()
     return str1, scores, str2
@@ -3420,7 +3589,7 @@ def Svm_modify(a, b,path,csvname):
     plt.minorticks_on()
     plt.xlabel("True", fontproperties = 'Times New Roman', size = 20)
     plt.ylabel("Prediction", fontproperties = 'Times New Roman', size = 20)
-    plt.text(.05, .2, 'MAE = %.3f \nMSE =  %.3f \nR2 =  %.3f \n' % (MAE, MSE, R2), fontproperties = 'Times New Roman', size = 20, horizontalalignment='center')
+    plt.gcf().text(0.0, -0.3, 'MAE = %.3f \nMSE =  %.3f \nR2 =  %.3f \n' % (MAE, MSE, R2), fontproperties = 'Times New Roman', size = 20, horizontalalignment='center')
     plt.savefig(path+'/Svm-modify.png', dpi=300, bbox_inches = 'tight')
     plt.close()
     # 使用KFold交叉验证建模
@@ -3503,7 +3672,7 @@ def Svm_modify(a, b,path,csvname):
     plt.minorticks_on()
     plt.xlabel("True", fontproperties = 'Times New Roman', size = 20)
     plt.ylabel("Prediction", fontproperties = 'Times New Roman', size = 20)
-    plt.text(.05, .2, 'MAE = %.3f \nMSE =  %.3f \nR2 =  %.3f \n' % (MAE_train, MSE_train, R2_train), fontproperties = 'Times New Roman', size = 20, horizontalalignment='center')
+    plt.gcf().text(0.0, -0.3, 'MAE = %.3f \nMSE =  %.3f \nR2 =  %.3f \n' % (MAE_train, MSE_train, R2_train), fontproperties = 'Times New Roman', size = 20, horizontalalignment='center')
     plt.savefig(path+'/Svm-modify-train.png', dpi=300, bbox_inches = 'tight')
     plt.close()
     import pickle
@@ -3578,7 +3747,7 @@ def Svm_modify(a, b,path,csvname):
 #     plt.minorticks_on()
 #     plt.xlabel("True", fontproperties = 'Times New Roman', size = 20)
 #     plt.ylabel("Prediction", fontproperties = 'Times New Roman', size = 20)
-#     plt.text(.05, .2, 'MAE = %.3f \nMSE =  %.3f \nR2 =  %.3f \n' % (MAE, MSE, R2), fontproperties = 'Times New Roman', size = 20, horizontalalignment='center')
+#     plt.gcf().text(0.0, -0.3, 'MAE = %.3f \nMSE =  %.3f \nR2 =  %.3f \n' % (MAE, MSE, R2), fontproperties = 'Times New Roman', size = 20, horizontalalignment='center')
 #     plt.savefig(path+'/DecisionTree-default.png', dpi=300, bbox_inches = 'tight')
 #     plt.close()
 #     # 使用KFold交叉验证建模
@@ -3661,7 +3830,7 @@ def Svm_modify(a, b,path,csvname):
 #     plt.minorticks_on()
 #     plt.xlabel("True", fontproperties = 'Times New Roman', size = 20)
 #     plt.ylabel("Prediction", fontproperties = 'Times New Roman', size = 20)
-#     plt.text(.05, .2, 'MAE = %.3f \nMSE =  %.3f \nR2 =  %.3f \n' % (MAE_train, MSE_train, R2_train), fontproperties = 'Times New Roman', size = 20, horizontalalignment='center')
+#     plt.gcf().text(0.0, -0.3, 'MAE = %.3f \nMSE =  %.3f \nR2 =  %.3f \n' % (MAE_train, MSE_train, R2_train), fontproperties = 'Times New Roman', size = 20, horizontalalignment='center')
 #     plt.savefig(path+'/DecisionTree-default-train.png', dpi=300, bbox_inches = 'tight')
 #     plt.close()
 #     return str1, scores, str2
@@ -3760,7 +3929,7 @@ def DecisionTree_modify(a, b,c,d,e,f,path,csvname):
     plt.minorticks_on()
     plt.xlabel("True", fontproperties = 'Times New Roman', size = 20)
     plt.ylabel("Prediction", fontproperties = 'Times New Roman', size = 20)
-    plt.text(.05, .2, 'MAE = %.3f \nMSE =  %.3f \nR2 =  %.3f \n' % (MAE, MSE, R2), fontproperties = 'Times New Roman', size = 20, horizontalalignment='center')
+    plt.gcf().text(0.0, -0.3, 'MAE = %.3f \nMSE =  %.3f \nR2 =  %.3f \n' % (MAE, MSE, R2), fontproperties = 'Times New Roman', size = 20, horizontalalignment='center')
     plt.savefig(path+'/DecisionTree-modify.png', dpi=300, bbox_inches = 'tight')
     plt.close()
     # 使用KFold交叉验证建模
@@ -3843,7 +4012,7 @@ def DecisionTree_modify(a, b,c,d,e,f,path,csvname):
     plt.minorticks_on()
     plt.xlabel("True", fontproperties = 'Times New Roman', size = 20)
     plt.ylabel("Prediction", fontproperties = 'Times New Roman', size = 20)
-    plt.text(.05, .2, 'MAE = %.3f \nMSE =  %.3f \nR2 =  %.3f \n' % (MAE_train, MSE_train, R2_train), fontproperties = 'Times New Roman', size = 20, horizontalalignment='center')
+    plt.gcf().text(0.0, -0.3, 'MAE = %.3f \nMSE =  %.3f \nR2 =  %.3f \n' % (MAE_train, MSE_train, R2_train), fontproperties = 'Times New Roman', size = 20, horizontalalignment='center')
     plt.savefig(path+'/DecisionTree-modify-train.png', dpi=300, bbox_inches = 'tight')
     plt.close()
     import pickle
@@ -3922,7 +4091,7 @@ def LinearRegression_default(path):
     plt.minorticks_on()
     plt.xlabel("True", fontproperties = 'Times New Roman', size = 20)
     plt.ylabel("Prediction", fontproperties = 'Times New Roman', size = 20)
-    plt.text(.05, .2, 'MAE = %.3f \nMSE =  %.3f \nR2 =  %.3f \n' % (MAE, MSE, R2), fontproperties = 'Times New Roman', size = 20, horizontalalignment='center')
+    plt.gcf().text(0.0, -0.3, 'MAE = %.3f \nMSE =  %.3f \nR2 =  %.3f \n' % (MAE, MSE, R2), fontproperties = 'Times New Roman', size = 20, horizontalalignment='center')
     plt.savefig(path+'/LinearRegression-default.png', dpi=300, bbox_inches = 'tight')
     plt.close()
     # 使用KFold交叉验证建模
@@ -4005,7 +4174,7 @@ def LinearRegression_default(path):
     plt.minorticks_on()
     plt.xlabel("True", fontproperties = 'Times New Roman', size = 20)
     plt.ylabel("Prediction", fontproperties = 'Times New Roman', size = 20)
-    plt.text(.05, .2, 'MAE = %.3f \nMSE =  %.3f \nR2 =  %.3f \n' % (MAE_train, MSE_train, R2_train), fontproperties = 'Times New Roman', size = 20, horizontalalignment='center')
+    plt.gcf().text(0.0, -0.3, 'MAE = %.3f \nMSE =  %.3f \nR2 =  %.3f \n' % (MAE_train, MSE_train, R2_train), fontproperties = 'Times New Roman', size = 20, horizontalalignment='center')
     plt.savefig(path+'/LinearRegression-default-train.png', dpi=300, bbox_inches = 'tight')
     plt.close()
     return str1, scores, str2
@@ -4101,7 +4270,7 @@ def LinearRegression_modify(a, b,c,d,path,csvname):
     plt.minorticks_on()
     plt.xlabel("True", fontproperties = 'Times New Roman', size = 20)
     plt.ylabel("Prediction", fontproperties = 'Times New Roman', size = 20)
-    plt.text(.05, .2, 'MAE = %.3f \nMSE =  %.3f \nR2 =  %.3f \n' % (MAE, MSE, R2), fontproperties = 'Times New Roman', size = 20, horizontalalignment='center')
+    plt.gcf().text(0.0, -0.3, 'MAE = %.3f \nMSE =  %.3f \nR2 =  %.3f \n' % (MAE, MSE, R2), fontproperties = 'Times New Roman', size = 20, horizontalalignment='center')
     plt.savefig(path+'/LinearRegression-modify.png', dpi=300, bbox_inches = 'tight')
     plt.close()
     # 使用KFold交叉验证建模
@@ -4184,7 +4353,7 @@ def LinearRegression_modify(a, b,c,d,path,csvname):
     plt.minorticks_on()
     plt.xlabel("True", fontproperties = 'Times New Roman', size = 20)
     plt.ylabel("Prediction", fontproperties = 'Times New Roman', size = 20)
-    plt.text(.05, .2, 'MAE = %.3f \nMSE =  %.3f \nR2 =  %.3f \n' % (MAE_train, MSE_train, R2_train), fontproperties = 'Times New Roman', size = 20, horizontalalignment='center')
+    plt.gcf().text(0.0, -0.3, 'MAE = %.3f \nMSE =  %.3f \nR2 =  %.3f \n' % (MAE_train, MSE_train, R2_train), fontproperties = 'Times New Roman', size = 20, horizontalalignment='center')
     plt.savefig(path+'/LinearRegression-modify-train.png', dpi=300, bbox_inches = 'tight')
     plt.close()
     import pickle
@@ -4258,7 +4427,7 @@ def Ridge_default(path):
     plt.minorticks_on()
     plt.xlabel("True", fontproperties = 'Times New Roman', size = 20)
     plt.ylabel("Prediction", fontproperties = 'Times New Roman', size = 20)
-    plt.text(.05, .2, 'MAE = %.3f \nMSE =  %.3f \nR2 =  %.3f \n' % (MAE, MSE, R2), fontproperties = 'Times New Roman', size = 20, horizontalalignment='center')
+    plt.gcf().text(0.0, -0.3, 'MAE = %.3f \nMSE =  %.3f \nR2 =  %.3f \n' % (MAE, MSE, R2), fontproperties = 'Times New Roman', size = 20, horizontalalignment='center')
     plt.savefig(path+'/Ridge-default.png', dpi=300, bbox_inches = 'tight')
     plt.close()
     # 使用KFold交叉验证建模
@@ -4341,7 +4510,7 @@ def Ridge_default(path):
     plt.minorticks_on()
     plt.xlabel("True", fontproperties = 'Times New Roman', size = 20)
     plt.ylabel("Prediction", fontproperties = 'Times New Roman', size = 20)
-    plt.text(.05, .2, 'MAE = %.3f \nMSE =  %.3f \nR2 =  %.3f \n' % (MAE_train, MSE_train, R2_train), fontproperties = 'Times New Roman', size = 20, horizontalalignment='center')
+    plt.gcf().text(0.0, -0.3, 'MAE = %.3f \nMSE =  %.3f \nR2 =  %.3f \n' % (MAE_train, MSE_train, R2_train), fontproperties = 'Times New Roman', size = 20, horizontalalignment='center')
     plt.savefig(path+'/Ridge-default-train.png', dpi=300, bbox_inches = 'tight')
     plt.close()
     return str1, scores, str2
@@ -4433,7 +4602,7 @@ def Ridge_modify(a, b,c,d,e,path,csvname):
     plt.minorticks_on()
     plt.xlabel("True", fontproperties = 'Times New Roman', size = 20)
     plt.ylabel("Prediction", fontproperties = 'Times New Roman', size = 20)
-    plt.text(.05, .2, 'MAE = %.3f \nMSE =  %.3f \nR2 =  %.3f \n' % (MAE, MSE, R2), fontproperties = 'Times New Roman', size = 20, horizontalalignment='center')
+    plt.gcf().text(0.0, -0.3, 'MAE = %.3f \nMSE =  %.3f \nR2 =  %.3f \n' % (MAE, MSE, R2), fontproperties = 'Times New Roman', size = 20, horizontalalignment='center')
     plt.savefig(path+'/Ridge-modify.png', dpi=300, bbox_inches = 'tight')
     plt.close()
     # 使用KFold交叉验证建模
@@ -4516,7 +4685,7 @@ def Ridge_modify(a, b,c,d,e,path,csvname):
     plt.minorticks_on()
     plt.xlabel("True", fontproperties = 'Times New Roman', size = 20)
     plt.ylabel("Prediction", fontproperties = 'Times New Roman', size = 20)
-    plt.text(.05, .2, 'MAE = %.3f \nMSE =  %.3f \nR2 =  %.3f \n' % (MAE_train, MSE_train, R2_train), fontproperties = 'Times New Roman', size = 20, horizontalalignment='center')
+    plt.gcf().text(0.0, -0.3, 'MAE = %.3f \nMSE =  %.3f \nR2 =  %.3f \n' % (MAE_train, MSE_train, R2_train), fontproperties = 'Times New Roman', size = 20, horizontalalignment='center')
     plt.savefig(path+'/Ridge-modify-train.png', dpi=300, bbox_inches = 'tight')
     plt.close()
     import pickle
@@ -4590,7 +4759,7 @@ def MLP_default(path):
     plt.minorticks_on()
     plt.xlabel("True", fontproperties = 'Times New Roman', size = 20)
     plt.ylabel("Prediction", fontproperties = 'Times New Roman', size = 20)
-    plt.text(.05, .2, 'MAE = %.3f \nMSE =  %.3f \nR2 =  %.3f \n' % (MAE, MSE, R2), fontproperties = 'Times New Roman', size = 20, horizontalalignment='center')
+    plt.gcf().text(0.0, -0.3, 'MAE = %.3f \nMSE =  %.3f \nR2 =  %.3f \n' % (MAE, MSE, R2), fontproperties = 'Times New Roman', size = 20, horizontalalignment='center')
     plt.savefig(path+'/MLP-default.png', dpi=300, bbox_inches = 'tight')
     plt.close()
     # 使用KFold交叉验证建模
@@ -4673,7 +4842,7 @@ def MLP_default(path):
     plt.minorticks_on()
     plt.xlabel("True", fontproperties = 'Times New Roman', size = 20)
     plt.ylabel("Prediction", fontproperties = 'Times New Roman', size = 20)
-    plt.text(.05, .2, 'MAE = %.3f \nMSE =  %.3f \nR2 =  %.3f \n' % (MAE_train, MSE_train, R2_train), fontproperties = 'Times New Roman', size = 20, horizontalalignment='center')
+    plt.gcf().text(0.0, -0.3, 'MAE = %.3f \nMSE =  %.3f \nR2 =  %.3f \n' % (MAE_train, MSE_train, R2_train), fontproperties = 'Times New Roman', size = 20, horizontalalignment='center')
     plt.savefig(path+'/MLP-default-train.png', dpi=300, bbox_inches = 'tight')
     plt.close()
     return str1, scores, str2
@@ -4752,7 +4921,7 @@ def MLP_modify(l,a,m,ha,hb,path,csvname):
     plt.minorticks_on()
     plt.xlabel("True", fontproperties = 'Times New Roman', size = 20)
     plt.ylabel("Prediction", fontproperties = 'Times New Roman', size = 20)
-    plt.text(.05, .2, 'MAE = %.3f \nMSE =  %.3f \nR2 =  %.3f \n' % (MAE, MSE, R2), fontproperties = 'Times New Roman', size = 20, horizontalalignment='center')
+    plt.gcf().text(0.0, -0.3, 'MAE = %.3f \nMSE =  %.3f \nR2 =  %.3f \n' % (MAE, MSE, R2), fontproperties = 'Times New Roman', size = 20, horizontalalignment='center')
     plt.savefig(path+'/MLP_modify.png', dpi=300, bbox_inches = 'tight')
     plt.close()
     # 使用KFold交叉验证建模
@@ -4835,7 +5004,7 @@ def MLP_modify(l,a,m,ha,hb,path,csvname):
     plt.minorticks_on()
     plt.xlabel("True", fontproperties = 'Times New Roman', size = 20)
     plt.ylabel("Prediction", fontproperties = 'Times New Roman', size = 20)
-    plt.text(.05, .2, 'MAE = %.3f \nMSE =  %.3f \nR2 =  %.3f \n' % (MAE_train, MSE_train, R2_train), fontproperties = 'Times New Roman', size = 20, horizontalalignment='center')
+    plt.gcf().text(0.0, -0.3, 'MAE = %.3f \nMSE =  %.3f \nR2 =  %.3f \n' % (MAE_train, MSE_train, R2_train), fontproperties = 'Times New Roman', size = 20, horizontalalignment='center')
     plt.savefig(path+'/MLP_modify-train.png', dpi=300, bbox_inches = 'tight')
     plt.close()
     import pickle
@@ -4912,9 +5081,9 @@ def randomforest_Classifier(a, b, c, d, e, f,path,csvName):
     print(f"Best parameters: {grid_search.best_params_}")
     print(f"Best score: {grid_search.best_score_}")
     str1 = f"Best parameters: {grid_search.best_params_}" + "\n" + f"Best score: {grid_search.best_score_}"
-    class_weights = {0: 1, 1: 5}
+
     clf = RandomForestClassifier(max_depth=a, random_state=b, min_samples_leaf=c, max_features=d, min_samples_split=e,
-                                 n_estimators=f,class_weight=class_weights)
+                                 n_estimators=f)
     # clf.fit(X_train, y_train)
     Classified_two_RF = clf.fit(X_train, y_train)
 
@@ -5102,9 +5271,9 @@ def extratrees_classifier(a, b, c, d, e, f,path,csvName):
     else:
         max_features1 = e
 
-    class_weights = {0: 1, 1: 3}
+
     clf = ExtraTreesClassifier(n_estimators=a, max_depth=max_depth1, min_samples_split=c, random_state=d, max_features=max_features1,
-                               min_samples_leaf=f,class_weight=class_weights)
+                               min_samples_leaf=f)
 
     Classified_two_ExtraTrees = clf.fit(X_train, y_train)
     # 画出ROC曲线 ExtraTrees test
@@ -5839,46 +6008,6 @@ def SVM_classifier(a, b, c, d,e,path,csvName):
 
 
 
-
-
-
-# 11 基于给定模型预测
-def model_modify_predict(csvName,path,model_path):
-    """import pandas as pd
-    Predict_features = pd.DataFrame(pd.read_csv(csvName))
-    featureData1 = Predict_features.values[:, :]
-    # StandardScaler.fit(featureData1)
-    # featureData2 = StandardScaler.transform(featureData1)
-    # print(featureData2)
-    predict = clf_xgboost_modify.predict(featureData1)
-    predict_Ef = pd.DataFrame(predict)
-    predict_Ef.to_csv(path + "/Predict_xgboost_dataset_modify.csv")"""
-
-    import pickle
-    import os
-    import pandas as pd
-    import numpy as np
-    import csv
-    from sklearn import preprocessing
-    loaded_model = pickle.load(open(model_path, "rb"))
-    data = pd.DataFrame(pd.read_csv(csvName))
-    X = pd.DataFrame(pd.read_csv(csvName)).values[:, :]
-
-    # 特征缩放，映射到0和1之间的范围
-    for i in range(X.shape[1]):
-        X[:, [i]] = preprocessing.MinMaxScaler().fit_transform(X[:, [i]])
-    target = loaded_model.predict(X)
-    print(loaded_model.predict(X))
-    file_name = "prediction_output("+os.path.basename(model_path)[:-4]+").csv"
-
-    tg = pd.DataFrame(target,columns=["Output"])
-
-    prediction = pd.concat([data, tg], axis=1)
-    prediction.to_csv(path +"/"+ file_name,index=None)
-    return path +"/"+ file_name
-
-
-
 # 用户导入虚拟数据集(只有输入的smiles和化学式，无target)，自动生成输出结果(实际有2in1特征)
 def virtual_two_in_one(path,csvpath):
     import pandas as pd
@@ -5914,10 +6043,10 @@ def virtual_two_in_one(path,csvpath):
 
     # 用法示例
     file_path = csvpath
-    suffixes = ['InorganicFormula', 'OrganicSmiles']
+    suffixes = ['Formula', 'Smiles']
     selected_columns = extract_and_store_columns(file_path, suffixes)
 
-    original_data = pd.DataFrame(pd.read_csv(path + '/InorganicFormula_selected_columns.csv'))
+    original_data = pd.DataFrame(pd.read_csv(path + '/Formula_selected_columns.csv'))
 
     import pandas as pd
 
@@ -5987,13 +6116,13 @@ def virtual_two_in_one(path,csvpath):
         element_fraction_features = element_fraction_features.iloc[:, 2:-1]  # 选择感兴趣的列
 
         # 添加前缀
-        prefix_orbital = f'inorganic_formula_{i}_orbital_'
+        prefix_orbital = f'_formula_{i}_orbital_'
         orbital_features = orbital_features.add_prefix(prefix_orbital)
 
-        prefix_element_property = f'inorganic_formula_{i}_element_property_'
+        prefix_element_property = f'_formula_{i}_element_property_'
         element_property_features = element_property_features.add_prefix(prefix_element_property)
 
-        prefix_element_fraction = f'inorganic_formula_{i}_element_fraction_'
+        prefix_element_fraction = f'_formula_{i}_element_fraction_'
         element_fraction_features = element_fraction_features.add_prefix(prefix_element_fraction)
 
         # 合并特征转换后的数据集
@@ -6010,7 +6139,7 @@ def virtual_two_in_one(path,csvpath):
     print(merged_result)
 
     # 有机部分
-    original_data2 = pd.DataFrame(pd.read_csv(path + '/OrganicSmiles_selected_columns.csv'))
+    original_data2 = pd.DataFrame(pd.read_csv(path + '/Smiles_selected_columns.csv'))
 
     new_datasets2 = {}
 
@@ -6073,10 +6202,177 @@ def virtual_two_in_one(path,csvpath):
     all_merged_data = pd.concat([merged_result, merged_rdkit_result, unselected_columns], axis=1)
 
     # 将合并后的结果保存为 CSV 文件
-    all_merged_data.to_csv(path + '/test_train_dataset.csv', index=False)
+    all_merged_data.to_csv(path + '/train_test_dataset.csv', index=False)
 
     selected_columns = all_merged_data.loc[:, s_rfe.columns]
     selected_columns.to_csv(path+'/virtual_generate_final.csv', index=False)
+
+
+
+
+def virtual_Multicolumn_Smiles(path,csvpath):
+    import pandas as pd
+    def select_columns_by_suffix(df, suffix):
+        filtered_columns = df.filter(regex=f'{suffix}$')
+        return filtered_columns
+
+    def extract_and_store_columns(csv_file, suffixes):
+        # 读取 CSV 文件
+        df = pd.read_csv(csv_file)
+
+        selected_columns = {}
+        for suffix in suffixes:
+            selected_columns[suffix] = select_columns_by_suffix(df, suffix)
+            print('********************************************************************************')
+            print(f"Columns ending with '{suffix}':")
+            print('********************************************************************************')
+            print(selected_columns[suffix])
+            # 如果需要保存到新的DataFrame中，取消注释下一行
+            # global df_selected
+            df_selected = pd.concat(selected_columns, axis=1)
+            # df_combined = pd.concat(selected_columns.values(), axis=1)
+            # df_combined.to_csv('selected_columns.csv', index=False)
+            selected_columns[suffix].to_csv(path + '/' + f'{suffix}_selected_columns.csv', index=False)
+
+        # 获取未被选中的列
+        unselected_columns = df.drop(columns=[col for cols in selected_columns.values() for col in cols.columns])
+
+        # 保存未被选中的列到 CSV 文件
+        unselected_columns.to_csv(path + '/' + 'unselected_columns.csv', index=False)
+
+        return selected_columns
+
+    # 用法示例
+    file_path = csvpath
+    suffixes = ['Smiles']
+    selected_columns = extract_and_store_columns(file_path, suffixes)
+
+    original_data = pd.DataFrame(pd.read_csv(path + '/Smiles_selected_columns.csv'))
+
+    import pandas as pd
+
+    # 假设 original_data 是您的原始数据集
+    # 创建一个空字典，用于存储新的数据集
+    new_datasets = {}
+
+    # 遍历原始数据集的每一列
+    for col_name in original_data.columns:
+        # 创建新的数据集，将当前列命名为 'Name'
+        new_dataset = pd.DataFrame({'Name': original_data[col_name]})
+
+        # 将新数据集存储在字典中，字典的键是 'data1'，'data2'，依此类推
+        new_datasets['data' + str(len(new_datasets) + 1)] = new_dataset
+
+    # 打印或使用新的数据集
+    for key, value in new_datasets.items():
+        print(f"{key}:\n{value}\n")
+
+
+    # 有机部分
+    original_data2 = pd.DataFrame(pd.read_csv(path + '/Smiles_selected_columns.csv'))
+
+    new_datasets2 = {}
+
+    # 遍历原始数据集的每一列
+    for col_name in original_data2.columns:
+        # 创建新的数据集，将当前列命名为 'Name'
+        new_dataset2 = pd.DataFrame({'Name': original_data2[col_name]})
+
+        # 将新数据集存储在字典中，字典的键是 'organic_data1'，'organic_data2'，依此类推
+        new_datasets2['organic_data' + str(len(new_datasets2) + 1)] = new_dataset2
+
+    # 打印或使用新的数据集
+    for key, value in new_datasets2.items():
+        print(f"{key}:\n{value}\n")
+
+    import pandas as pd
+    import numpy as np
+    from rdkit import Chem
+    from rdkit.Chem import AllChem
+
+    # 假设 new_datasets2 是包含拆分数据集的字典，如 'organic_data1', 'organic_data2', ...
+    # 每个数据集中应该有 'Name' 列
+
+    # 用于存储 RDKit 特征化后的数据集
+    rdkit_datasets = {}
+
+    # 遍历拆分的数据集
+    for key, dataset in new_datasets2.items():
+        # 特征化 RDKit
+        rdkit_features = dataset['Name'].apply(
+            lambda x: AllChem.GetMorganFingerprintAsBitVect(Chem.MolFromSmiles(x), 2))
+
+        # 将 RDKit 指纹转换为 DataFrame
+        rdkit_features_df = pd.DataFrame(
+            list(rdkit_features.apply(lambda x: np.frombuffer(x.ToBinary(), dtype=np.uint8))))
+
+        # 添加前缀
+        prefix_rdkit = f'{key}_rdkit_'
+        rdkit_features_df = rdkit_features_df.add_prefix(prefix_rdkit)
+
+        # 存储特征化后的数据集
+        rdkit_datasets[key] = rdkit_features_df
+
+    # 合并 RDKit 特征化后的数据集
+    merged_rdkit_result = pd.concat(rdkit_datasets.values(), axis=1)
+    merged_rdkit_result.fillna(0, inplace=True)
+    # 将合并后的结果保存为 CSV 文件
+    merged_rdkit_result.to_csv(path + '/merged_rdkit_result.csv', index=False)
+
+    # 打印或使用合并后的 RDKit 特征化结果
+    print(merged_rdkit_result)
+
+    unselected_columns = pd.DataFrame(pd.read_csv(path + '/unselected_columns.csv'))
+    # 合并前重置索引
+    merged_rdkit_result.reset_index(drop=True, inplace=True)
+    unselected_columns.reset_index(drop=True, inplace=True)
+
+    # 合并三个数据集
+    all_merged_data = pd.concat([merged_rdkit_result, unselected_columns], axis=1)
+
+    # 将合并后的结果保存为 CSV 文件
+    all_merged_data.to_csv(path + '/train_test_Multicolumn_Smiles_dataset.csv', index=False)
+
+    selected_columns = all_merged_data.loc[:, s_rfe.columns]
+    selected_columns.to_csv(path+'/virtual_generate_Multicolumn_Smiles_final.csv', index=False)
+
+
+# 11 基于给定模型预测
+def model_modify_predict(csvName,path,model_path):
+    """import pandas as pd
+    Predict_features = pd.DataFrame(pd.read_csv(csvName))
+    featureData1 = Predict_features.values[:, :]
+    # StandardScaler.fit(featureData1)
+    # featureData2 = StandardScaler.transform(featureData1)
+    # print(featureData2)
+    predict = clf_xgboost_modify.predict(featureData1)
+    predict_Ef = pd.DataFrame(predict)
+    predict_Ef.to_csv(path + "/Predict_xgboost_dataset_modify.csv")"""
+
+    import pickle
+    import os
+    import pandas as pd
+    import numpy as np
+    import csv
+    from sklearn import preprocessing
+    loaded_model = pickle.load(open(model_path, "rb"))
+    data = pd.DataFrame(pd.read_csv(csvName))
+    X = pd.DataFrame(pd.read_csv(csvName)).values[:, :]
+
+    # 特征缩放，映射到0和1之间的范围
+    for i in range(X.shape[1]):
+        X[:, [i]] = preprocessing.MinMaxScaler().fit_transform(X[:, [i]])
+    target = loaded_model.predict(X)
+    print(loaded_model.predict(X))
+    file_name = "prediction_output("+os.path.basename(model_path)[:-4]+").csv"
+
+    tg = pd.DataFrame(target,columns=["Output"])
+
+    prediction = pd.concat([data, tg], axis=1)
+    prediction.to_csv(path +"/"+ file_name,index=None)
+    return path +"/"+ file_name
+
+
 
 
 
@@ -6277,6 +6573,102 @@ def Visualization_for_classification(csvname,path,column_name):
         return False
 
 
+
+
+
+
+
+def gp_default(r_thresh):  ## 输入参数为皮尔森阈值 ：例如输入0.6后，大于0.6的才显示
+    import numpy as np
+    from sklearn import preprocessing
+    from gplearn import genetic
+    X = data.values[:,:-1]
+    y = data.values[:,-1]
+    for i in range(X.shape[1]):
+        X[:,[i]] = preprocessing.MinMaxScaler().fit_transform(X[:,[i]])
+    est_gp = genetic.SymbolicTransformer(population_size=1000,
+                               generations=91, stopping_criteria=0.01,
+                               p_crossover=0.8, p_subtree_mutation=0.05,
+                               p_hoist_mutation=0.05, p_point_mutation=0.05,
+                               max_samples=0.9, verbose=1,
+                               parsimony_coefficient=0.01, random_state=None,n_components=100)
+    V=est_gp.fit(X, y)
+    px=V.transform(X)
+    str1=""
+    for i in range(0,50):
+        pear=np.corrcoef(px[:,i], y)
+        pea=pear[0,1]
+        if pea>r_thresh:
+            print(pea,i,V[i])
+            str1=str1+str(pea)+"  "+str(i)+"  "+str(V[i])+"\n"
+    print('\n***************************')
+    for i in range(len(data.columns.values.tolist())):
+        print(i, data.columns.values.tolist()[i])
+    return str1,data
+
+## 9.2 更多运算符
+def gp_tan(r_thresh):
+    import numpy as np
+    from sklearn import preprocessing
+    from gplearn import genetic
+    X = data.values[:, :-1]
+    y = data.values[:, -1]
+    for i in range(X.shape[1]):
+        X[:, [i]] = preprocessing.MinMaxScaler().fit_transform(X[:, [i]])
+    function_set = ['add', 'sub', 'mul', 'div', 'log', 'sqrt', 'abs', 'neg','inv','sin','cos','tan', 'max', 'min']
+    est_gp = genetic.SymbolicTransformer(population_size=1000,
+                               generations=91, stopping_criteria=0.01,
+                               p_crossover=0.8, p_subtree_mutation=0.05,
+                               p_hoist_mutation=0.05, p_point_mutation=0.05,
+                               max_samples=0.9, verbose=1,function_set=function_set,
+                               parsimony_coefficient=0.01, random_state=None,n_components=100)
+    V=est_gp.fit(X, y)
+    px=V.transform(X)
+    str1 = ""
+    for i in range(0,50):
+        pear=np.corrcoef(px[:,i], y)
+        pea=pear[0,1]
+        if pea>r_thresh:
+            print(pea,i,V[i])
+            str1 = str1 + str(pea) + "  " + str(i) + "  " + str(V[i]) + "\n"
+    print('\n***************************')
+    for i in range(len(data.columns.values.tolist())):
+        print(i, data.columns.values.tolist()[i])
+    return str1, data
+
+## 9.3 tSR默认形式为(X[:,i]-X[:,j])*(X[:,k]-X[:,n])
+def tSR_default(r_thresh,path):
+    import numpy as np
+    X = data_rfe.values[:, :-1]
+    y = data_rfe.values[:, -1]
+    for i in range(0,(data_rfe.shape[1]-1)):
+         for j in range(0,(data_rfe.shape[1]-1)):
+              for k in range(0,(data_rfe.shape[1]-1)):
+                    for n in range(0,(data_rfe.shape[1]-1)):
+                         px=(X[:,i]-X[:,j])*(X[:,k]-X[:,n])
+                         per=np.corrcoef(px, y)
+                         if per[0,1]>r_thresh or per[0,1]< -1 * r_thresh:
+                              print(per[0,1])
+                              print(i,j,k,n)
+                              print(data_rfe.columns.values.tolist()[i],data_rfe.columns.values.tolist()[j],data_rfe.columns.values.tolist()[k],data_rfe.columns.values.tolist()[n])
+                              print('(',data_rfe.columns.values.tolist()[i],'-',data_rfe.columns.values.tolist()[j],')','*','(',data_rfe.columns.values.tolist()[k],'-',data_rfe.columns.values.tolist()[n],')')
+                              print('**********************************************')
+                              with open(path+"/data.txt", "a+") as f:
+                                  f.write(str(per[0,1])+"\n")
+                                  f.write(str(i)+" "+str(j)+" "+str(k)+" "+str(n)+"\n")
+                                  f.write(str(data_rfe.columns.values.tolist()[i])+" "
+                                          +str(data_rfe.columns.values.tolist()[j])+" "
+                                          +str(data_rfe.columns.values.tolist()[k])+" "
+                                          +str(data_rfe.columns.values.tolist()[n])+"\n")
+                                  f.write("( "+str(data_rfe.columns.values.tolist()[i]) + " - "
+                                          + str(data_rfe.columns.values.tolist()[j]) + " ) * ("
+                                          + str(data_rfe.columns.values.tolist()[k]) + " - "
+                                          + str(data_rfe.columns.values.tolist()[n]) + " )\n")
+                                  f.write('**********************************************\n')
+
+
+
+
 def Symbolicregression_Modelconstruction(csvname,path):
     import pickle
     import matplotlib.pyplot as plot
@@ -6322,7 +6714,7 @@ def Symbolicregression_Modelconstruction(csvname,path):
     feature_names = list(data.columns[:-1])
 
     # 定义符号回归模型，并使用训练数据拟合模型
-    reg = SymbolicRegressor(population_size=5000, generations=5, verbose=1,
+    reg = SymbolicRegressor(population_size=5000, generations=20, verbose=1,
                             function_set=['add', 'sub', 'mul', 'div', 'sqrt', 'log', 'abs', 'neg',
                                           'inv', 'max', 'min', 'sin', 'cos', 'tan'],
                             metric='mean absolute error', stopping_criteria=0.001,
@@ -6332,66 +6724,64 @@ def Symbolicregression_Modelconstruction(csvname,path):
     import pickle
     pickle.dump(Symbolic_Regression_Model, open(path + "/Symbolic_Regression_Model.dat", "wb"))
 
-
-
     from sklearn.metrics import mean_absolute_error
     # 预测测试数据
     y_pred = reg.predict(X_test)
     mae = mean_absolute_error(y_test, y_pred)
     print("MAE:", mae)
 
+    import matplotlib.pyplot as plt
+
+    # 绘制拟合图
+    # plt.scatter(X, y, color='blue', label='Data')
+    # plt.plot(X, model.predict(X), color='red', label='Fit')
+    # 获取拟合图中 x 和 y 轴的范围
+    # x_min, x_max = plt.xlim()
+    # y_min, y_max = plt.ylim()
+    # # 绘制对角线
+    # plt.plot([x_min, x_max], [y_min, y_max], color='green', label='Diagonal')
+    # # 设置图例
+    # plt.legend()
+    # # 设置对角线图的坐标范围与拟合图一致
+    # plt.xlim(x_min, x_max)
+    # plt.ylim(y_min, y_max)
+    # plt.show()
+    #
 
 
-    from sklearn.model_selection import learning_curve
 
-    # Compute the training and test scores
-    train_sizes, train_scores, test_scores = learning_curve(
-        reg, X_train, y_train, cv=5, n_jobs=-1, train_sizes=np.linspace(0.1, 1.0, 10),
-        scoring='neg_mean_absolute_error')
 
-    # Create the learning curve plot
-    fig, ax = plt.subplots(figsize=(10, 6))
-    plt.plot(train_sizes, np.mean(train_scores, axis=1), 'o-', color='r', label='Training score')
-    plt.plot(train_sizes, np.mean(test_scores, axis=1), 'o-', color='g', label='Testing score')
-    plt.xlabel('Training examples')
-    plt.ylabel('Score (MAE)')
-    plt.ylim((-1, 1))
-    plt.legend(loc='best')
-    plt.savefig(path + '/Learning curve.png', dpi=300, bbox_inches='tight')
+    plt.scatter(y_test, y_pred, alpha=0.5)
+    # 获取拟合图中 x 和 y 轴的范围
+    x_min, x_max = plt.xlim()
+    y_min, y_max = plt.ylim()
+    # 绘制对角线
+    plt.plot([x_min, x_max], [y_min, y_max], color='black', label='Diagonal')
+    # 设置对角线图的坐标范围与拟合图一致
+    plt.xlim(x_min, x_max)
+    plt.ylim(y_min, y_max)
+    plt.xlabel("True values")
+    plt.ylabel("Predictions")
+    plt.savefig(path + '/fitting.png', dpi=300, bbox_inches='tight')
+    plt.close()
+
+    plt.scatter(y_pred, y_test - y_pred, alpha=0.5)
+    plt.hlines(y=0, xmin=x_min, xmax=x_max, colors='r', linestyles='--')
+    plt.xlabel("Predictions")
+    plt.ylabel("Residuals")
+    plt.savefig(path + '/residue.png', dpi=300, bbox_inches='tight')
     plt.close()
 
 
+    import graphviz
+    dot_data = reg._program.export_graphviz()
+    graph = graphviz.Source(dot_data)
+    graph.render(path + '/tree', format="png")
 
 
-    # 绘制预测值和真实值的散点图
-    fig = plt.figure(dpi=300)
-    plt.scatter(y_test, y_pred)
-    plt.xlabel('True Values')
-    plt.ylabel('Predictions')
 
-    # 绘制一条参考线，x=y，表示预测值等于真实值的情况
-    plt.plot([plt.xlim()[0], plt.xlim()[1]], [plt.ylim()[0], plt.ylim()[1]], ls="--", c=".3")
-    plt.savefig(path + '/figure.png', dpi=300, bbox_inches='tight')
-    plt.close()
 
-    import sympy as sp
-    import pydot
 
-    expr = sp.simplify(str(reg._program))
-    dot = sp.dotprint(expr, format='pydot')
-    graph = pydot.graph_from_dot_data(dot)[0]
-    for node in graph.get_nodes():
-        if node.get_shape() == 'ellipse':  # 运算节点
-            node.set_style('filled')
-            node.set_fillcolor('#FFC0CB')  # 淡粉色
-        else:  # 叶节点
-            node.set_style('filled')
-            node.set_fillcolor('#ADD8E6')  # 浅蓝色
-
-    # 可视化符号表达式树
-    graph.write_png(path + '/expression_tree.png')
-
-    return mae
 
 def Symbolicclassification(csvname,path):
     import pickle
@@ -6435,27 +6825,29 @@ def Symbolicclassification(csvname,path):
         X_test[:, [i]] = preprocessing.MinMaxScaler().fit_transform(X_test[:, [i]])
 
     # 创建符号分类器
-    reg = SymbolicClassifier(population_size=5000, generations=30, tournament_size=20,
+    clf = SymbolicClassifier(population_size=5000, generations=20, tournament_size=20,
                              function_set=['add', 'sub', 'mul', 'div', 'sqrt', 'log', 'abs', 'neg',
                                            'inv', 'max', 'min', 'sin', 'cos', 'tan'],
                              stopping_criteria=0.0, const_range=(-1.0, 1.0), verbose=1)
-    reg.fit(X_train, y_train)
-    Symbolic_Classification_Model = reg.fit(X_train, y_train)
+    clf.fit(X_train, y_train)
+    Symbolic_Classification_Model = clf.fit(X_train, y_train)
     import pickle
-    pickle.dump(Symbolic_Classification_Model, open(path + "/Symbolic_Regression_Model.dat", "wb"))
+    pickle.dump(Symbolic_Classification_Model, open(path + "/Symbolic_classification_Model.dat", "wb"))
+
+    print(set(str(clf._program).split()))
 
     from sklearn.metrics import confusion_matrix, roc_curve, roc_auc_score
     import matplotlib.pyplot as plt
 
     # Prediction on test set
-    y_pred = reg.predict(X_test)
+    y_pred = clf.predict(X_test)
 
     # Confusion matrix
     cm = confusion_matrix(y_test, y_pred)
     print("Confusion Matrix:")
     print(cm)
 
-    plt.imshow(cm, cmap="Blues")
+    plt.imshow(cm, cmap="coolwarm")
     plt.title("Confusion Matrix")
     plt.colorbar()
     plt.xlabel("Predicted")
@@ -6466,8 +6858,7 @@ def Symbolicclassification(csvname,path):
     # Adding text to the confusion matrix cells with larger font size
     for i in range(len(set(y))):
         for j in range(len(set(y))):
-            plt.text(j, i, cm[i, j], ha='center', va='center', color='red', fontsize=14)
-
+            plt.text(j, i, cm[i, j], ha='center', va='center', color='black', fontsize=14)
     plt.savefig(path + '/test_confusion.png', dpi=300, bbox_inches='tight')
     plt.close()
 
@@ -6475,7 +6866,7 @@ def Symbolicclassification(csvname,path):
     import matplotlib.pyplot as plt
 
     # Prediction on test set
-    y_pred = reg.predict(X_train)
+    y_pred = clf.predict(X_train)
 
     # Confusion matrix
     cm = confusion_matrix(y_train, y_pred)
@@ -6498,7 +6889,7 @@ def Symbolicclassification(csvname,path):
     plt.close()
 
     # ROC Curve
-    y_probs = reg.predict_proba(X_test)[:, 1]
+    y_probs = clf.predict_proba(X_test)[:, 1]
     fpr, tpr, thresholds = roc_curve(y_test, y_probs)
 
     # Plotting ROC Curve
@@ -6511,14 +6902,12 @@ def Symbolicclassification(csvname,path):
     plt.savefig(path + '/test_ROC.png', dpi=300, bbox_inches='tight')
     plt.close()
 
-
     # Accuracy
-    accuracy = reg.score(X_test, y_test)
-    str1="Test_ROC_Accuracy:"+str(accuracy)
+    accuracy = clf.score(X_test, y_test)
     print("Accuracy:", accuracy)
 
     # ROC Curve
-    y_probs = reg.predict_proba(X_train)[:, 1]
+    y_probs = clf.predict_proba(X_train)[:, 1]
     fpr, tpr, thresholds = roc_curve(y_train, y_probs)
 
     # Plotting ROC Curve
@@ -6528,16 +6917,125 @@ def Symbolicclassification(csvname,path):
     plt.ylabel('True Positive Rate')
     plt.title('ROC Curve')
     plt.legend()
-
     plt.savefig(path + '/train_ROC.png', dpi=300, bbox_inches='tight')
     plt.close()
 
     # Accuracy
-    accuracy = reg.score(X_train, y_train)
-    str2 = "Train_ROC_Accuracy:" + str(accuracy)
+    accuracy = clf.score(X_train, y_train)
     print("Accuracy:", accuracy)
 
-    return str1,str2
+    # import graphviz
+    # dot_data = clf._program.export_graphviz()
+    # graph = graphviz.Source(dot_data)
+    # graph
+    from sklearn.tree import export_graphviz
+    from io import StringIO
+    from IPython.display import Image
+    import graphviz
+    dot_data = clf._program.export_graphviz()
+    graph = graphviz.Source(dot_data)
+    graph.render(path + '/tree', format="png")
+    # graph.render(output_path + "graph", format="png")
+    # graph.write_png('tree_graph.png')
+
+    # from IPython.display import Image
+    # Image(filename='tree.png')
+
+
+    # from sklearn.metrics import confusion_matrix, roc_curve, roc_auc_score
+    # import matplotlib.pyplot as plt
+    #
+    # # Prediction on test set
+    # y_pred = reg.predict(X_test)
+    #
+    # # Confusion matrix
+    # cm = confusion_matrix(y_test, y_pred)
+    # print("Confusion Matrix:")
+    # print(cm)
+    #
+    # plt.imshow(cm, cmap="Blues")
+    # plt.title("Confusion Matrix")
+    # plt.colorbar()
+    # plt.xlabel("Predicted")
+    # plt.ylabel("Actual")
+    # plt.xticks(np.arange(len(set(y))), set(y))
+    # plt.yticks(np.arange(len(set(y))), set(y))
+    #
+    # # Adding text to the confusion matrix cells with larger font size
+    # for i in range(len(set(y))):
+    #     for j in range(len(set(y))):
+    #         plt.text(j, i, cm[i, j], ha='center', va='center', color='red', fontsize=14)
+    #
+    # plt.savefig(path + '/test_confusion.png', dpi=300, bbox_inches='tight')
+    # plt.close()
+    #
+    # from sklearn.metrics import confusion_matrix, roc_curve, roc_auc_score
+    # import matplotlib.pyplot as plt
+    #
+    # # Prediction on test set
+    # y_pred = reg.predict(X_train)
+    #
+    # # Confusion matrix
+    # cm = confusion_matrix(y_train, y_pred)
+    # print("Confusion Matrix:")
+    # print(cm)
+    #
+    # plt.imshow(cm, cmap="Blues")
+    # plt.title("Confusion Matrix")
+    # plt.colorbar()
+    # plt.xlabel("Predicted")
+    # plt.ylabel("Actual")
+    # plt.xticks(np.arange(len(set(y))), set(y))
+    # plt.yticks(np.arange(len(set(y))), set(y))
+    #
+    # # Adding text to the confusion matrix cells with larger font size
+    # for i in range(len(set(y))):
+    #     for j in range(len(set(y))):
+    #         plt.text(j, i, cm[i, j], ha='center', va='center', color='red', fontsize=14)
+    # plt.savefig(path + '/train_confusion.png', dpi=300, bbox_inches='tight')
+    # plt.close()
+    #
+    # # ROC Curve
+    # y_probs = reg.predict_proba(X_test)[:, 1]
+    # fpr, tpr, thresholds = roc_curve(y_test, y_probs)
+    #
+    # # Plotting ROC Curve
+    # plt.plot(fpr, tpr, label='ROC Curve')
+    # plt.plot([0, 1], [0, 1], 'k--', label='Random')
+    # plt.xlabel('False Positive Rate')
+    # plt.ylabel('True Positive Rate')
+    # plt.title('ROC Curve')
+    # plt.legend()
+    # plt.savefig(path + '/test_ROC.png', dpi=300, bbox_inches='tight')
+    # plt.close()
+    #
+    #
+    # # Accuracy
+    # accuracy = reg.score(X_test, y_test)
+    # str1="Test_ROC_Accuracy:"+str(accuracy)
+    # print("Accuracy:", accuracy)
+    #
+    # # ROC Curve
+    # y_probs = reg.predict_proba(X_train)[:, 1]
+    # fpr, tpr, thresholds = roc_curve(y_train, y_probs)
+    #
+    # # Plotting ROC Curve
+    # plt.plot(fpr, tpr, label='ROC Curve')
+    # plt.plot([0, 1], [0, 1], 'k--', label='Random')
+    # plt.xlabel('False Positive Rate')
+    # plt.ylabel('True Positive Rate')
+    # plt.title('ROC Curve')
+    # plt.legend()
+    #
+    # plt.savefig(path + '/train_ROC.png', dpi=300, bbox_inches='tight')
+    # plt.close()
+    #
+    # # Accuracy
+    # accuracy = reg.score(X_train, y_train)
+    # str2 = "Train_ROC_Accuracy:" + str(accuracy)
+    # print("Accuracy:", accuracy)
+    #
+    # return str1,str2
 
 #shap 导入和出结果
 def Result(csvname,path,model_path):
@@ -6554,44 +7052,42 @@ def Result(csvname,path,model_path):
 
     # 加载预测数据集
     data = pd.read_csv(csvname)
-    print(1)
+
     import pickle  # 加载训练好的ExtraTreeClassifier模型
 
     model1 = pickle.load(open(model_path, "rb"))
-    print(1)
+
     # 拟合模型
     #column_name=data.columns[-1]
     #X = data.drop(columns=[column_name])
     #y = data[column_name]
-    print(1)
-
-    X = data.drop(columns=['Potential (v)'])
-    y = data['Potential (v)']
 
 
+    # X = data.drop(columns=['Potential (v)'])
+    # y = data['Potential (v)']
 
+    # 获取除了最后一列之外的所有列作为特征变量
+    X = data.iloc[:, :-1]
+    # 获取最后一列作为目标变量
+    y = data.iloc[:, -1]
 
     # X = pd.DataFrame(data[:,:-1])
     # y = pd.DataFrame(data[:,-1])
 
-    print(1)
     # 初始化 SHAP explainer
     explainer = shap.Explainer(model1, X)
 
-    print(1)
     # 计算 SHAP 值
     shap_values = explainer(X)
 
-    print(1)
     # 将 shap 值转换为 pandas DataFrame
 
     #shap_df = pd.DataFrame(shap_values.values[:, :, 1], columns=X.columns)
     shap_df = pd.DataFrame(shap_values.values[:, :], columns=X.columns)
 
-    print(1)
     """import matplotlib
     matplotlib.use('TkAgg')
-    print(1)
+
 
     import matplotlib
     matplotlib.use('TkAgg')"""
@@ -6600,9 +7096,25 @@ def Result(csvname,path,model_path):
     #shap.summary_plot(shap_values.values[:, :, 1], X, show=False, plot_type='dot')
     shap.summary_plot(shap_values.values[:, :], X, show=False, plot_type='dot')
     plt.tight_layout()
+    plt.subplots_adjust(left=0.1, right=0.9)
+    # plt.xlim(-2, 2)  # 设置 x 轴的最小值和最大值
+
     # 保存图表为 .png 格式的文件
     plt.savefig(path+'/summary_plot.png', format='png', dpi=300, bbox_inches='tight')
     plt.close()
+
+
+
+    # 绘制不含y标签的蜂群图
+    shap.summary_plot(shap_values.values[:, :], X, show=False, plot_type='dot')
+    plt.tight_layout()
+    plt.gca().set_yticklabels([])
+    plt.subplots_adjust(left=0.1, right=0.9)
+    # 保存图表为 .png 格式的文件
+    plt.savefig(path+'/summary_plot_b.png', format='png', dpi=300, bbox_inches='tight')
+    plt.close()
+
+
 
     # 绘制第一个样本的活力图，绿色表示对目标分类的贡献，红色表示对其他分类的贡献
     #shap.force_plot(explainer.expected_value[1], shap_values.values[0, :, 1], X.iloc[0, :],
@@ -6611,6 +7123,7 @@ def Result(csvname,path,model_path):
     shap.force_plot(explainer.expected_value, shap_values.values[0, :], X.iloc[0, :],
                     matplotlib=True, show=False)
     plt.tight_layout()
+
     plt.savefig(path+'/Forceplot.png', bbox_inches='tight', dpi=300)
     plt.close()
 
@@ -6637,27 +7150,27 @@ def Result(csvname,path,model_path):
                    enumerate(shap_values)]
 
     # 绘制每个样本的特征重要性瀑布图
-    for i, sv in enumerate(shap_values):
-        plt.title(f"Sample {i}")
-        shap.waterfall_plot(sv[0], max_display=10)
+    # for i, sv in enumerate(shap_values):
+    #     plt.title(f"Sample {i}")
+    #     shap.waterfall_plot(sv[0], max_display=10)
+    #
+    #     plt.savefig(path + '/Waterfall.png', bbox_inches='tight', dpi=300)
+    #     plt.close()
 
-        plt.savefig(path + '/Waterfall.png', bbox_inches='tight', dpi=300)
-        plt.close()
 
-
-    import graphviz
-    from sklearn.tree import export_graphviz
-    # 将决策树导出为DOT格式
-    dot_data = export_graphviz(model.estimators_[0], out_file=None,
-                               feature_names=data.columns[:-1], class_names=['0', '1'],
-                               filled=True, rounded=True,
-                               special_characters=True)
-    # 将DOT格式转换为绘图
-    graph = graphviz.Source(dot_data)
-
-    # 展示决策树状图
-    graph.render('decision_tree', format='png')
-    graph.write_png(path + '/decision_tree.png')
+    # import graphviz
+    # from sklearn.tree import export_graphviz
+    # # 将决策树导出为DOT格式
+    # dot_data = export_graphviz(model1.estimators_[0], out_file=None,
+    #                            feature_names=data.columns[:-1], class_names=['0', '1'],
+    #                            filled=True, rounded=True,
+    #                            special_characters=True)
+    # # 将DOT格式转换为绘图
+    # graph = graphviz.Source(dot_data)
+    #
+    # # 展示决策树状图
+    # graph.render('decision_tree', format='png')
+    # graph.write_png(path + '/decision_tree.png')
 
 
 

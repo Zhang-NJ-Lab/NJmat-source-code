@@ -57,7 +57,7 @@
      <x>0</x>
      <y>0</y>
      <width>1848</width>
-     <height>41</height>
+     <height>23</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu">
@@ -141,7 +141,15 @@
      <addaction name="actionImport_2"/>
      <addaction name="actionFeaturize"/>
     </widget>
+    <widget class="QMenu" name="menuImport_and_generate_Multicolumn_Smiles">
+     <property name="title">
+      <string>Import and generate Multicolumn Smiles</string>
+     </property>
+     <addaction name="actionEnter_virtual_Multicolumn_Smiles"/>
+     <addaction name="actionGenerate_virtual_Multicolumn_Smiles"/>
+    </widget>
     <addaction name="menuImport_no_featurizer_no_label"/>
+    <addaction name="menuImport_and_generate_Multicolumn_Smiles"/>
     <addaction name="action_15"/>
     <addaction name="actionSelect_machine_learning_model"/>
     <addaction name="action_18"/>
@@ -149,7 +157,7 @@
    </widget>
    <widget class="QMenu" name="menu_9">
     <property name="title">
-     <string>* Genetic</string>
+     <string>Genetic</string>
     </property>
     <addaction name="actionSymbolic_regression"/>
     <addaction name="actionsymbolic_classification"/>
@@ -187,7 +195,15 @@
      <addaction name="actionImport"/>
      <addaction name="actionGenerate"/>
     </widget>
+    <widget class="QMenu" name="menuMultiple_column_Smiles">
+     <property name="title">
+      <string>Organic Multiple column Smiles</string>
+     </property>
+     <addaction name="actionImport_Multicolumn_Smiles"/>
+     <addaction name="actionFeaturize_Multicolumn_Smiles"/>
+    </widget>
     <addaction name="menuHybrid_inorganic_organic_2in1"/>
+    <addaction name="menuMultiple_column_Smiles"/>
     <addaction name="menu_15"/>
     <addaction name="menu_16"/>
     <addaction name="menuInorganic_descriptor_matminer"/>
@@ -257,7 +273,7 @@
    </widget>
    <widget class="QMenu" name="menuHints">
     <property name="title">
-     <string>Hints</string>
+     <string>Help</string>
     </property>
     <addaction name="actionTemplates"/>
     <addaction name="action2_csv_templates_https_github_com_Zhang_NJ_Lab_NJmatML_templates"/>
@@ -270,10 +286,10 @@
    <addaction name="menu_6"/>
    <addaction name="menu_7"/>
    <addaction name="menuShapley"/>
-   <addaction name="menuHints"/>
-   <addaction name="menuNLP"/>
    <addaction name="menu_9"/>
+   <addaction name="menuNLP"/>
    <addaction name="menuMore_function"/>
+   <addaction name="menuHints"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
   <action name="action_heatmap">
@@ -818,7 +834,7 @@
   </action>
   <action name="actionMore_visualization_only_for_classification">
    <property name="text">
-    <string>More visualization (only for classification)</string>
+    <string>*More visualization (only for classification)</string>
    </property>
   </action>
   <action name="actionMae">
@@ -980,6 +996,26 @@
    </property>
   </action>
   <action name="actionFeaturize">
+   <property name="text">
+    <string>Generate</string>
+   </property>
+  </action>
+  <action name="actionImport_Multicolumn_Smiles">
+   <property name="text">
+    <string>Import</string>
+   </property>
+  </action>
+  <action name="actionFeaturize_Multicolumn_Smiles">
+   <property name="text">
+    <string>Featurize</string>
+   </property>
+  </action>
+  <action name="actionEnter_virtual_Multicolumn_Smiles">
+   <property name="text">
+    <string>Import</string>
+   </property>
+  </action>
+  <action name="actionGenerate_virtual_Multicolumn_Smiles">
    <property name="text">
     <string>Generate</string>
    </property>

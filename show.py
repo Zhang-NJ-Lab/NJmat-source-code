@@ -58,9 +58,15 @@ class mywindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.parser.add_argument("--origin_path_8", type=str,
                                  default="",
                                  help="2in1")
+        self.parser.add_argument("--origin_path_28", type=str,
+                                 default="",
+                                 help="Multicolumn_Smiles")
         self.parser.add_argument("--origin_path_9", type=str,
                                  default="",
                                  help="virtual_2in1")
+        self.parser.add_argument("--origin_path_19", type=str,
+                                 default="",
+                                 help="virtual_Multicolumn_Smiles")
         self.parser.add_argument("--prediction_visualization_path", type=str, default="",
                                  help="Prediction visualization默认文件路径")
         #D:\project_zl\new_generate\Machine Learning Modeling\Algorithms\Continuous data\Xgboost
@@ -97,9 +103,8 @@ class mywindow(QtWidgets.QMainWindow, Ui_MainWindow):
         # self.menuInorganic_descriptor_matminer.addAction(self.actionGenerate_magpie)
         self.actionImport.triggered.connect(self.enter_2in1)
         self.actionGenerate.triggered.connect(self.featurize_2in1)
-
-
-
+        self.actionImport_Multicolumn_Smiles.triggered.connect(self.enter_Multicolumn_Smiles)
+        self.actionFeaturize_Multicolumn_Smiles.triggered.connect(self.featurize_Multicolumn_Smiles)
 
         # 数据导入
         self.action_21.triggered.connect(self.enter_training_test_set_path)
@@ -144,8 +149,14 @@ class mywindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.actionsymbolic_classification.triggered.connect(self.GP_Symbolicclassification)
 
         # 预测集建立
+
+
         self.actionImport_2.triggered.connect(self.enter_virtual_2in1)
         self.actionFeaturize.triggered.connect(self.generate_virtual_2in1)
+
+        self.actionEnter_virtual_Multicolumn_Smiles.triggered.connect(self.enter_virtual_Multicolumn_Smiles)
+        self.actionGenerate_virtual_Multicolumn_Smiles.triggered.connect(self.generate_virtual_Multicolumn_Smiles)
+
         self.actionSelect_machine_learning_model.triggered.connect(self.import_model_dat)
         self.action_15.triggered.connect(self.Prediction_Importvirtualdata)
 
@@ -162,8 +173,13 @@ class mywindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.enter_organic_smiles_state =self.opt.if_control
         self.enter_inorganic_fomula_state = self.opt.if_control
         self.Import_magpie_formula_state = self.opt.if_control
+
         self.enter_2in1_state=self.opt.if_control
         self.enter_virtual_2in1_state = self.opt.if_control
+        self.enter_Multicolumn_Smiles_state=self.opt.if_control
+        self.enter_virtual_Multicolumn_Smiles_state = self.opt.if_control
+
+
         self.enter_training_test_set_path_state=self.opt.if_control                      # 由于本电脑有默认导入文件路径，所以可由if_control控制，方便测试
 
 
@@ -447,7 +463,54 @@ class mywindow(QtWidgets.QMainWindow, Ui_MainWindow):
                 QMessageBox.information(self, 'Hint', 'Completed!', QMessageBox.Ok | QMessageBox.Close,
                                         QMessageBox.Close)
                 if self.opt.if_open == True:
-                    str1 = (path+'/merged_result.csv').replace("/", "\\")
+                    str1 = (path+'/train_test_dataset.csv').replace("/", "\\")
+                    os.startfile(str1)
+            else:
+                QMessageBox.information(self, 'Hint', 'Do "Import"!', QMessageBox.Ok | QMessageBox.Close,
+                                        QMessageBox.Close)
+        except Exception as e:
+            print(e)
+
+
+
+
+
+
+    def enter_Multicolumn_Smiles(self):
+        directory_temp, filetype = QFileDialog.getOpenFileNames(self, "Select file")
+        if len(directory_temp) > 0:
+            str_root = str(directory_temp)
+            f_csv = str_root.rfind('.csv')
+            if f_csv != -1:  # 判断是不是.csv
+                self.opt.origin_path_28 = str((str_root.replace("\\", '/'))[2:-2])
+                self.enter_Multicolumn_Smiles_state = True
+                QMessageBox.information(self, 'Hint', 'Completed!', QMessageBox.Ok | QMessageBox.Close,
+                                        QMessageBox.Close)
+            else:
+                QMessageBox.information(self, 'Hint', 'Not .csv file, please re-enter!',
+                                        QMessageBox.Ok | QMessageBox.Close,
+                                        QMessageBox.Close)
+        else:
+            QMessageBox.information(self, 'Hint', 'Please enter a file!', QMessageBox.Ok | QMessageBox.Close,
+                                    QMessageBox.Close)
+
+
+
+    # 生成
+    def featurize_Multicolumn_Smiles(self):
+        try:
+            if self.enter_Multicolumn_Smiles_state == True:
+                path = self.opt.save_path + "/Descriptor generation/Multicolumn Smiles"
+                if os.path.exists(path):
+                    shutil.rmtree(path)
+                os.makedirs(path)
+
+                dataML.featurize_Multicolumn_Smiles(path,self.opt.origin_path_28)
+
+                QMessageBox.information(self, 'Hint', 'Completed!', QMessageBox.Ok | QMessageBox.Close,
+                                        QMessageBox.Close)
+                if self.opt.if_open == True:
+                    str1 = (path+'/train_test_dataset.csv').replace("/", "\\")
                     os.startfile(str1)
             else:
                 QMessageBox.information(self, 'Hint', 'Do "Import"!', QMessageBox.Ok | QMessageBox.Close,
@@ -497,7 +560,10 @@ class mywindow(QtWidgets.QMainWindow, Ui_MainWindow):
             if self.enter_training_test_set_path_state == True:
                 self.textBrowser.clear()
 
-
+                path = self.opt.save_path + "/Data importing/Training test set import and visualization/Visualize"
+                if os.path.exists(path):  # 重做得删文件夹
+                    shutil.rmtree(path)
+                os.makedirs(path)
                 dataML.hist(path)  #画所有列分布的柱状图，例如potential 在0.3 V最多
 
 
@@ -835,7 +901,7 @@ class mywindow(QtWidgets.QMainWindow, Ui_MainWindow):
                 QMessageBox.information(self, 'Hint', 'Completed!', QMessageBox.Ok | QMessageBox.Close,
                                         QMessageBox.Close)
                 if self.opt.if_open == True:
-                    str1 = (path+'/xgboost-modify.png').replace("/", "\\")
+                    str1 = (path+'/xgboost-modify-test.png').replace("/", "\\")
                     os.startfile(str1)
                     str2 = (path+'/xgboost_modify-10-fold-crossvalidation.png').replace("/", "\\")
                     os.startfile(str2)
@@ -898,7 +964,7 @@ class mywindow(QtWidgets.QMainWindow, Ui_MainWindow):
             QMessageBox.information(self, 'Hint', 'Completed!', QMessageBox.Ok | QMessageBox.Close,
                                     QMessageBox.Close)
             if self.opt.if_open == True:
-                str1 = (path+'/RandomForest-modify.png').replace("/", "\\")
+                str1 = (path+'/RandomForest-modify-test.png').replace("/", "\\")
                 os.startfile(str1)
                 str2 = (path+'/RandomForest_modify-10-fold-crossvalidation.png').replace("/", "\\")
                 os.startfile(str2)
@@ -951,7 +1017,7 @@ class mywindow(QtWidgets.QMainWindow, Ui_MainWindow):
         QMessageBox.information(self, 'Hint', 'Completed!', QMessageBox.Ok | QMessageBox.Close,
                                 QMessageBox.Close)
         if self.opt.if_open == True:
-            str1 = (path + '/Bagging-modify.png').replace("/", "\\")
+            str1 = (path + '/Bagging-modify-test.png').replace("/", "\\")
             os.startfile(str1)
             str2 = (path + '/Bagging-modify-10-fold-crossvalidation.png').replace("/", "\\")
             os.startfile(str2)
@@ -1895,11 +1961,12 @@ class mywindow(QtWidgets.QMainWindow, Ui_MainWindow):
                         self.textBrowser.append(string1)
 
                         if self.opt.if_open == True:
-                            str1 = (path + '/Learning curve.png').replace("/", "\\")
+                            # str1 = (path + '/Learning curve.png').replace("/", "\\")
+                            str1 = (path + '/fitting.png').replace("/", "\\")
                             os.startfile(str1)
-                            str2 = (path + '/figure.png').replace("/", "\\")
+                            str2 = (path + '/residue.png').replace("/", "\\")
                             os.startfile(str2)
-                            str3 = (path + '/expression_tree.png').replace("/", "\\")
+                            str3 = (path + '/tree.png').replace("/", "\\")
                             os.startfile(str3)
 
                         QMessageBox.information(self, 'Hint', 'Completed!', QMessageBox.Ok | QMessageBox.Close,
@@ -1942,6 +2009,9 @@ class mywindow(QtWidgets.QMainWindow, Ui_MainWindow):
                         os.startfile(str3)
                         str4 = (path + '/train_ROC.png').replace("/", "\\")
                         os.startfile(str4)
+                        # str5 = (path + '/tree.png').replace("/", "\\")
+                        # os.startfile(str5)
+
 
                     QMessageBox.information(self, 'Hint', 'Completed!', QMessageBox.Ok | QMessageBox.Close,
                                             QMessageBox.Close)
@@ -2005,6 +2075,54 @@ class mywindow(QtWidgets.QMainWindow, Ui_MainWindow):
         except Exception as e:
             print(e)
 
+
+
+    def enter_virtual_Multicolumn_Smiles(self):
+        directory_temp, filetype = QFileDialog.getOpenFileNames(self, "Select file")
+        if len(directory_temp) > 0:
+            str_root = str(directory_temp)
+            f_csv = str_root.rfind('.csv')
+            if f_csv != -1:  # 判断是不是.csv
+                self.opt.origin_path_19 = str((str_root.replace("\\", '/'))[2:-2])
+                self.enter_virtual_Multicolumn_Smiles_state = True
+                QMessageBox.information(self, 'Hint', 'Completed!', QMessageBox.Ok | QMessageBox.Close,
+                                        QMessageBox.Close)
+            else:
+                QMessageBox.information(self, 'Hint', 'Not .csv file, please re-enter!',
+                                        QMessageBox.Ok | QMessageBox.Close,
+                                        QMessageBox.Close)
+        else:
+            QMessageBox.information(self, 'Hint', 'Please enter a file!', QMessageBox.Ok | QMessageBox.Close,
+                                    QMessageBox.Close)
+
+    # 自动生成输出结果
+    def generate_virtual_Multicolumn_Smiles(self):
+        try:
+            if self.enter_virtual_Multicolumn_Smiles_state == True:
+                path = self.opt.save_path + "/Prediction/Import and generate only smiles"
+                if os.path.exists(path):
+                    shutil.rmtree(path)
+                os.makedirs(path)
+
+                dataML.virtual_Multicolumn_Smiles(path,self.opt.origin_path_19)
+
+                QMessageBox.information(self, 'Hint', 'Completed!', QMessageBox.Ok | QMessageBox.Close,
+                                        QMessageBox.Close)
+                if self.opt.if_open == True:
+                    str1 = (path+'/virtual_generate_Multicolumn_Smiles_final.csv').replace("/", "\\")
+                    os.startfile(str1)
+            else:
+                QMessageBox.information(self, 'Hint', 'Do "Import"!', QMessageBox.Ok | QMessageBox.Close,
+                                        QMessageBox.Close)
+        except Exception as e:
+            print(e)
+
+
+
+
+
+
+
     # 预测集建立——导入预测集                          Prediction_Import virtual data (without label)
     def Prediction_Importvirtualdata(self):
         directory_temp, filetype = QFileDialog.getOpenFileNames(self, "Select file")
@@ -2056,8 +2174,11 @@ class mywindow(QtWidgets.QMainWindow, Ui_MainWindow):
             if self.import_prediction_dataset_state == True:
                 if self. import_model_dat_state== True:
                     path = self.opt.save_path + "/Prediction/Prediction generation (with label)"
-                    if os.path.exists(path) == False:
-                        os.makedirs(path)
+                    # if os.path.exists(path) == False:
+                    #     os.makedirs(path)
+                    if os.path.exists(path):
+                        shutil.rmtree(path)
+                    os.makedirs(path)
 
                     generate_file=dataML.model_modify_predict(self.opt.origin_path_2, path,self.opt.origin_path_6)
 
@@ -2135,6 +2256,7 @@ class mywindow(QtWidgets.QMainWindow, Ui_MainWindow):
             QMessageBox.information(self, 'Hint', 'Please choose a model!', QMessageBox.Ok | QMessageBox.Close,
                                     QMessageBox.Close)
 
+
     # shapley_Data import
     def shapley_Dataimport(self):
         directory_temp, filetype = QFileDialog.getOpenFileNames(self, "Select file")
@@ -2159,8 +2281,9 @@ class mywindow(QtWidgets.QMainWindow, Ui_MainWindow):
     def shapley_Result(self):
         try:
             path = self.opt.save_path + "/Shapley/Result"
-            if os.path.exists(path) == False:
-                os.makedirs(path)
+            if os.path.exists(path):
+                shutil.rmtree(path)
+            os.makedirs(path)
 
             dataML.Result(self.opt.origin_path_2, path, self.opt.origin_path_7)
 
@@ -2171,10 +2294,10 @@ class mywindow(QtWidgets.QMainWindow, Ui_MainWindow):
                 os.startfile(str2)
                 str3 = (path + '/Feature_ranking_bar.png').replace("/", "\\")
                 os.startfile(str3)
-                str4 = (path + '/Waterfall.png').replace("/", "\\")
-                os.startfile(str4)
-                str5 = (path + '/decision_tree.png').replace("/", "\\")
-                os.startfile(str5)
+                # str4 = (path + '/Waterfall.png').replace("/", "\\")
+                # os.startfile(str4)
+                # str5 = (path + '/decision_tree.png').replace("/", "\\")
+                # os.startfile(str5)
 
             QMessageBox.information(self, 'Hint', 'Completed!', QMessageBox.Ok | QMessageBox.Close,
                                     QMessageBox.Close)
