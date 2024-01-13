@@ -78,7 +78,6 @@
      <addaction name="action_3"/>
      <addaction name="action_4"/>
     </widget>
-    <addaction name="actionlabel_conversion"/>
     <addaction name="actionrfe"/>
     <addaction name="menu_rfe_pairplot"/>
     <addaction name="menu_3"/>
@@ -121,7 +120,6 @@
       <addaction name="actionRamdom_Forest"/>
       <addaction name="actionExtra_Tree_2"/>
       <addaction name="actionGaussian_Process"/>
-      <addaction name="actionKNeighbors"/>
       <addaction name="actionDecision_Tree_2"/>
       <addaction name="actionSVM"/>
      </widget>
@@ -136,24 +134,32 @@
     </property>
     <widget class="QMenu" name="menuImport_no_featurizer_no_label">
      <property name="title">
-      <string>Import and generate (recommend)</string>
+      <string>Virtual hybrid inorganic organic 2in1 (recommend)</string>
      </property>
      <addaction name="actionImport_2"/>
      <addaction name="actionFeaturize"/>
     </widget>
-    <widget class="QMenu" name="menuImport_and_generate_Multicolumn_Smiles">
+    <widget class="QMenu" name="menuImport_and_generate_Multicolumn_Smiles_Morgan">
      <property name="title">
-      <string>Import and generate Multicolumn Smiles</string>
+      <string>Virtual organic Multicolumn Smiles (Morgan)</string>
      </property>
      <addaction name="actionEnter_virtual_Multicolumn_Smiles"/>
      <addaction name="actionGenerate_virtual_Multicolumn_Smiles"/>
     </widget>
+    <widget class="QMenu" name="menuImport_and_generate_Multicolumn_Smiles_RDKit">
+     <property name="title">
+      <string>Virtual organic Multicolum Smiles (RDKit)</string>
+     </property>
+     <addaction name="separator"/>
+     <addaction name="actionEnter_virtual_Multicolumn_Smiles_RDKit"/>
+     <addaction name="actionGenerate_virtual_Multicolumn_Smiles_RDKit"/>
+    </widget>
     <addaction name="menuImport_no_featurizer_no_label"/>
-    <addaction name="menuImport_and_generate_Multicolumn_Smiles"/>
+    <addaction name="menuImport_and_generate_Multicolumn_Smiles_RDKit"/>
+    <addaction name="menuImport_and_generate_Multicolumn_Smiles_Morgan"/>
     <addaction name="action_15"/>
     <addaction name="actionSelect_machine_learning_model"/>
     <addaction name="action_18"/>
-    <addaction name="actionPrediction_visualization"/>
    </widget>
    <widget class="QMenu" name="menu_9">
     <property name="title">
@@ -171,7 +177,6 @@
       <string>Organic descriptor</string>
      </property>
      <addaction name="action_smiles_2"/>
-     <addaction name="actionpydel"/>
      <addaction name="actionrdkit_2"/>
     </widget>
     <widget class="QMenu" name="menu_16">
@@ -195,15 +200,23 @@
      <addaction name="actionImport"/>
      <addaction name="actionGenerate"/>
     </widget>
-    <widget class="QMenu" name="menuMultiple_column_Smiles">
+    <widget class="QMenu" name="menuMulticolumn_Smiles_Morgan">
      <property name="title">
-      <string>Organic Multiple column Smiles</string>
+      <string>Organic Multicolumn Smiles (Morgan)</string>
      </property>
-     <addaction name="actionImport_Multicolumn_Smiles"/>
-     <addaction name="actionFeaturize_Multicolumn_Smiles"/>
+     <addaction name="actionImport_Multicolumn_Smiles_Morgan"/>
+     <addaction name="actionFeaturize_Multicolumn_Smiles_Morgan"/>
+    </widget>
+    <widget class="QMenu" name="menuOrganic_Multicolum_Smiles_RDKit">
+     <property name="title">
+      <string>Organic Multicolum Smiles (RDKit)</string>
+     </property>
+     <addaction name="actionImport_Multicolumn_Smiles_RDKit"/>
+     <addaction name="actionFeaturize_Multicolumn_Smiles_RDKit"/>
     </widget>
     <addaction name="menuHybrid_inorganic_organic_2in1"/>
-    <addaction name="menuMultiple_column_Smiles"/>
+    <addaction name="menuOrganic_Multicolum_Smiles_RDKit"/>
+    <addaction name="menuMulticolumn_Smiles_Morgan"/>
     <addaction name="menu_15"/>
     <addaction name="menu_16"/>
     <addaction name="menuInorganic_descriptor_matminer"/>
@@ -221,55 +234,29 @@
     </widget>
     <addaction name="menu_17"/>
     <addaction name="action_20"/>
-    <addaction name="actionMore_visualization_only_for_classification"/>
-   </widget>
-   <widget class="QMenu" name="menuMore_function">
-    <property name="title">
-     <string>* More functions</string>
-    </property>
-    <widget class="QMenu" name="menuValidation">
-     <property name="title">
-      <string>Validation</string>
-     </property>
-     <addaction name="actionExperimental_validation_2"/>
-     <addaction name="actionDFT_validation_2"/>
-    </widget>
-    <widget class="QMenu" name="menuPV_efficiency_prediction">
-     <property name="title">
-      <string>PV efficiency prediction</string>
-     </property>
-     <addaction name="actionSLME_efficiency"/>
-     <addaction name="actionSQ_efficiency_3"/>
-    </widget>
-    <addaction name="actionMaterial_screening"/>
-    <addaction name="menuValidation"/>
-    <addaction name="menuPV_efficiency_prediction"/>
-   </widget>
-   <widget class="QMenu" name="menuNLP">
-    <property name="title">
-     <string>*NLP</string>
-    </property>
-    <widget class="QMenu" name="menuVisualization">
-     <property name="title">
-      <string>Visualization</string>
-     </property>
-     <addaction name="actionPCA_3"/>
-     <addaction name="actiont_SNE_2"/>
-     <addaction name="actionDBscan"/>
-     <addaction name="actionK_mean"/>
-    </widget>
-    <addaction name="actionData_import"/>
-    <addaction name="actionWord2vec"/>
-    <addaction name="actionCosine_similarity"/>
-    <addaction name="menuVisualization"/>
    </widget>
    <widget class="QMenu" name="menuShapley">
     <property name="title">
      <string>Shapley</string>
     </property>
-    <addaction name="actionModel_import"/>
-    <addaction name="actionData_import_2"/>
-    <addaction name="actionResult"/>
+    <widget class="QMenu" name="menuShap_Regression">
+     <property name="title">
+      <string>Regression</string>
+     </property>
+     <addaction name="actionShap_Regression_Model_import"/>
+     <addaction name="actionShap_Regression_Data_import"/>
+     <addaction name="actionShap_Regression_Result"/>
+    </widget>
+    <widget class="QMenu" name="menuShap_Classification">
+     <property name="title">
+      <string>Classification</string>
+     </property>
+     <addaction name="actionShap_Classification_Model_import"/>
+     <addaction name="actionShap_Classification_Data_import"/>
+     <addaction name="actionShap_Classification_Result"/>
+    </widget>
+    <addaction name="menuShap_Regression"/>
+    <addaction name="menuShap_Classification"/>
    </widget>
    <widget class="QMenu" name="menuHints">
     <property name="title">
@@ -287,8 +274,6 @@
    <addaction name="menu_7"/>
    <addaction name="menuShapley"/>
    <addaction name="menu_9"/>
-   <addaction name="menuNLP"/>
-   <addaction name="menuMore_function"/>
    <addaction name="menuHints"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
@@ -1000,12 +985,12 @@
     <string>Generate</string>
    </property>
   </action>
-  <action name="actionImport_Multicolumn_Smiles">
+  <action name="actionImport_Multicolumn_Smiles_Morgan">
    <property name="text">
     <string>Import</string>
    </property>
   </action>
-  <action name="actionFeaturize_Multicolumn_Smiles">
+  <action name="actionFeaturize_Multicolumn_Smiles_Morgan">
    <property name="text">
     <string>Featurize</string>
    </property>
@@ -1016,6 +1001,76 @@
    </property>
   </action>
   <action name="actionGenerate_virtual_Multicolumn_Smiles">
+   <property name="text">
+    <string>Generate</string>
+   </property>
+  </action>
+  <action name="actionUnder_development">
+   <property name="text">
+    <string>Under development</string>
+   </property>
+  </action>
+  <action name="actionSLME_efficiency_2">
+   <property name="text">
+    <string>SLME efficiency</string>
+   </property>
+  </action>
+  <action name="actionSQ_efficiency_4">
+   <property name="text">
+    <string>SQ efficiency</string>
+   </property>
+  </action>
+  <action name="actionDFT">
+   <property name="text">
+    <string>DFT</string>
+   </property>
+  </action>
+  <action name="actionShap_Regression_Model_import">
+   <property name="text">
+    <string>Model import</string>
+   </property>
+  </action>
+  <action name="actionShap_Regression_Data_import">
+   <property name="text">
+    <string>Data import</string>
+   </property>
+  </action>
+  <action name="actionShap_Regression_Result">
+   <property name="text">
+    <string>Result</string>
+   </property>
+  </action>
+  <action name="actionShap_Classification_Model_import">
+   <property name="text">
+    <string>Model import</string>
+   </property>
+  </action>
+  <action name="actionShap_Classification_Data_import">
+   <property name="text">
+    <string>Data import</string>
+   </property>
+  </action>
+  <action name="actionShap_Classification_Result">
+   <property name="text">
+    <string>Result</string>
+   </property>
+  </action>
+  <action name="actionImport_Multicolumn_Smiles_RDKit">
+   <property name="text">
+    <string>Import</string>
+   </property>
+  </action>
+  <action name="actionFeaturize_Multicolumn_Smiles_RDKit">
+   <property name="text">
+    <string>Featurize</string>
+   </property>
+  </action>
+  <action name="actionEnter_virtual_Multicolumn_Smiles_RDKit">
+   <property name="text">
+    <string>Import</string>
+   </property>
+  </action>
+  <action name="actionGenerate_virtual_Multicolumn_Smiles_RDKit">
    <property name="text">
     <string>Generate</string>
    </property>

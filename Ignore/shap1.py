@@ -62,7 +62,6 @@ from matminer.featurizers.conversions import StrToComposition
 from matminer.featurizers.composition.orbital import AtomicOrbitals
 from matminer.featurizers.composition import ElementProperty
 from matminer.featurizers.composition.element import ElementFraction
-from pymatgen.core import Composition
 
 # 假设 new_datasets 是包含拆分数据集的字典，如 'data1', 'data2', ...
 # 每个数据集中应该有 'Name' 列
@@ -148,7 +147,7 @@ for key, value in new_datasets2.items():
 import pandas as pd
 import numpy as np
 from rdkit import Chem
-from rdkit.Chem import AllChem
+from rdkit import AllChem
 
 # 假设 new_datasets2 是包含拆分数据集的字典，如 'organic_data1', 'organic_data2', ...
 # 每个数据集中应该有 'Name' 列

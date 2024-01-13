@@ -55,6 +55,16 @@ class mywindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.parser.add_argument("--origin_path_7", type=str,
                                  default="D:/project_zl/new_generate/Shapley/Model import/.dat",
                                  help="shapley_Model import")
+
+        # self.parser.add_argument("--origin_path_17", type=str,
+        #                          default="D:/project_zl/new_generate/Shapley/Model import/.dat",
+        #                          help="shapley_Model import")
+        #
+        # self.parser.add_argument("--origin_path_27", type=str,
+        #                          default="D:/project_zl/new_generate/Shapley/Model import/.dat",
+        #                          help="shapley_Model import")
+
+
         self.parser.add_argument("--origin_path_8", type=str,
                                  default="",
                                  help="2in1")
@@ -90,7 +100,7 @@ class mywindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
         # 描述符导入生成
         self.action_smiles_2.triggered.connect(self.enter_organic_smiles)
-        self.actionpydel.triggered.connect(self.Descriptorgeneration_Organicmoleculardescriptors_pydel)
+        # self.actionpydel.triggered.connect(self.Descriptorgeneration_Organicmoleculardescriptors_pydel)
         self.actionrdkit_2.triggered.connect(self.Descriptorgeneration_Organicmoleculardescriptors_rdkit)
         self.action_importonehot.triggered.connect(self.enter_inorganic_fomula)
         self.actionmatminer_2.triggered.connect(self.Descriptorgeneration_Inorganicmoleculardescriptors_matminers)
@@ -103,14 +113,20 @@ class mywindow(QtWidgets.QMainWindow, Ui_MainWindow):
         # self.menuInorganic_descriptor_matminer.addAction(self.actionGenerate_magpie)
         self.actionImport.triggered.connect(self.enter_2in1)
         self.actionGenerate.triggered.connect(self.featurize_2in1)
-        self.actionImport_Multicolumn_Smiles.triggered.connect(self.enter_Multicolumn_Smiles)
-        self.actionFeaturize_Multicolumn_Smiles.triggered.connect(self.featurize_Multicolumn_Smiles)
+        # self.actionImport_Multicolumn_Smiles.triggered.connect(self.enter_Multicolumn_Smiles)
+
+
+        self.actionImport_Multicolumn_Smiles_RDKit.triggered.connect(self.Import_Multicolumn_Smiles_RDKit)
+        self.actionFeaturize_Multicolumn_Smiles_RDKit.triggered.connect(self.Featurize_Multicolumn_Smiles_RDKit)
+        self.actionImport_Multicolumn_Smiles_Morgan.triggered.connect(self.Import_Multicolumn_Smiles_Morgan)
+        self.actionFeaturize_Multicolumn_Smiles_Morgan.triggered.connect(self.Featurize_Multicolumn_Smiles_Morgan)
+
 
         # 数据导入
         self.action_21.triggered.connect(self.enter_training_test_set_path)
         self.action_22.triggered.connect(self.Dataimporting_Trainingtestsetimportandvisualization_Importandvisualization)
         self.action_20.triggered.connect(self.Dataimporting_Heatmap)
-        self.actionMore_visualization_only_for_classification.triggered.connect(self.Dataimporting_Morevisualization_classification)
+        # self.actionMore_visualization_only_for_classification.triggered.connect(self.Dataimporting_Morevisualization_classification)
 
         # 预处理
         self.actionrfe.triggered.connect(self.Preprocessing_Rfefeatureselection)
@@ -154,6 +170,10 @@ class mywindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.actionImport_2.triggered.connect(self.enter_virtual_2in1)
         self.actionFeaturize.triggered.connect(self.generate_virtual_2in1)
 
+
+        self.actionEnter_virtual_Multicolumn_Smiles_RDKit.triggered.connect(self.enter_virtual_Multicolumn_Smiles_RDKit)
+        self.actionGenerate_virtual_Multicolumn_Smiles_RDKit.triggered.connect(self.generate_virtual_Multicolumn_Smiles_RDKit)
+
         self.actionEnter_virtual_Multicolumn_Smiles.triggered.connect(self.enter_virtual_Multicolumn_Smiles)
         self.actionGenerate_virtual_Multicolumn_Smiles.triggered.connect(self.generate_virtual_Multicolumn_Smiles)
 
@@ -161,13 +181,20 @@ class mywindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.action_15.triggered.connect(self.Prediction_Importvirtualdata)
 
         self.action_18.triggered.connect(self.Prediction_Predictiongeneration)
-        self.actionPrediction_visualization.triggered.connect(self.Prediction_Prediction_visualization)
+        # self.actionPrediction_visualization.triggered.connect(self.Prediction_Prediction_visualization)
 
         # shapley
-        self.actionModel_import.triggered.connect(self.shapley_Modelimport)
-        self.actionData_import_2.triggered.connect(self.shapley_Dataimport)
-        self.actionResult.triggered.connect(self.shapley_Result)
-
+        # self.actionModel_import.triggered.connect(self.shapley_Modelimport)
+        # self.actionData_import_2.triggered.connect(self.shapley_Dataimport)
+        # self.actionResult.triggered.connect(self.shapley_Result)
+        # shapley 回归
+        self.actionShap_Regression_Model_import.triggered.connect(self.shapley_Regression_Modelimport)
+        self.actionShap_Regression_Data_import.triggered.connect(self.shapley_Regression_Dataimport)
+        self.actionShap_Regression_Result.triggered.connect(self.shapley_Regression_Result)
+        # shapley 分类
+        self.actionShap_Classification_Model_import.triggered.connect(self.shapley_Classification_Modelimport)
+        self.actionShap_Classification_Data_import.triggered.connect(self.shapley_Classification_Dataimport)
+        self.actionShap_Classification_Result.triggered.connect(self.shapley_Classification_Result)
 
 
         self.enter_organic_smiles_state =self.opt.if_control
@@ -176,9 +203,14 @@ class mywindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
         self.enter_2in1_state=self.opt.if_control
         self.enter_virtual_2in1_state = self.opt.if_control
-        self.enter_Multicolumn_Smiles_state=self.opt.if_control
-        self.enter_virtual_Multicolumn_Smiles_state = self.opt.if_control
+        self.Import_Multicolumn_Smiles_RDKit_state=self.opt.if_control
+        self.Featurize_Multicolumn_Smiles_RDKit_state=self.opt.if_control
+        self.Import_Multicolumn_Smiles_Morgan_state=self.opt.if_control
+        self.Featurize_Multicolumn_Smiles_Morgan_state=self.opt.if_control
 
+
+        self.enter_virtual_Multicolumn_Smiles_state = self.opt.if_control
+        self.enter_virtual_Multicolumn_Smiles_RDKit_state = self.opt.if_control
 
         self.enter_training_test_set_path_state=self.opt.if_control                      # 由于本电脑有默认导入文件路径，所以可由if_control控制，方便测试
 
@@ -325,27 +357,27 @@ class mywindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
     # 暂时不行
     # 描述符生成--有机分子描述符--pydel描述符   descriptor generation_Organic molecular descriptors_pydel
-    def Descriptorgeneration_Organicmoleculardescriptors_pydel(self):
-        if self.enter_organic_smiles_state == True:
-            path = self.opt.save_path + "/Descriptor generation/Organic molecular descriptors/pydel"
-            if os.path.exists(path):
-                shutil.rmtree(path)
-            os.makedirs(path)
-
-            data2=dataML.smiles_csv_pydel(self.opt.origin_path_3)
-            data2b=dataML.pydel_featurizer(path)
-            self.textBrowser_print_Pandas_DataFrame_table(data2, 0, 1)
-            self.textBrowser_print_Pandas_DataFrame_table(data2b, 2, 1)
-            self.textBrowser.append("*" * 150)
-
-            QMessageBox.information(self, 'Hint', 'Completed!', QMessageBox.Ok | QMessageBox.Close,
-                                    QMessageBox.Close)
-            if self.opt.if_open == True:
-                str1 = (path+"/pydel_featurizer_output.csv").replace("/", "\\")
-                os.startfile(str1)
-        else:
-            QMessageBox.information(self, 'Hint', 'Do "Import smiles"!', QMessageBox.Ok | QMessageBox.Close,
-                                    QMessageBox.Close)
+    # def Descriptorgeneration_Organicmoleculardescriptors_pydel(self):
+    #     if self.enter_organic_smiles_state == True:
+    #         path = self.opt.save_path + "/Descriptor generation/Organic molecular descriptors/pydel"
+    #         if os.path.exists(path):
+    #             shutil.rmtree(path)
+    #         os.makedirs(path)
+    #
+    #         data2=dataML.smiles_csv_pydel(self.opt.origin_path_3)
+    #         data2b=dataML.pydel_featurizer(path)
+    #         self.textBrowser_print_Pandas_DataFrame_table(data2, 0, 1)
+    #         self.textBrowser_print_Pandas_DataFrame_table(data2b, 2, 1)
+    #         self.textBrowser.append("*" * 150)
+    #
+    #         QMessageBox.information(self, 'Hint', 'Completed!', QMessageBox.Ok | QMessageBox.Close,
+    #                                 QMessageBox.Close)
+    #         if self.opt.if_open == True:
+    #             str1 = (path+"/pydel_featurizer_output.csv").replace("/", "\\")
+    #             os.startfile(str1)
+    #     else:
+    #         QMessageBox.information(self, 'Hint', 'Do "Import smiles"!', QMessageBox.Ok | QMessageBox.Close,
+    #                                 QMessageBox.Close)
 
     # 描述符生成--有机描述符--rdkit描述符     descriptor generation_Organic molecular descriptors_rdkit
     def Descriptorgeneration_Organicmoleculardescriptors_rdkit(self):
@@ -473,17 +505,14 @@ class mywindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
 
 
-
-
-
-    def enter_Multicolumn_Smiles(self):
+    def Import_Multicolumn_Smiles_RDKit(self):
         directory_temp, filetype = QFileDialog.getOpenFileNames(self, "Select file")
         if len(directory_temp) > 0:
             str_root = str(directory_temp)
             f_csv = str_root.rfind('.csv')
             if f_csv != -1:  # 判断是不是.csv
                 self.opt.origin_path_28 = str((str_root.replace("\\", '/'))[2:-2])
-                self.enter_Multicolumn_Smiles_state = True
+                self.Import_Multicolumn_Smiles_RDKit_state = True
                 QMessageBox.information(self, 'Hint', 'Completed!', QMessageBox.Ok | QMessageBox.Close,
                                         QMessageBox.Close)
             else:
@@ -494,18 +523,58 @@ class mywindow(QtWidgets.QMainWindow, Ui_MainWindow):
             QMessageBox.information(self, 'Hint', 'Please enter a file!', QMessageBox.Ok | QMessageBox.Close,
                                     QMessageBox.Close)
 
-
-
     # 生成
-    def featurize_Multicolumn_Smiles(self):
+    def Featurize_Multicolumn_Smiles_RDKit(self):
         try:
-            if self.enter_Multicolumn_Smiles_state == True:
-                path = self.opt.save_path + "/Descriptor generation/Multicolumn Smiles"
+            if self.Import_Multicolumn_Smiles_RDKit_state == True:
+                path = self.opt.save_path + "/Descriptor generation/Multicolumn Smiles rdkit"
                 if os.path.exists(path):
                     shutil.rmtree(path)
                 os.makedirs(path)
 
-                dataML.featurize_Multicolumn_Smiles(path,self.opt.origin_path_28)
+                dataML.featurize_Multicolumn_Smiles_RDKit(path,self.opt.origin_path_28)
+
+                QMessageBox.information(self, 'Hint', 'Completed!', QMessageBox.Ok | QMessageBox.Close,
+                                        QMessageBox.Close)
+                if self.opt.if_open == True:
+                    str1 = (path+'/train_test_dataset.csv').replace("/", "\\")
+                    os.startfile(str1)
+            else:
+                QMessageBox.information(self, 'Hint', 'Do "Import"!', QMessageBox.Ok | QMessageBox.Close,
+                                        QMessageBox.Close)
+        except Exception as e:
+            print(e)
+
+
+
+
+    def Import_Multicolumn_Smiles_Morgan(self):
+        directory_temp, filetype = QFileDialog.getOpenFileNames(self, "Select file")
+        if len(directory_temp) > 0:
+            str_root = str(directory_temp)
+            f_csv = str_root.rfind('.csv')
+            if f_csv != -1:  # 判断是不是.csv
+                self.opt.origin_path_28 = str((str_root.replace("\\", '/'))[2:-2])
+                self.Import_Multicolumn_Smiles_Morgan_state = True
+                QMessageBox.information(self, 'Hint', 'Completed!', QMessageBox.Ok | QMessageBox.Close,
+                                        QMessageBox.Close)
+            else:
+                QMessageBox.information(self, 'Hint', 'Not .csv file, please re-enter!',
+                                        QMessageBox.Ok | QMessageBox.Close,
+                                        QMessageBox.Close)
+        else:
+            QMessageBox.information(self, 'Hint', 'Please enter a file!', QMessageBox.Ok | QMessageBox.Close,
+                                    QMessageBox.Close)
+    # 生成
+    def Featurize_Multicolumn_Smiles_Morgan(self):
+        try:
+            if self.Import_Multicolumn_Smiles_Morgan_state == True:
+                path = self.opt.save_path + "/Descriptor generation/Multicolumn Smiles morgan"
+                if os.path.exists(path):
+                    shutil.rmtree(path)
+                os.makedirs(path)
+
+                dataML.featurize_Multicolumn_Smiles_Morgan(path,self.opt.origin_path_28)
 
                 QMessageBox.information(self, 'Hint', 'Completed!', QMessageBox.Ok | QMessageBox.Close,
                                         QMessageBox.Close)
@@ -602,34 +671,34 @@ class mywindow(QtWidgets.QMainWindow, Ui_MainWindow):
                                     QMessageBox.Close)
 
     #  数据导入-更多可视化    Data importing_More visualization (only for classification)
-    def Dataimporting_Morevisualization_classification(self):
-        try:
-            if self.enter_training_test_set_path_state == True:
-
-                path = self.opt.save_path + "/Data importing/More visualization (only for classification)"
-                csvname = self.opt.origin_path_1
-                if os.path.exists(path):
-                    shutil.rmtree(path)
-                os.makedirs(path)
-
-                value, ok = QtWidgets.QInputDialog.getText(self, "Train/Test dataset",
-                                                           "type column name for conversion:",
-                                                           QtWidgets.QLineEdit.Normal, "")
-                result = dataML.Visualization_for_classification(csvname, path, value)
-                if result == False:
-                    QMessageBox.information(self, 'Hint', 'Column name not found!', QMessageBox.Ok | QMessageBox.Close,
-                                            QMessageBox.Close)
-                else:
-                    if self.opt.if_open == True:
-                        os.startfile(path)
-
-
-            else:
-
-                QMessageBox.information(self, 'Hint', 'Do "Train/Test -> Import"!', QMessageBox.Ok | QMessageBox.Close,
-                                        QMessageBox.Close)
-        except Exception as e:
-            print(e)
+    # def Dataimporting_Morevisualization_classification(self):
+    #     try:
+    #         if self.enter_training_test_set_path_state == True:
+    #
+    #             path = self.opt.save_path + "/Data importing/More visualization (only for classification)"
+    #             csvname = self.opt.origin_path_1
+    #             if os.path.exists(path):
+    #                 shutil.rmtree(path)
+    #             os.makedirs(path)
+    #
+    #             value, ok = QtWidgets.QInputDialog.getText(self, "Train/Test dataset",
+    #                                                        "type column name for conversion:",
+    #                                                        QtWidgets.QLineEdit.Normal, "")
+    #             result = dataML.Visualization_for_classification(csvname, path, value)
+    #             if result == False:
+    #                 QMessageBox.information(self, 'Hint', 'Column name not found!', QMessageBox.Ok | QMessageBox.Close,
+    #                                         QMessageBox.Close)
+    #             else:
+    #                 if self.opt.if_open == True:
+    #                     os.startfile(path)
+    #
+    #
+    #         else:
+    #
+    #             QMessageBox.information(self, 'Hint', 'Do "Train/Test -> Import"!', QMessageBox.Ok | QMessageBox.Close,
+    #                                     QMessageBox.Close)
+    #     except Exception as e:
+    #         print(e)
 
     # 预处理---------------------------------------------------------------------------------------------
     # 预处理-rfe特征选择           Preprocessing_rfe feature selection
@@ -859,8 +928,8 @@ class mywindow(QtWidgets.QMainWindow, Ui_MainWindow):
                     self.show_dialog_classified_data_two_ExtraTree()
                 elif text2 == "Gaussian Process":
                     self.show_dialog_classified_data_two_GaussianProcess()
-                elif text2 == "KNeighbors":
-                    pass
+                # elif text2 == "KNeighbors":
+                #     pass
                 elif text2 == "Decision Tree":
                     self.show_dialog_classified_data_two_DecisionTree()
                 elif text2 == "SVM":
@@ -1941,92 +2010,6 @@ class mywindow(QtWidgets.QMainWindow, Ui_MainWindow):
             QMessageBox.information(self, 'Hint', 'Do "Train/Test -> Import"!', QMessageBox.Ok | QMessageBox.Close,
                                     QMessageBox.Close)
 
-    # GP-------------------------------------------------------------------------------------------------------
-    # GP——符号回归                              GP_Symbolic regression
-    def GP_Symbolicregression(self):
-        try:
-                directory_temp, filetype = QFileDialog.getOpenFileNames(self, "Select file")
-                if len(directory_temp) > 0:
-                    str_root = str(directory_temp)
-                    f_csv = str_root.rfind('.csv')
-                    if f_csv != -1:                                                    # 判断是不是.csv
-                        csvname=str((str_root.replace("\\", '/'))[2:-2])
-                        path = self.opt.save_path + "/GP/Symbolic regression"
-                        if os.path.exists(path):
-                            shutil.rmtree(path)
-                        os.makedirs(path)
-
-                        MAE=Symbolicregression_Modelconstruction(csvname,path)
-                        string1 = "MAE: " + str(MAE)
-                        self.textBrowser.append(string1)
-
-                        if self.opt.if_open == True:
-                            # str1 = (path + '/Learning curve.png').replace("/", "\\")
-                            str1 = (path + '/fitting.png').replace("/", "\\")
-                            os.startfile(str1)
-                            str2 = (path + '/residue.png').replace("/", "\\")
-                            os.startfile(str2)
-                            str3 = (path + '/tree.png').replace("/", "\\")
-                            os.startfile(str3)
-
-                        QMessageBox.information(self, 'Hint', 'Completed!', QMessageBox.Ok | QMessageBox.Close,
-                                                QMessageBox.Close)
-
-                    else:
-                        QMessageBox.information(self, 'Hint', 'Not .csv file, please re-enter!', QMessageBox.Ok | QMessageBox.Close,
-                                                QMessageBox.Close)
-                else:
-                    QMessageBox.information(self, 'Hint', 'Please enter a file!', QMessageBox.Ok | QMessageBox.Close,
-                                            QMessageBox.Close)
-        except Exception as e:
-            print(e)
-
-    # GP——符号分类                                   GP_Symbolic classification
-    def GP_Symbolicclassification(self):
-        try:
-            directory_temp, filetype = QFileDialog.getOpenFileNames(self, "Select file")
-            if len(directory_temp) > 0:
-                str_root = str(directory_temp)
-                f_csv = str_root.rfind('.csv')
-                if f_csv != -1:  # 判断是不是.csv
-                    csvname = str((str_root.replace("\\", '/'))[2:-2])
-                    path = self.opt.save_path + "/GP/Symbolic classification"
-                    if os.path.exists(path):
-                        shutil.rmtree(path)
-                    os.makedirs(path)
-
-                    string1,string2 = Symbolicclassification(csvname, path)
-
-                    self.textBrowser.append(string1)
-                    self.textBrowser.append(string2)
-
-                    if self.opt.if_open == True:
-                        str1 = (path + '/test_confusion.png').replace("/", "\\")
-                        os.startfile(str1)
-                        str2 = (path + '/train_confusion.png').replace("/", "\\")
-                        os.startfile(str2)
-                        str3 = (path + '/test_ROC.png').replace("/", "\\")
-                        os.startfile(str3)
-                        str4 = (path + '/train_ROC.png').replace("/", "\\")
-                        os.startfile(str4)
-                        # str5 = (path + '/tree.png').replace("/", "\\")
-                        # os.startfile(str5)
-
-
-                    QMessageBox.information(self, 'Hint', 'Completed!', QMessageBox.Ok | QMessageBox.Close,
-                                            QMessageBox.Close)
-
-                else:
-                    QMessageBox.information(self, 'Hint', 'Not .csv file, please re-enter!',
-                                            QMessageBox.Ok | QMessageBox.Close,
-                                            QMessageBox.Close)
-            else:
-                QMessageBox.information(self, 'Hint', 'Please enter a file!', QMessageBox.Ok | QMessageBox.Close,
-                                        QMessageBox.Close)
-        except Exception as e:
-            print(e)
-
-
 
 
 
@@ -2077,6 +2060,48 @@ class mywindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
 
 
+
+    def enter_virtual_Multicolumn_Smiles_RDKit(self):
+        directory_temp, filetype = QFileDialog.getOpenFileNames(self, "Select file")
+        if len(directory_temp) > 0:
+            str_root = str(directory_temp)
+            f_csv = str_root.rfind('.csv')
+            if f_csv != -1:  # 判断是不是.csv
+                self.opt.origin_path_19 = str((str_root.replace("\\", '/'))[2:-2])
+                self.enter_virtual_Multicolumn_Smiles_RDKit_state = True
+                QMessageBox.information(self, 'Hint', 'Completed!', QMessageBox.Ok | QMessageBox.Close,
+                                        QMessageBox.Close)
+            else:
+                QMessageBox.information(self, 'Hint', 'Not .csv file, please re-enter!',
+                                        QMessageBox.Ok | QMessageBox.Close,
+                                        QMessageBox.Close)
+        else:
+            QMessageBox.information(self, 'Hint', 'Please enter a file!', QMessageBox.Ok | QMessageBox.Close,
+                                    QMessageBox.Close)
+
+    # 自动生成输出结果
+    def generate_virtual_Multicolumn_Smiles_RDKit(self):
+        try:
+            if self.enter_virtual_Multicolumn_Smiles_RDKit_state == True:
+                path = self.opt.save_path + "/Prediction/Import and generate only smiles RDKit"
+                if os.path.exists(path):
+                    shutil.rmtree(path)
+                os.makedirs(path)
+
+                dataML.virtual_Multicolumn_Smiles_RDKit(path,self.opt.origin_path_19)
+
+                QMessageBox.information(self, 'Hint', 'Completed!', QMessageBox.Ok | QMessageBox.Close,
+                                        QMessageBox.Close)
+                if self.opt.if_open == True:
+                    str1 = (path+'/virtual_generate_Multicolumn_Smiles_RDKit_final.csv').replace("/", "\\")
+                    os.startfile(str1)
+            else:
+                QMessageBox.information(self, 'Hint', 'Do "Import"!', QMessageBox.Ok | QMessageBox.Close,
+                                        QMessageBox.Close)
+        except Exception as e:
+            print(e)
+
+
     def enter_virtual_Multicolumn_Smiles(self):
         directory_temp, filetype = QFileDialog.getOpenFileNames(self, "Select file")
         if len(directory_temp) > 0:
@@ -2099,7 +2124,7 @@ class mywindow(QtWidgets.QMainWindow, Ui_MainWindow):
     def generate_virtual_Multicolumn_Smiles(self):
         try:
             if self.enter_virtual_Multicolumn_Smiles_state == True:
-                path = self.opt.save_path + "/Prediction/Import and generate only smiles"
+                path = self.opt.save_path + "/Prediction/Import and generate only smiles Morgan"
                 if os.path.exists(path):
                     shutil.rmtree(path)
                 os.makedirs(path)
@@ -2109,7 +2134,7 @@ class mywindow(QtWidgets.QMainWindow, Ui_MainWindow):
                 QMessageBox.information(self, 'Hint', 'Completed!', QMessageBox.Ok | QMessageBox.Close,
                                         QMessageBox.Close)
                 if self.opt.if_open == True:
-                    str1 = (path+'/virtual_generate_Multicolumn_Smiles_final.csv').replace("/", "\\")
+                    str1 = (path+'/virtual_generate_Multicolumn_Smiles_Morgan_final.csv').replace("/", "\\")
                     os.startfile(str1)
             else:
                 QMessageBox.information(self, 'Hint', 'Do "Import"!', QMessageBox.Ok | QMessageBox.Close,
@@ -2200,44 +2225,118 @@ class mywindow(QtWidgets.QMainWindow, Ui_MainWindow):
             print(e)
 
     # 预测集建立——预测集可视化                         Prediction_Prediction visualization
-    def Prediction_Prediction_visualization(self):
-        try:
-            if self. import_prediction_dataset_state== True:
-                if self. import_model_dat_state== True:
-                    if self.prediction_generation == True:
-                        path = self.opt.save_path + "/Prediction/Prediction visualization"
-                        csvname = self.opt.prediction_visualization_path
-                        if os.path.exists(path):
-                            shutil.rmtree(path)
-                        os.makedirs(path)
+    # def Prediction_Prediction_visualization(self):
+    #     try:
+    #         if self. import_prediction_dataset_state== True:
+    #             if self. import_model_dat_state== True:
+    #                 if self.prediction_generation == True:
+    #                     path = self.opt.save_path + "/Prediction/Prediction visualization"
+    #                     csvname = self.opt.prediction_visualization_path
+    #                     if os.path.exists(path):
+    #                         shutil.rmtree(path)
+    #                     os.makedirs(path)
+    #
+    #                     value, ok = QtWidgets.QInputDialog.getText(self, "Prediction", "type column name for conversion:",
+    #                                                                QtWidgets.QLineEdit.Normal, "")
+    #                     result=dataML.Visualization_for_classification(csvname, path, value)
+    #                     if result==False:
+    #                         QMessageBox.information(self, 'Hint', 'Column name not found!', QMessageBox.Ok | QMessageBox.Close,
+    #                                                 QMessageBox.Close)
+    #                     else:
+    #                         QMessageBox.information(self, 'Hint', 'Completed!', QMessageBox.Ok | QMessageBox.Close,
+    #                                                 QMessageBox.Close)
+    #                         if self.opt.if_open == True:
+    #                             os.startfile(path)
+    #                 else:
+    #                     QMessageBox.information(self, 'Hint', 'Do "Prediction generation (with label)"!', QMessageBox.Ok | QMessageBox.Close,
+    #                                             QMessageBox.Close)
+    #             else:
+    #                 QMessageBox.information(self, 'Hint', 'Do "Select machine learning model"!', QMessageBox.Ok | QMessageBox.Close,
+    #                                         QMessageBox.Close)
+    #         else:
+    #             QMessageBox.information(self, 'Hint', 'Do "Import virtual data (without label)"!', QMessageBox.Ok | QMessageBox.Close,
+    #                                     QMessageBox.Close)
+    #     except Exception as e:
+    #         print(e)
 
-                        value, ok = QtWidgets.QInputDialog.getText(self, "Prediction", "type column name for conversion:",
-                                                                   QtWidgets.QLineEdit.Normal, "")
-                        result=dataML.Visualization_for_classification(csvname, path, value)
-                        if result==False:
-                            QMessageBox.information(self, 'Hint', 'Column name not found!', QMessageBox.Ok | QMessageBox.Close,
-                                                    QMessageBox.Close)
-                        else:
-                            QMessageBox.information(self, 'Hint', 'Completed!', QMessageBox.Ok | QMessageBox.Close,
-                                                    QMessageBox.Close)
-                            if self.opt.if_open == True:
-                                os.startfile(path)
-                    else:
-                        QMessageBox.information(self, 'Hint', 'Do "Prediction generation (with label)"!', QMessageBox.Ok | QMessageBox.Close,
-                                                QMessageBox.Close)
-                else:
-                    QMessageBox.information(self, 'Hint', 'Do "Select machine learning model"!', QMessageBox.Ok | QMessageBox.Close,
-                                            QMessageBox.Close)
-            else:
-                QMessageBox.information(self, 'Hint', 'Do "Import virtual data (without label)"!', QMessageBox.Ok | QMessageBox.Close,
-                                        QMessageBox.Close)
-        except Exception as e:
-            print(e)
+
 
 
     # shapley----------------------------------------------------------------------------------------------------
-    # shapley_Model import
-    def shapley_Modelimport(self):
+    # # shapley_Model import
+    # def shapley_Modelimport(self):
+    #     directory_temp, filetype = QFileDialog.getOpenFileNames(self, "Select file")
+    #     if len(directory_temp) > 0:
+    #         str_root = str(directory_temp)
+    #         f_dat = str_root.rfind('.dat')
+    #         if f_dat != -1:  # 判断是不是.dat
+    #             self.opt.origin_path_7 = str((str_root.replace("\\", '/'))[2:-2])
+    #
+    #             #self.import_model_dat_state = True
+    #             QMessageBox.information(self, 'Hint', 'Completed!', QMessageBox.Ok | QMessageBox.Close,
+    #                                     QMessageBox.Close)
+    #         else:
+    #             QMessageBox.information(self, 'Hint', 'Not .dat file, please re-enter!',
+    #                                     QMessageBox.Ok | QMessageBox.Close,
+    #                                     QMessageBox.Close)
+    #     else:
+    #         QMessageBox.information(self, 'Hint', 'Please choose a model!', QMessageBox.Ok | QMessageBox.Close,
+    #                                 QMessageBox.Close)
+    #
+    #
+    # # shapley_Data import
+    # def shapley_Dataimport(self):
+    #     directory_temp, filetype = QFileDialog.getOpenFileNames(self, "Select file")
+    #     if len(directory_temp) > 0:
+    #         str_root = str(directory_temp)
+    #         f_csv = str_root.rfind('.csv')
+    #         if f_csv != -1:  # 判断是不是.csv
+    #             self.opt.origin_path_2 = str((str_root.replace("\\", '/'))[2:-2])
+    #             #self.clear_state_Prediction()
+    #             #self.import_prediction_dataset_state = True
+    #             QMessageBox.information(self, 'Hint', 'Completed!', QMessageBox.Ok | QMessageBox.Close,
+    #                                     QMessageBox.Close)
+    #         else:
+    #             QMessageBox.information(self, 'Hint', 'Not .csv file, please re-enter!',
+    #                                     QMessageBox.Ok | QMessageBox.Close,
+    #                                     QMessageBox.Close)
+    #     else:
+    #         QMessageBox.information(self, 'Hint', 'Please enter a file!', QMessageBox.Ok | QMessageBox.Close,
+    #                                 QMessageBox.Close)
+    #
+    # # shapley_Result
+    # def shapley_Result(self):
+    #     try:
+    #         path = self.opt.save_path + "/Shapley/Result"
+    #         if os.path.exists(path):
+    #             shutil.rmtree(path)
+    #         os.makedirs(path)
+    #
+    #         dataML.Result(self.opt.origin_path_2, path, self.opt.origin_path_7)
+    #
+    #         if self.opt.if_open == True:
+    #             str1 = (path + '/summary_plot.png').replace("/", "\\")
+    #             os.startfile(str1)
+    #             str2 = (path + '/Forceplot.png').replace("/", "\\")
+    #             os.startfile(str2)
+    #             str3 = (path + '/Feature_ranking_bar.png').replace("/", "\\")
+    #             os.startfile(str3)
+    #             # str4 = (path + '/Waterfall.png').replace("/", "\\")
+    #             # os.startfile(str4)
+    #             # str5 = (path + '/decision_tree.png').replace("/", "\\")
+    #             # os.startfile(str5)
+    #
+    #         QMessageBox.information(self, 'Hint', 'Completed!', QMessageBox.Ok | QMessageBox.Close,
+    #                                 QMessageBox.Close)
+    #     except Exception as e:
+    #         print(e)
+    #
+    #
+    #
+
+
+#Shapley 回归
+    def shapley_Regression_Modelimport(self):
         directory_temp, filetype = QFileDialog.getOpenFileNames(self, "Select file")
         if len(directory_temp) > 0:
             str_root = str(directory_temp)
@@ -2258,7 +2357,7 @@ class mywindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
 
     # shapley_Data import
-    def shapley_Dataimport(self):
+    def shapley_Regression_Dataimport(self):
         directory_temp, filetype = QFileDialog.getOpenFileNames(self, "Select file")
         if len(directory_temp) > 0:
             str_root = str(directory_temp)
@@ -2278,14 +2377,14 @@ class mywindow(QtWidgets.QMainWindow, Ui_MainWindow):
                                     QMessageBox.Close)
 
     # shapley_Result
-    def shapley_Result(self):
+    def shapley_Regression_Result(self):
         try:
-            path = self.opt.save_path + "/Shapley/Result"
+            path = self.opt.save_path + "/Shapley/Regression/Result"
             if os.path.exists(path):
                 shutil.rmtree(path)
             os.makedirs(path)
 
-            dataML.Result(self.opt.origin_path_2, path, self.opt.origin_path_7)
+            dataML.Result_regression(self.opt.origin_path_2, path, self.opt.origin_path_7)
 
             if self.opt.if_open == True:
                 str1 = (path + '/summary_plot.png').replace("/", "\\")
@@ -2303,6 +2402,79 @@ class mywindow(QtWidgets.QMainWindow, Ui_MainWindow):
                                     QMessageBox.Close)
         except Exception as e:
             print(e)
+
+
+
+#Shapley 分类
+    def shapley_Classification_Modelimport(self):
+        directory_temp, filetype = QFileDialog.getOpenFileNames(self, "Select file")
+        if len(directory_temp) > 0:
+            str_root = str(directory_temp)
+            f_dat = str_root.rfind('.dat')
+            if f_dat != -1:  # 判断是不是.dat
+                self.opt.origin_path_7 = str((str_root.replace("\\", '/'))[2:-2])
+
+                #self.import_model_dat_state = True
+                QMessageBox.information(self, 'Hint', 'Completed!', QMessageBox.Ok | QMessageBox.Close,
+                                        QMessageBox.Close)
+            else:
+                QMessageBox.information(self, 'Hint', 'Not .dat file, please re-enter!',
+                                        QMessageBox.Ok | QMessageBox.Close,
+                                        QMessageBox.Close)
+        else:
+            QMessageBox.information(self, 'Hint', 'Please choose a model!', QMessageBox.Ok | QMessageBox.Close,
+                                    QMessageBox.Close)
+
+
+    # shapley_Data import
+    def shapley_Classification_Dataimport(self):
+        directory_temp, filetype = QFileDialog.getOpenFileNames(self, "Select file")
+        if len(directory_temp) > 0:
+            str_root = str(directory_temp)
+            f_csv = str_root.rfind('.csv')
+            if f_csv != -1:  # 判断是不是.csv
+                self.opt.origin_path_2 = str((str_root.replace("\\", '/'))[2:-2])
+                #self.clear_state_Prediction()
+                #self.import_prediction_dataset_state = True
+                QMessageBox.information(self, 'Hint', 'Completed!', QMessageBox.Ok | QMessageBox.Close,
+                                        QMessageBox.Close)
+            else:
+                QMessageBox.information(self, 'Hint', 'Not .csv file, please re-enter!',
+                                        QMessageBox.Ok | QMessageBox.Close,
+                                        QMessageBox.Close)
+        else:
+            QMessageBox.information(self, 'Hint', 'Please enter a file!', QMessageBox.Ok | QMessageBox.Close,
+                                    QMessageBox.Close)
+
+    # shapley_Result
+    def shapley_Classification_Result(self):
+        try:
+            path = self.opt.save_path + "/Shapley/Classification/Result"
+            if os.path.exists(path):
+                shutil.rmtree(path)
+            os.makedirs(path)
+
+            dataML.Result_classification(self.opt.origin_path_2, path, self.opt.origin_path_7)
+
+            if self.opt.if_open == True:
+                str1 = (path + '/summary_plot.png').replace("/", "\\")
+                os.startfile(str1)
+                str2 = (path + '/Forceplot.png').replace("/", "\\")
+                os.startfile(str2)
+                str3 = (path + '/Feature_ranking_bar.png').replace("/", "\\")
+                os.startfile(str3)
+                # str4 = (path + '/Waterfall.png').replace("/", "\\")
+                # os.startfile(str4)
+                # str5 = (path + '/decision_tree.png').replace("/", "\\")
+                # os.startfile(str5)
+
+            QMessageBox.information(self, 'Hint', 'Completed!', QMessageBox.Ok | QMessageBox.Close,
+                                    QMessageBox.Close)
+        except Exception as e:
+            print(e)
+
+
+
 
     """
     # 9                                                               # 1 9  and 1 3 9.3
@@ -2391,6 +2563,92 @@ class mywindow(QtWidgets.QMainWindow, Ui_MainWindow):
             print(e)
     """
 
+
+
+    # GP-------------------------------------------------------------------------------------------------------
+    # GP——符号回归                              GP_Symbolic regression
+    def GP_Symbolicregression(self):
+        try:
+                directory_temp, filetype = QFileDialog.getOpenFileNames(self, "Select file")
+                if len(directory_temp) > 0:
+                    str_root = str(directory_temp)
+                    f_csv = str_root.rfind('.csv')
+                    if f_csv != -1:                                                    # 判断是不是.csv
+                        csvname=str((str_root.replace("\\", '/'))[2:-2])
+                        path = self.opt.save_path + "/GP/Symbolic regression"
+                        if os.path.exists(path):
+                            shutil.rmtree(path)
+                        os.makedirs(path)
+
+                        MAE=Symbolicregression_Modelconstruction(csvname,path)
+                        string1 = "MAE: " + str(MAE)
+                        self.textBrowser.append(string1)
+
+                        if self.opt.if_open == True:
+                            # str1 = (path + '/Learning curve.png').replace("/", "\\")
+                            str1 = (path + '/fitting.png').replace("/", "\\")
+                            os.startfile(str1)
+                            str2 = (path + '/residue.png').replace("/", "\\")
+                            os.startfile(str2)
+                            str3 = (path + '/tree.png').replace("/", "\\")
+                            os.startfile(str3)
+
+                        QMessageBox.information(self, 'Hint', 'Completed!', QMessageBox.Ok | QMessageBox.Close,
+                                                QMessageBox.Close)
+
+                    else:
+                        QMessageBox.information(self, 'Hint', 'Not .csv file, please re-enter!', QMessageBox.Ok | QMessageBox.Close,
+                                                QMessageBox.Close)
+                else:
+                    QMessageBox.information(self, 'Hint', 'Please enter a file!', QMessageBox.Ok | QMessageBox.Close,
+                                            QMessageBox.Close)
+        except Exception as e:
+            print(e)
+
+    # GP——符号分类                                   GP_Symbolic classification
+    def GP_Symbolicclassification(self):
+        try:
+            directory_temp, filetype = QFileDialog.getOpenFileNames(self, "Select file")
+            if len(directory_temp) > 0:
+                str_root = str(directory_temp)
+                f_csv = str_root.rfind('.csv')
+                if f_csv != -1:  # 判断是不是.csv
+                    csvname = str((str_root.replace("\\", '/'))[2:-2])
+                    path = self.opt.save_path + "/GP/Symbolic classification"
+                    if os.path.exists(path):
+                        shutil.rmtree(path)
+                    os.makedirs(path)
+
+                    string1,string2 = Symbolicclassification(csvname, path)
+
+                    self.textBrowser.append(string1)
+                    self.textBrowser.append(string2)
+
+                    if self.opt.if_open == True:
+                        str1 = (path + '/test_confusion.png').replace("/", "\\")
+                        os.startfile(str1)
+                        str2 = (path + '/train_confusion.png').replace("/", "\\")
+                        os.startfile(str2)
+                        str3 = (path + '/test_ROC.png').replace("/", "\\")
+                        os.startfile(str3)
+                        str4 = (path + '/train_ROC.png').replace("/", "\\")
+                        os.startfile(str4)
+                        # str5 = (path + '/tree.png').replace("/", "\\")
+                        # os.startfile(str5)
+
+
+                    QMessageBox.information(self, 'Hint', 'Completed!', QMessageBox.Ok | QMessageBox.Close,
+                                            QMessageBox.Close)
+
+                else:
+                    QMessageBox.information(self, 'Hint', 'Not .csv file, please re-enter!',
+                                            QMessageBox.Ok | QMessageBox.Close,
+                                            QMessageBox.Close)
+            else:
+                QMessageBox.information(self, 'Hint', 'Please enter a file!', QMessageBox.Ok | QMessageBox.Close,
+                                        QMessageBox.Close)
+        except Exception as e:
+            print(e)
 
 
 

@@ -12,28 +12,28 @@
 # 0.1.1.1 导入有机分子smiles码的csv文件
 
 
-def smiles_csv_pydel(name2):
-    import pandas as pd
-    global data2
-    data2 = pd.read_csv(name2)
-    print(data2.iloc[:,0])
-    return data2
+# def smiles_csv_pydel(name2):
+#     import pandas as pd
+#     global data2
+#     data2 = pd.read_csv(name2)
+#     print(data2.iloc[:,0])
+#     return data2
 
 # 0.1.1.2 pydel描述符生成
-def pydel_featurizer(path):
-    from padelpy import from_smiles
-    import pandas as pd
-    data2a = data2.iloc[:,0].map(lambda x : from_smiles(x).values())
-    data2a = pd.DataFrame(data2a)
-    data2b = data2a.iloc[:,0].apply(pd.Series)
-    #写入列名
-    data2c = data2.iloc[:,0].map(lambda x : from_smiles(x).keys())
-    col2c = data2c.iloc[0]
-    data2b.columns = col2c
-    print(data2b)
-    # 特征存入pydel_featurizer.csv
-    data2b.to_csv(path+"/pydel_featurizer_output.csv")
-    return data2b
+# def pydel_featurizer(path):
+#     from padelpy import from_smiles
+#     import pandas as pd
+#     data2a = data2.iloc[:,0].map(lambda x : from_smiles(x).values())
+#     data2a = pd.DataFrame(data2a)
+#     data2b = data2a.iloc[:,0].apply(pd.Series)
+#     #写入列名
+#     data2c = data2.iloc[:,0].map(lambda x : from_smiles(x).keys())
+#     col2c = data2c.iloc[0]
+#     data2b.columns = col2c
+#     print(data2b)
+#     # 特征存入pydel_featurizer.csv
+#     data2b.to_csv(path+"/pydel_featurizer_output.csv")
+#     return data2b
 
 # !pip install padelpy
 # from padelpy import from_smiles
@@ -461,7 +461,349 @@ def two_in_one(path,csvpath):
 
 
 # multiple rdkit smiles columns
-def featurize_Multicolumn_Smiles(path,csvpath):
+def featurize_Multicolumn_Smiles_RDKit(path,csvpath):
+    #magpie (matminer) and rdkit, 2in1
+    import pandas as pd
+    import rdkit.Chem.Descriptors
+    def select_columns_by_suffix(df, suffix):
+        filtered_columns = df.filter(regex=f'{suffix}$')
+        return filtered_columns
+
+    def extract_and_store_columns(csv_file, suffixes):
+        # 读取 CSV 文件
+        df = pd.read_csv(csv_file)
+
+        selected_columns = {}
+        for suffix in suffixes:
+            selected_columns[suffix] = select_columns_by_suffix(df, suffix)
+            print('********************************************************************************')
+            print(f"Columns ending with '{suffix}':")
+            print('********************************************************************************')
+            print(selected_columns[suffix])
+            # 如果需要保存到新的DataFrame中，取消注释下一行
+            #global df_selected
+            df_selected = pd.concat(selected_columns, axis=1)
+            # df_combined = pd.concat(selected_columns.values(), axis=1)
+            # df_combined.to_csv('selected_columns.csv', index=False)
+            selected_columns[suffix].to_csv(path+'/'+f'{suffix}_selected_columns.csv', index=False)
+
+        # 获取未被选中的列
+        unselected_columns = df.drop(columns=[col for cols in selected_columns.values() for col in cols.columns])
+
+        # 保存未被选中的列到 CSV 文件
+        unselected_columns.to_csv(path+'/'+'unselected_columns.csv', index=False)
+
+        return selected_columns
+
+    # 用法示例
+    file_path = csvpath
+    # suffixes = ['Formula', 'Smiles']
+    suffixes = ['Smiles']
+    selected_columns = extract_and_store_columns(file_path, suffixes)
+
+    original_data = pd.DataFrame(pd.read_csv(path+'/Smiles_selected_columns.csv'))
+
+    import pandas as pd
+
+    # 假设 original_data 是您的原始数据集
+    # 创建一个空字典，用于存储新的数据集
+    new_datasets = {}
+
+    # 遍历原始数据集的每一列
+    for col_name in original_data.columns:
+        # 创建新的数据集，将当前列命名为 'Name'
+        new_dataset = pd.DataFrame({'Name': original_data[col_name]})
+
+        # 将新数据集存储在字典中，字典的键是 'data1'，'data2'，依此类推
+        new_datasets['data' + str(len(new_datasets) + 1)] = new_dataset
+
+    # 打印或使用新的数据集
+    for key, value in new_datasets.items():
+        print(f"{key}:\n{value}\n")
+
+
+    # 用于存储特征转换后的数据集
+    result_datasets = {}
+
+
+    # 合并所有数据集
+    merged_result = result_datasets
+
+    # 将合并后的结果保存为 CSV 文件
+    # merged_result.to_csv(path+'/merged_result.csv', index=False)
+
+    # 打印或使用合并后的结果
+    # print(merged_result)
+
+    # 有机部分
+    original_data2 = pd.DataFrame(pd.read_csv(path+'/Smiles_selected_columns.csv'))
+
+    new_datasets2 = {}
+
+    # 遍历原始数据集的每一列
+    for col_name in original_data2.columns:
+        # 创建新的数据集，将当前列命名为 'Name'
+        new_dataset2 = pd.DataFrame({'Name': original_data2[col_name]})
+
+        # 将新数据集存储在字典中，字典的键是 'organic_data1'，'organic_data2'，依此类推
+        new_datasets2['organic_data' + str(len(new_datasets2) + 1)] = new_dataset2
+
+    # 打印或使用新的数据集
+    for key, value in new_datasets2.items():
+        print(f"{key}:\n{value}\n")
+
+    from rdkit import Chem
+    from rdkit.Chem import Descriptors
+    import pandas as pd
+
+    rdkit_datasets = {}
+
+    for key, dataset in new_datasets2.items():
+        # 特征化 RDKit
+        rdkit_features = dataset['Name'].apply(lambda x: Chem.MolFromSmiles(x))
+
+        # 检查分子是否有效
+        valid_mols = rdkit_features.dropna()
+
+        if not valid_mols.empty:
+            # 计算所有 RDKit 描述符
+            # rdkit_descriptors = valid_mols.apply(lambda x: [Descriptors.MolWt(x), Descriptors.NumRotatableBonds(x)])
+            rdkit_descriptors = valid_mols.apply(lambda x: [Descriptors.BalabanJ(x),
+Descriptors.BertzCT(x),
+Descriptors.Chi0(x),
+Descriptors.Chi0n(x),
+Descriptors.Chi0v(x),
+Descriptors.Chi1(x),
+Descriptors.Chi1n(x),
+Descriptors.Chi1v(x),
+Descriptors.Chi2n(x),
+Descriptors.Chi2v(x),
+Descriptors.Chi3n(x),
+Descriptors.Chi3v(x),
+Descriptors.Chi4n(x),
+Descriptors.Chi4v(x),
+Descriptors.EState_VSA1(x),
+Descriptors.EState_VSA10(x),
+Descriptors.EState_VSA11(x),
+Descriptors.EState_VSA2(x),
+Descriptors.EState_VSA3(x),
+Descriptors.EState_VSA4(x),
+Descriptors.EState_VSA5(x),
+Descriptors.EState_VSA6(x),
+Descriptors.EState_VSA7(x),
+Descriptors.EState_VSA8(x),
+Descriptors.EState_VSA9(x),
+Descriptors.ExactMolWt(x),
+Descriptors.FpDensityMorgan1(x),
+Descriptors.FpDensityMorgan2(x),
+Descriptors.FpDensityMorgan3(x),
+Descriptors.FractionCSP3(x),
+Descriptors.HallKierAlpha(x),
+Descriptors.HeavyAtomCount(x),
+Descriptors.HeavyAtomMolWt(x),
+Descriptors.Ipc(x),
+Descriptors.Kappa1(x),
+Descriptors.Kappa2(x),
+Descriptors.Kappa3(x),
+Descriptors.LabuteASA(x),
+Descriptors.MaxAbsEStateIndex(x),
+Descriptors.MaxAbsPartialCharge(x),
+Descriptors.MaxEStateIndex(x),
+Descriptors.MaxPartialCharge(x),
+Descriptors.MinAbsEStateIndex(x),
+Descriptors.MinAbsPartialCharge(x),
+Descriptors.MinEStateIndex(x),
+Descriptors.MinPartialCharge(x),
+Descriptors.MolLogP(x),
+Descriptors.MolMR(x),
+Descriptors.MolWt(x),
+Descriptors.NHOHCount(x),
+Descriptors.NOCount(x),
+Descriptors.NumAliphaticCarbocycles(x),
+Descriptors.NumAliphaticHeterocycles(x),
+Descriptors.NumAliphaticRings(x),
+Descriptors.NumAromaticCarbocycles(x),
+Descriptors.NumAromaticHeterocycles(x),
+Descriptors.NumAromaticRings(x),
+Descriptors.NumHAcceptors(x),
+Descriptors.NumHDonors(x),
+Descriptors.NumHeteroatoms(x),
+Descriptors.NumRadicalElectrons(x),
+Descriptors.NumRotatableBonds(x),
+Descriptors.NumSaturatedCarbocycles(x),
+Descriptors.NumSaturatedHeterocycles(x),
+Descriptors.NumSaturatedRings(x),
+Descriptors.NumValenceElectrons(x),
+Descriptors.PEOE_VSA1(x),
+Descriptors.PEOE_VSA10(x),
+Descriptors.PEOE_VSA11(x),
+Descriptors.PEOE_VSA12(x),
+Descriptors.PEOE_VSA13(x),
+Descriptors.PEOE_VSA14(x),
+Descriptors.PEOE_VSA2(x),
+Descriptors.PEOE_VSA3(x),
+Descriptors.PEOE_VSA4(x),
+Descriptors.PEOE_VSA5(x),
+Descriptors.PEOE_VSA6(x),
+Descriptors.PEOE_VSA7(x),
+Descriptors.PEOE_VSA8(x),
+Descriptors.PEOE_VSA9(x),
+Descriptors.RingCount(x),
+Descriptors.SMR_VSA1(x),
+Descriptors.SMR_VSA10(x),
+Descriptors.SMR_VSA2(x),
+Descriptors.SMR_VSA3(x),
+Descriptors.SMR_VSA4(x),
+Descriptors.SMR_VSA5(x),
+Descriptors.SMR_VSA6(x),
+Descriptors.SMR_VSA7(x),
+Descriptors.SMR_VSA8(x),
+Descriptors.SMR_VSA9(x),
+Descriptors.SlogP_VSA1(x),
+Descriptors.SlogP_VSA10(x),
+Descriptors.SlogP_VSA11(x),
+Descriptors.SlogP_VSA12(x),
+Descriptors.SlogP_VSA2(x),
+Descriptors.SlogP_VSA3(x),
+Descriptors.SlogP_VSA4(x),
+Descriptors.SlogP_VSA5(x),
+Descriptors.SlogP_VSA6(x),
+Descriptors.SlogP_VSA7(x),
+Descriptors.SlogP_VSA8(x),
+Descriptors.SlogP_VSA9(x),
+Descriptors.TPSA(x),
+Descriptors.VSA_EState1(x),
+Descriptors.VSA_EState10(x),
+Descriptors.VSA_EState2(x),
+Descriptors.VSA_EState3(x),
+Descriptors.VSA_EState4(x),
+Descriptors.VSA_EState5(x),
+Descriptors.VSA_EState6(x),
+Descriptors.VSA_EState7(x),
+Descriptors.VSA_EState8(x),
+Descriptors.VSA_EState9(x),
+Descriptors.fr_Al_COO(x),
+Descriptors.fr_Al_OH(x),
+Descriptors.fr_Al_OH_noTert(x),
+Descriptors.fr_ArN(x),
+Descriptors.fr_Ar_COO(x),
+Descriptors.fr_Ar_N(x),
+Descriptors.fr_Ar_NH(x),
+Descriptors.fr_Ar_OH(x),
+Descriptors.fr_COO(x),
+Descriptors.fr_COO2(x),
+Descriptors.fr_C_O(x),
+Descriptors.fr_C_O_noCOO(x),
+Descriptors.fr_C_S(x),
+Descriptors.fr_HOCCN(x),
+Descriptors.fr_Imine(x),
+Descriptors.fr_NH0(x),
+Descriptors.fr_NH1(x),
+Descriptors.fr_NH2(x),
+Descriptors.fr_N_O(x),
+Descriptors.fr_Ndealkylation1(x),
+Descriptors.fr_Ndealkylation2(x),
+Descriptors.fr_Nhpyrrole(x),
+Descriptors.fr_SH(x),
+Descriptors.fr_aldehyde(x),
+Descriptors.fr_alkyl_carbamate(x),
+Descriptors.fr_alkyl_halide(x),
+Descriptors.fr_allylic_oxid(x),
+Descriptors.fr_amide(x),
+Descriptors.fr_amidine(x),
+Descriptors.fr_aniline(x),
+Descriptors.fr_aryl_methyl(x),
+Descriptors.fr_azide(x),
+Descriptors.fr_azo(x),
+Descriptors.fr_barbitur(x),
+Descriptors.fr_benzene(x),
+Descriptors.fr_benzodiazepine(x),
+Descriptors.fr_bicyclic(x),
+Descriptors.fr_diazo(x),
+Descriptors.fr_dihydropyridine(x),
+Descriptors.fr_epoxide(x),
+Descriptors.fr_ester(x),
+Descriptors.fr_ether(x),
+Descriptors.fr_furan(x),
+Descriptors.fr_guanido(x),
+Descriptors.fr_halogen(x),
+Descriptors.fr_hdrzine(x),
+Descriptors.fr_hdrzone(x),
+Descriptors.fr_imidazole(x),
+Descriptors.fr_imide(x),
+Descriptors.fr_isocyan(x),
+Descriptors.fr_isothiocyan(x),
+Descriptors.fr_ketone(x),
+Descriptors.fr_ketone_Topliss(x),
+Descriptors.fr_lactam(x),
+Descriptors.fr_lactone(x),
+Descriptors.fr_methoxy(x),
+Descriptors.fr_morpholine(x),
+Descriptors.fr_nitrile(x),
+Descriptors.fr_nitro(x),
+Descriptors.fr_nitro_arom(x),
+Descriptors.fr_nitro_arom_nonortho(x),
+Descriptors.fr_nitroso(x),
+Descriptors.fr_oxazole(x),
+Descriptors.fr_oxime(x),
+Descriptors.fr_para_hydroxylation(x),
+Descriptors.fr_phenol(x),
+Descriptors.fr_phenol_noOrthoHbond(x),
+Descriptors.fr_phos_acid(x),
+Descriptors.fr_phos_ester(x),
+Descriptors.fr_piperdine(x),
+Descriptors.fr_piperzine(x),
+Descriptors.fr_priamide(x),
+Descriptors.fr_prisulfonamd(x),
+Descriptors.fr_pyridine(x),
+Descriptors.fr_quatN(x),
+Descriptors.fr_sulfide(x),
+Descriptors.fr_sulfonamd(x),
+Descriptors.fr_sulfone(x),
+Descriptors.fr_term_acetylene(x),
+Descriptors.fr_tetrazole(x),
+Descriptors.fr_thiazole(x),
+Descriptors.fr_thiocyan(x),
+Descriptors.fr_thiophene(x),
+Descriptors.fr_unbrch_alkane(x),
+Descriptors.fr_urea(x),
+Descriptors.qed(x)])
+            # 将 RDKit 描述符转换为 DataFrame
+            rdkit_descriptors_df = pd.DataFrame(list(rdkit_descriptors), columns=['BalabanJ', 'BertzCT', 'Chi0', 'Chi0n', 'Chi0v', 'Chi1', 'Chi1n', 'Chi1v', 'Chi2n', 'Chi2v', 'Chi3n', 'Chi3v', 'Chi4n', 'Chi4v', 'EState_VSA1', 'EState_VSA10', 'EState_VSA11', 'EState_VSA2', 'EState_VSA3', 'EState_VSA4', 'EState_VSA5', 'EState_VSA6', 'EState_VSA7', 'EState_VSA8', 'EState_VSA9', 'ExactMolWt', 'FpDensityMorgan1', 'FpDensityMorgan2', 'FpDensityMorgan3', 'FractionCSP3', 'HallKierAlpha', 'HeavyAtomCount', 'HeavyAtomMolWt', 'Ipc', 'Kappa1', 'Kappa2', 'Kappa3', 'LabuteASA', 'MaxAbsEStateIndex', 'MaxAbsPartialCharge', 'MaxEStateIndex', 'MaxPartialCharge', 'MinAbsEStateIndex', 'MinAbsPartialCharge', 'MinEStateIndex', 'MinPartialCharge', 'MolLogP', 'MolMR', 'MolWt', 'NHOHCount', 'NOCount', 'NumAliphaticCarbocycles', 'NumAliphaticHeterocycles', 'NumAliphaticRings', 'NumAromaticCarbocycles', 'NumAromaticHeterocycles', 'NumAromaticRings', 'NumHAcceptors', 'NumHDonors', 'NumHeteroatoms', 'NumRadicalElectrons', 'NumRotatableBonds', 'NumSaturatedCarbocycles', 'NumSaturatedHeterocycles', 'NumSaturatedRings', 'NumValenceElectrons', 'PEOE_VSA1', 'PEOE_VSA10', 'PEOE_VSA11', 'PEOE_VSA12', 'PEOE_VSA13', 'PEOE_VSA14', 'PEOE_VSA2', 'PEOE_VSA3', 'PEOE_VSA4', 'PEOE_VSA5', 'PEOE_VSA6', 'PEOE_VSA7', 'PEOE_VSA8', 'PEOE_VSA9', 'RingCount', 'SMR_VSA1', 'SMR_VSA10', 'SMR_VSA2', 'SMR_VSA3', 'SMR_VSA4', 'SMR_VSA5', 'SMR_VSA6', 'SMR_VSA7', 'SMR_VSA8', 'SMR_VSA9', 'SlogP_VSA1', 'SlogP_VSA10', 'SlogP_VSA11', 'SlogP_VSA12', 'SlogP_VSA2', 'SlogP_VSA3', 'SlogP_VSA4', 'SlogP_VSA5', 'SlogP_VSA6', 'SlogP_VSA7', 'SlogP_VSA8', 'SlogP_VSA9', 'TPSA', 'VSA_EState1', 'VSA_EState10', 'VSA_EState2', 'VSA_EState3', 'VSA_EState4', 'VSA_EState5', 'VSA_EState6', 'VSA_EState7', 'VSA_EState8', 'VSA_EState9', 'fr_Al_COO', 'fr_Al_OH', 'fr_Al_OH_noTert', 'fr_ArN', 'fr_Ar_COO', 'fr_Ar_N', 'fr_Ar_NH', 'fr_Ar_OH', 'fr_COO', 'fr_COO2', 'fr_C_O', 'fr_C_O_noCOO', 'fr_C_S', 'fr_HOCCN', 'fr_Imine', 'fr_NH0', 'fr_NH1', 'fr_NH2', 'fr_N_O', 'fr_Ndealkylation1', 'fr_Ndealkylation2', 'fr_Nhpyrrole', 'fr_SH', 'fr_aldehyde', 'fr_alkyl_carbamate', 'fr_alkyl_halide', 'fr_allylic_oxid', 'fr_amide', 'fr_amidine', 'fr_aniline', 'fr_aryl_methyl', 'fr_azide', 'fr_azo', 'fr_barbitur', 'fr_benzene', 'fr_benzodiazepine', 'fr_bicyclic', 'fr_diazo', 'fr_dihydropyridine', 'fr_epoxide', 'fr_ester', 'fr_ether', 'fr_furan', 'fr_guanido', 'fr_halogen', 'fr_hdrzine', 'fr_hdrzone', 'fr_imidazole', 'fr_imide', 'fr_isocyan', 'fr_isothiocyan', 'fr_ketone', 'fr_ketone_Topliss', 'fr_lactam', 'fr_lactone', 'fr_methoxy', 'fr_morpholine', 'fr_nitrile', 'fr_nitro', 'fr_nitro_arom', 'fr_nitro_arom_nonortho', 'fr_nitroso', 'fr_oxazole', 'fr_oxime', 'fr_para_hydroxylation', 'fr_phenol', 'fr_phenol_noOrthoHbond', 'fr_phos_acid', 'fr_phos_ester', 'fr_piperdine', 'fr_piperzine', 'fr_priamide', 'fr_prisulfonamd', 'fr_pyridine', 'fr_quatN', 'fr_sulfide', 'fr_sulfonamd', 'fr_sulfone', 'fr_term_acetylene', 'fr_tetrazole', 'fr_thiazole', 'fr_thiocyan', 'fr_thiophene', 'fr_unbrch_alkane', 'fr_urea', 'qed'])
+
+            # 添加前缀
+            prefix_rdkit = f'{key}_rdkit_'
+            rdkit_descriptors_df = rdkit_descriptors_df.add_prefix(prefix_rdkit)
+
+            # 存储特征化后的数据集
+            rdkit_datasets[key] = rdkit_descriptors_df
+
+    # rdkit_datasets 包含了每个数据集的 RDKit 描述符
+
+    # 合并 RDKit 特征化后的数据集
+    merged_rdkit_result = pd.concat(rdkit_datasets.values(), axis=1)
+    merged_rdkit_result.fillna(0, inplace=True)
+    # 将合并后的结果保存为 CSV 文件
+    merged_rdkit_result.to_csv(path+'/merged_rdkit_result.csv', index=False)
+
+    # 打印或使用合并后的 RDKit 特征化结果
+    print(merged_rdkit_result)
+
+    unselected_columns = pd.DataFrame(pd.read_csv(path+'/unselected_columns.csv'))
+    # 合并前重置索引
+    # merged_result.reset_index(drop=True, inplace=True)
+    merged_rdkit_result.reset_index(drop=True, inplace=True)
+    unselected_columns.reset_index(drop=True, inplace=True)
+
+    # 合并三个数据集
+    all_merged_data = pd.concat([merged_rdkit_result, unselected_columns], axis=1)
+
+    # 将合并后的结果保存为 CSV 文件
+    all_merged_data.to_csv(path+'/train_test_dataset.csv', index=False)
+
+
+
+def featurize_Multicolumn_Smiles_Morgan(path,csvpath):
     #magpie (matminer) and rdkit, 2in1
     import pandas as pd
     def select_columns_by_suffix(df, suffix):
@@ -507,15 +849,15 @@ def featurize_Multicolumn_Smiles(path,csvpath):
     # 假设 original_data 是您的原始数据集
     # 创建一个空字典，用于存储新的数据集
     new_datasets = {}
-    print(1)
+
     # 遍历原始数据集的每一列
     for col_name in original_data.columns:
         # 创建新的数据集，将当前列命名为 'Name'
         new_dataset = pd.DataFrame({'Name': original_data[col_name]})
-        print(6)
+
         # 将新数据集存储在字典中，字典的键是 'data1'，'data2'，依此类推
         new_datasets['data' + str(len(new_datasets) + 1)] = new_dataset
-    print(2)
+
     # 打印或使用新的数据集
     for key, value in new_datasets.items():
         print(f"{key}:\n{value}\n")
@@ -555,14 +897,16 @@ def featurize_Multicolumn_Smiles(path,csvpath):
     import numpy as np
     from rdkit import Chem
     from rdkit.Chem import AllChem
-
+    from rdkit import Chem
+    from rdkit.Chem import Descriptors
+    import pandas as pd
     # 假设 new_datasets2 是包含拆分数据集的字典，如 'organic_data1', 'organic_data2', ...
     # 每个数据集中应该有 'Name' 列
 
     # 用于存储 RDKit 特征化后的数据集
     rdkit_datasets = {}
 
-    # 遍历拆分的数据集
+#    遍历拆分的数据集
     for key, dataset in new_datasets2.items():
         # 特征化 RDKit
         rdkit_features = dataset['Name'].apply(
@@ -578,6 +922,7 @@ def featurize_Multicolumn_Smiles(path,csvpath):
 
         # 存储特征化后的数据集
         rdkit_datasets[key] = rdkit_features_df
+
 
     # 合并 RDKit 特征化后的数据集
     merged_rdkit_result = pd.concat(rdkit_datasets.values(), axis=1)
@@ -599,10 +944,6 @@ def featurize_Multicolumn_Smiles(path,csvpath):
 
     # 将合并后的结果保存为 CSV 文件
     all_merged_data.to_csv(path+'/train_test_dataset.csv', index=False)
-
-
-
-
 
 # 9 遗传算法设计新特征
 ## 9.1 普通默认运算符
@@ -726,7 +1067,7 @@ def feature_rfe_select1(remain_number,path):
         f.write("\nAcquired data feature size:\n")
         f.write('(%s,%s)' % rfe_X.shape)
         #f.write("\n最后的特征s_rfe：\n")
-        f.write("\nS_rfe(Final feature)：\n")
+        f.write("\nS_rfe(Final feature):\n")
         for i in range(len(list2)):
             f.write(str(list2[i]) + '\n')
     target.to_csv(path + "/target.csv",index=None)
@@ -1363,7 +1704,7 @@ def xgboost_RandomSearchCV(path):
     plt.minorticks_on()
     plt.xlabel("True", fontproperties = 'Times New Roman', size = 20)
     plt.ylabel("Prediction", fontproperties = 'Times New Roman', size = 20)
-    pplt.gcf().text(0.0, -0.3, 'MAE = %.3f \nMSE =  %.3f \nR2 =  %.3f \n' % (MAE_train, MSE_train, R2_train), fontproperties = 'Times New Roman', size = 20, horizontalalignment='center')
+    plt.gcf().text(0.0, -0.3, 'MAE = %.3f \nMSE =  %.3f \nR2 =  %.3f \n' % (MAE_train, MSE_train, R2_train), fontproperties = 'Times New Roman', size = 20, horizontalalignment='center')
     plt.savefig(path+'/xgboost-train-randomSearch.png', dpi=300, bbox_inches = 'tight')
     plt.close()
     return str1, scores, str2
@@ -5532,103 +5873,103 @@ def GaussianProcess_classifier(a, b, c, d, e,path,csvName):
     return str1, str2, str3
 
 # 10.4
-def KNeighbors_classifier(a, b, c, d, e, f,csvName,path):
-    import matplotlib.pyplot as plot
-    import seaborn as sns
-    import matplotlib.pyplot as plt
-    from sklearn import svm
-    import numpy as np
-    import pandas as pd
-    from sklearn import preprocessing
-    from pandas import DataFrame
-    from sklearn.ensemble import RandomForestClassifier
-    from sklearn.ensemble import ExtraTreesClassifier
-    from sklearn.gaussian_process import GaussianProcessClassifier
-    from sklearn.gaussian_process.kernels import RBF
-    from sklearn.model_selection import KFold
-    from sklearn.metrics import roc_curve, auc
-    from sklearn.metrics import confusion_matrix
-    from sklearn.model_selection import train_test_split
-    from sklearn.metrics import accuracy_score
-    from sklearn.metrics import f1_score
-    from sklearn.tree import DecisionTreeClassifier
-    from sklearn.neighbors import KNeighborsClassifier
-    from sklearn.svm import SVC
-    from sklearn.model_selection import GridSearchCV
-    from sklearn.metrics import classification_report
-    import pickle
-
-    data = pd.DataFrame(pd.read_csv(csvName))
-
-    X = data.values[:, :-1]
-    y = data.values[:, -1]
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=1)
-
-    for i in range(X_train.shape[1]):
-        X_train[:, [i]] = preprocessing.MinMaxScaler().fit_transform(X_train[:, [i]])
-
-    for i in range(X_test.shape[1]):
-        X_test[:, [i]] = preprocessing.MinMaxScaler().fit_transform(X_test[:, [i]])
-
-    clf = KNeighborsClassifier(n_neighbors=8)
-    Classified_KNeighbors = clf.fit(X_train, y_train)
-
-    # 画出ROC曲线 KNeighbors test
-    y_score = Classified_KNeighbors.predict_proba(X_test)
-    fpr, tpr, threshold = roc_curve(y_test, y_score[:, 1])
-    roc_auc = auc(fpr, tpr)
-    plt.figure()
-    lw = 2
-    plt.figure(figsize=(10, 10))
-    plt.plot(fpr, tpr, color='darkorange',
-             lw=lw, label='ROC curve (area = %0.2f)' % roc_auc)  ###假正率为横坐标，真正率为纵坐标做曲线
-    print(fpr)
-    print(tpr)
-    plt.plot([0, 1], [0, 1], color='navy', lw=lw, linestyle='--')
-    plt.xlim([0.01, 1.0])
-    plt.ylim([0, 1.05])
-    plt.xlabel('False Positive Rate', fontsize=20)
-    plt.ylabel('True Positive Rate', fontsize=20)
-    plt.xticks(fontsize=20)
-    plt.yticks(fontsize=20)
-
-    plt.title('AUC')
-    plt.legend(loc="lower right", fontsize=20, frameon=False)
-    plt.show()
-
-    # 画出混淆矩阵 KNeighbors test
-    prey = Classified_KNeighbors.predict(X_test)
-    true = 0
-    for i in range(0, len(y_test)):
-        if prey[i] == y_test[i]:
-            true = true + 1
-    C = confusion_matrix(y_test, prey, labels=[0, 1])
-    plt.imshow(C, cmap=plt.cm.Blues)
-    indices = range(len(C))
-    plt.xticks(indices, [0, 1], fontsize=20)
-    plt.yticks(indices, [0, 1], fontsize=20)
-    plt.colorbar()
-    for first_index in range(len(C)):  # 第几行
-        for second_index in range(len(C)):  # 第几列
-            plt.text(first_index, second_index, C[first_index][second_index], fontsize=20, horizontalalignment='center')
-    plt.show()
-    print("true:", true)
-
-    from sklearn.metrics import accuracy_score
-    score = []
-    for K in range(40):
-        K_value = K + 1
-        knn = KNeighborsClassifier(n_neighbors=K_value, weights='uniform', algorithm='auto')
-        knn.fit(X_train, y_train)
-        y_pred = knn.predict(X_test)
-        score.append(round(accuracy_score(y_test, y_pred) * 100, 2))
-
-    plt.figure(figsize=(12, 6))
-    plt.plot(range(1, 41), score, color='red', linestyle='dashed', marker='o',
-             markerfacecolor='blue', markersize=10)
-    plt.title('The Learning curve')
-    plt.xlabel('K Value')
-    plt.ylabel('Score')
+# def KNeighbors_classifier(a, b, c, d, e, f,csvName,path):
+#     import matplotlib.pyplot as plot
+#     import seaborn as sns
+#     import matplotlib.pyplot as plt
+#     from sklearn import svm
+#     import numpy as np
+#     import pandas as pd
+#     from sklearn import preprocessing
+#     from pandas import DataFrame
+#     from sklearn.ensemble import RandomForestClassifier
+#     from sklearn.ensemble import ExtraTreesClassifier
+#     from sklearn.gaussian_process import GaussianProcessClassifier
+#     from sklearn.gaussian_process.kernels import RBF
+#     from sklearn.model_selection import KFold
+#     from sklearn.metrics import roc_curve, auc
+#     from sklearn.metrics import confusion_matrix
+#     from sklearn.model_selection import train_test_split
+#     from sklearn.metrics import accuracy_score
+#     from sklearn.metrics import f1_score
+#     from sklearn.tree import DecisionTreeClassifier
+#     from sklearn.neighbors import KNeighborsClassifier
+#     from sklearn.svm import SVC
+#     from sklearn.model_selection import GridSearchCV
+#     from sklearn.metrics import classification_report
+#     import pickle
+#
+#     data = pd.DataFrame(pd.read_csv(csvName))
+#
+#     X = data.values[:, :-1]
+#     y = data.values[:, -1]
+#     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=1)
+#
+#     for i in range(X_train.shape[1]):
+#         X_train[:, [i]] = preprocessing.MinMaxScaler().fit_transform(X_train[:, [i]])
+#
+#     for i in range(X_test.shape[1]):
+#         X_test[:, [i]] = preprocessing.MinMaxScaler().fit_transform(X_test[:, [i]])
+#
+#     clf = KNeighborsClassifier(n_neighbors=8)
+#     Classified_KNeighbors = clf.fit(X_train, y_train)
+#
+#     # 画出ROC曲线 KNeighbors test
+#     y_score = Classified_KNeighbors.predict_proba(X_test)
+#     fpr, tpr, threshold = roc_curve(y_test, y_score[:, 1])
+#     roc_auc = auc(fpr, tpr)
+#     plt.figure()
+#     lw = 2
+#     plt.figure(figsize=(10, 10))
+#     plt.plot(fpr, tpr, color='darkorange',
+#              lw=lw, label='ROC curve (area = %0.2f)' % roc_auc)  ###假正率为横坐标，真正率为纵坐标做曲线
+#     print(fpr)
+#     print(tpr)
+#     plt.plot([0, 1], [0, 1], color='navy', lw=lw, linestyle='--')
+#     plt.xlim([0.01, 1.0])
+#     plt.ylim([0, 1.05])
+#     plt.xlabel('False Positive Rate', fontsize=20)
+#     plt.ylabel('True Positive Rate', fontsize=20)
+#     plt.xticks(fontsize=20)
+#     plt.yticks(fontsize=20)
+#
+#     plt.title('AUC')
+#     plt.legend(loc="lower right", fontsize=20, frameon=False)
+#     plt.show()
+#
+#     # 画出混淆矩阵 KNeighbors test
+#     prey = Classified_KNeighbors.predict(X_test)
+#     true = 0
+#     for i in range(0, len(y_test)):
+#         if prey[i] == y_test[i]:
+#             true = true + 1
+#     C = confusion_matrix(y_test, prey, labels=[0, 1])
+#     plt.imshow(C, cmap=plt.cm.Blues)
+#     indices = range(len(C))
+#     plt.xticks(indices, [0, 1], fontsize=20)
+#     plt.yticks(indices, [0, 1], fontsize=20)
+#     plt.colorbar()
+#     for first_index in range(len(C)):  # 第几行
+#         for second_index in range(len(C)):  # 第几列
+#             plt.text(first_index, second_index, C[first_index][second_index], fontsize=20, horizontalalignment='center')
+#     plt.show()
+#     print("true:", true)
+#
+#     from sklearn.metrics import accuracy_score
+#     score = []
+#     for K in range(40):
+#         K_value = K + 1
+#         knn = KNeighborsClassifier(n_neighbors=K_value, weights='uniform', algorithm='auto')
+#         knn.fit(X_train, y_train)
+#         y_pred = knn.predict(X_test)
+#         score.append(round(accuracy_score(y_test, y_pred) * 100, 2))
+#
+#     plt.figure(figsize=(12, 6))
+#     plt.plot(range(1, 41), score, color='red', linestyle='dashed', marker='o',
+#              markerfacecolor='blue', markersize=10)
+#     plt.title('The Learning curve')
+#     plt.xlabel('K Value')
+#     plt.ylabel('Score')
 
 # 10.5
 def DecisionTree_classifier(a, b, c, d, e,path,csvName):
@@ -6210,6 +6551,350 @@ def virtual_two_in_one(path,csvpath):
 
 
 
+def virtual_Multicolumn_Smiles_RDKit(path,csvpath):
+    import pandas as pd
+    def select_columns_by_suffix(df, suffix):
+        filtered_columns = df.filter(regex=f'{suffix}$')
+        return filtered_columns
+
+    def extract_and_store_columns(csv_file, suffixes):
+        # 读取 CSV 文件
+        df = pd.read_csv(csv_file)
+
+        selected_columns = {}
+        for suffix in suffixes:
+            selected_columns[suffix] = select_columns_by_suffix(df, suffix)
+            print('********************************************************************************')
+            print(f"Columns ending with '{suffix}':")
+            print('********************************************************************************')
+            print(selected_columns[suffix])
+            # 如果需要保存到新的DataFrame中，取消注释下一行
+            # global df_selected
+            df_selected = pd.concat(selected_columns, axis=1)
+            # df_combined = pd.concat(selected_columns.values(), axis=1)
+            # df_combined.to_csv('selected_columns.csv', index=False)
+            selected_columns[suffix].to_csv(path + '/' + f'{suffix}_selected_columns.csv', index=False)
+
+        # 获取未被选中的列
+        unselected_columns = df.drop(columns=[col for cols in selected_columns.values() for col in cols.columns])
+
+        # 保存未被选中的列到 CSV 文件
+        unselected_columns.to_csv(path + '/' + 'unselected_columns.csv', index=False)
+
+        return selected_columns
+
+    # 用法示例
+    file_path = csvpath
+    suffixes = ['Smiles']
+    selected_columns = extract_and_store_columns(file_path, suffixes)
+
+    original_data = pd.DataFrame(pd.read_csv(path + '/Smiles_selected_columns.csv'))
+
+    import pandas as pd
+
+    # 假设 original_data 是您的原始数据集
+    # 创建一个空字典，用于存储新的数据集
+    new_datasets = {}
+
+    # 遍历原始数据集的每一列
+    for col_name in original_data.columns:
+        # 创建新的数据集，将当前列命名为 'Name'
+        new_dataset = pd.DataFrame({'Name': original_data[col_name]})
+
+        # 将新数据集存储在字典中，字典的键是 'data1'，'data2'，依此类推
+        new_datasets['data' + str(len(new_datasets) + 1)] = new_dataset
+
+    # 打印或使用新的数据集
+    for key, value in new_datasets.items():
+        print(f"{key}:\n{value}\n")
+
+
+    # 有机部分
+    original_data2 = pd.DataFrame(pd.read_csv(path + '/Smiles_selected_columns.csv'))
+
+    new_datasets2 = {}
+
+    # 遍历原始数据集的每一列
+    for col_name in original_data2.columns:
+        # 创建新的数据集，将当前列命名为 'Name'
+        new_dataset2 = pd.DataFrame({'Name': original_data2[col_name]})
+
+        # 将新数据集存储在字典中，字典的键是 'organic_data1'，'organic_data2'，依此类推
+        new_datasets2['organic_data' + str(len(new_datasets2) + 1)] = new_dataset2
+
+    # 打印或使用新的数据集
+    for key, value in new_datasets2.items():
+        print(f"{key}:\n{value}\n")
+
+    import pandas as pd
+    import numpy as np
+    from rdkit import Chem
+    from rdkit.Chem import AllChem
+
+    # 假设 new_datasets2 是包含拆分数据集的字典，如 'organic_data1', 'organic_data2', ...
+    # 每个数据集中应该有 'Name' 列
+
+    # 用于存储 RDKit 特征化后的数据集
+    from rdkit import Chem
+    from rdkit.Chem import Descriptors
+    import pandas as pd
+
+    rdkit_datasets = {}
+
+    for key, dataset in new_datasets2.items():
+        # 特征化 RDKit
+        rdkit_features = dataset['Name'].apply(lambda x: Chem.MolFromSmiles(x))
+
+        # 检查分子是否有效
+        valid_mols = rdkit_features.dropna()
+
+        if not valid_mols.empty:
+            # 计算所有 RDKit 描述符
+            # rdkit_descriptors = valid_mols.apply(lambda x: [Descriptors.MolWt(x), Descriptors.NumRotatableBonds(x)])
+            rdkit_descriptors = valid_mols.apply(lambda x: [Descriptors.BalabanJ(x),
+                                                            Descriptors.BertzCT(x),
+                                                            Descriptors.Chi0(x),
+                                                            Descriptors.Chi0n(x),
+                                                            Descriptors.Chi0v(x),
+                                                            Descriptors.Chi1(x),
+                                                            Descriptors.Chi1n(x),
+                                                            Descriptors.Chi1v(x),
+                                                            Descriptors.Chi2n(x),
+                                                            Descriptors.Chi2v(x),
+                                                            Descriptors.Chi3n(x),
+                                                            Descriptors.Chi3v(x),
+                                                            Descriptors.Chi4n(x),
+                                                            Descriptors.Chi4v(x),
+                                                            Descriptors.EState_VSA1(x),
+                                                            Descriptors.EState_VSA10(x),
+                                                            Descriptors.EState_VSA11(x),
+                                                            Descriptors.EState_VSA2(x),
+                                                            Descriptors.EState_VSA3(x),
+                                                            Descriptors.EState_VSA4(x),
+                                                            Descriptors.EState_VSA5(x),
+                                                            Descriptors.EState_VSA6(x),
+                                                            Descriptors.EState_VSA7(x),
+                                                            Descriptors.EState_VSA8(x),
+                                                            Descriptors.EState_VSA9(x),
+                                                            Descriptors.ExactMolWt(x),
+                                                            Descriptors.FpDensityMorgan1(x),
+                                                            Descriptors.FpDensityMorgan2(x),
+                                                            Descriptors.FpDensityMorgan3(x),
+                                                            Descriptors.FractionCSP3(x),
+                                                            Descriptors.HallKierAlpha(x),
+                                                            Descriptors.HeavyAtomCount(x),
+                                                            Descriptors.HeavyAtomMolWt(x),
+                                                            Descriptors.Ipc(x),
+                                                            Descriptors.Kappa1(x),
+                                                            Descriptors.Kappa2(x),
+                                                            Descriptors.Kappa3(x),
+                                                            Descriptors.LabuteASA(x),
+                                                            Descriptors.MaxAbsEStateIndex(x),
+                                                            Descriptors.MaxAbsPartialCharge(x),
+                                                            Descriptors.MaxEStateIndex(x),
+                                                            Descriptors.MaxPartialCharge(x),
+                                                            Descriptors.MinAbsEStateIndex(x),
+                                                            Descriptors.MinAbsPartialCharge(x),
+                                                            Descriptors.MinEStateIndex(x),
+                                                            Descriptors.MinPartialCharge(x),
+                                                            Descriptors.MolLogP(x),
+                                                            Descriptors.MolMR(x),
+                                                            Descriptors.MolWt(x),
+                                                            Descriptors.NHOHCount(x),
+                                                            Descriptors.NOCount(x),
+                                                            Descriptors.NumAliphaticCarbocycles(x),
+                                                            Descriptors.NumAliphaticHeterocycles(x),
+                                                            Descriptors.NumAliphaticRings(x),
+                                                            Descriptors.NumAromaticCarbocycles(x),
+                                                            Descriptors.NumAromaticHeterocycles(x),
+                                                            Descriptors.NumAromaticRings(x),
+                                                            Descriptors.NumHAcceptors(x),
+                                                            Descriptors.NumHDonors(x),
+                                                            Descriptors.NumHeteroatoms(x),
+                                                            Descriptors.NumRadicalElectrons(x),
+                                                            Descriptors.NumRotatableBonds(x),
+                                                            Descriptors.NumSaturatedCarbocycles(x),
+                                                            Descriptors.NumSaturatedHeterocycles(x),
+                                                            Descriptors.NumSaturatedRings(x),
+                                                            Descriptors.NumValenceElectrons(x),
+                                                            Descriptors.PEOE_VSA1(x),
+                                                            Descriptors.PEOE_VSA10(x),
+                                                            Descriptors.PEOE_VSA11(x),
+                                                            Descriptors.PEOE_VSA12(x),
+                                                            Descriptors.PEOE_VSA13(x),
+                                                            Descriptors.PEOE_VSA14(x),
+                                                            Descriptors.PEOE_VSA2(x),
+                                                            Descriptors.PEOE_VSA3(x),
+                                                            Descriptors.PEOE_VSA4(x),
+                                                            Descriptors.PEOE_VSA5(x),
+                                                            Descriptors.PEOE_VSA6(x),
+                                                            Descriptors.PEOE_VSA7(x),
+                                                            Descriptors.PEOE_VSA8(x),
+                                                            Descriptors.PEOE_VSA9(x),
+                                                            Descriptors.RingCount(x),
+                                                            Descriptors.SMR_VSA1(x),
+                                                            Descriptors.SMR_VSA10(x),
+                                                            Descriptors.SMR_VSA2(x),
+                                                            Descriptors.SMR_VSA3(x),
+                                                            Descriptors.SMR_VSA4(x),
+                                                            Descriptors.SMR_VSA5(x),
+                                                            Descriptors.SMR_VSA6(x),
+                                                            Descriptors.SMR_VSA7(x),
+                                                            Descriptors.SMR_VSA8(x),
+                                                            Descriptors.SMR_VSA9(x),
+                                                            Descriptors.SlogP_VSA1(x),
+                                                            Descriptors.SlogP_VSA10(x),
+                                                            Descriptors.SlogP_VSA11(x),
+                                                            Descriptors.SlogP_VSA12(x),
+                                                            Descriptors.SlogP_VSA2(x),
+                                                            Descriptors.SlogP_VSA3(x),
+                                                            Descriptors.SlogP_VSA4(x),
+                                                            Descriptors.SlogP_VSA5(x),
+                                                            Descriptors.SlogP_VSA6(x),
+                                                            Descriptors.SlogP_VSA7(x),
+                                                            Descriptors.SlogP_VSA8(x),
+                                                            Descriptors.SlogP_VSA9(x),
+                                                            Descriptors.TPSA(x),
+                                                            Descriptors.VSA_EState1(x),
+                                                            Descriptors.VSA_EState10(x),
+                                                            Descriptors.VSA_EState2(x),
+                                                            Descriptors.VSA_EState3(x),
+                                                            Descriptors.VSA_EState4(x),
+                                                            Descriptors.VSA_EState5(x),
+                                                            Descriptors.VSA_EState6(x),
+                                                            Descriptors.VSA_EState7(x),
+                                                            Descriptors.VSA_EState8(x),
+                                                            Descriptors.VSA_EState9(x),
+                                                            Descriptors.fr_Al_COO(x),
+                                                            Descriptors.fr_Al_OH(x),
+                                                            Descriptors.fr_Al_OH_noTert(x),
+                                                            Descriptors.fr_ArN(x),
+                                                            Descriptors.fr_Ar_COO(x),
+                                                            Descriptors.fr_Ar_N(x),
+                                                            Descriptors.fr_Ar_NH(x),
+                                                            Descriptors.fr_Ar_OH(x),
+                                                            Descriptors.fr_COO(x),
+                                                            Descriptors.fr_COO2(x),
+                                                            Descriptors.fr_C_O(x),
+                                                            Descriptors.fr_C_O_noCOO(x),
+                                                            Descriptors.fr_C_S(x),
+                                                            Descriptors.fr_HOCCN(x),
+                                                            Descriptors.fr_Imine(x),
+                                                            Descriptors.fr_NH0(x),
+                                                            Descriptors.fr_NH1(x),
+                                                            Descriptors.fr_NH2(x),
+                                                            Descriptors.fr_N_O(x),
+                                                            Descriptors.fr_Ndealkylation1(x),
+                                                            Descriptors.fr_Ndealkylation2(x),
+                                                            Descriptors.fr_Nhpyrrole(x),
+                                                            Descriptors.fr_SH(x),
+                                                            Descriptors.fr_aldehyde(x),
+                                                            Descriptors.fr_alkyl_carbamate(x),
+                                                            Descriptors.fr_alkyl_halide(x),
+                                                            Descriptors.fr_allylic_oxid(x),
+                                                            Descriptors.fr_amide(x),
+                                                            Descriptors.fr_amidine(x),
+                                                            Descriptors.fr_aniline(x),
+                                                            Descriptors.fr_aryl_methyl(x),
+                                                            Descriptors.fr_azide(x),
+                                                            Descriptors.fr_azo(x),
+                                                            Descriptors.fr_barbitur(x),
+                                                            Descriptors.fr_benzene(x),
+                                                            Descriptors.fr_benzodiazepine(x),
+                                                            Descriptors.fr_bicyclic(x),
+                                                            Descriptors.fr_diazo(x),
+                                                            Descriptors.fr_dihydropyridine(x),
+                                                            Descriptors.fr_epoxide(x),
+                                                            Descriptors.fr_ester(x),
+                                                            Descriptors.fr_ether(x),
+                                                            Descriptors.fr_furan(x),
+                                                            Descriptors.fr_guanido(x),
+                                                            Descriptors.fr_halogen(x),
+                                                            Descriptors.fr_hdrzine(x),
+                                                            Descriptors.fr_hdrzone(x),
+                                                            Descriptors.fr_imidazole(x),
+                                                            Descriptors.fr_imide(x),
+                                                            Descriptors.fr_isocyan(x),
+                                                            Descriptors.fr_isothiocyan(x),
+                                                            Descriptors.fr_ketone(x),
+                                                            Descriptors.fr_ketone_Topliss(x),
+                                                            Descriptors.fr_lactam(x),
+                                                            Descriptors.fr_lactone(x),
+                                                            Descriptors.fr_methoxy(x),
+                                                            Descriptors.fr_morpholine(x),
+                                                            Descriptors.fr_nitrile(x),
+                                                            Descriptors.fr_nitro(x),
+                                                            Descriptors.fr_nitro_arom(x),
+                                                            Descriptors.fr_nitro_arom_nonortho(x),
+                                                            Descriptors.fr_nitroso(x),
+                                                            Descriptors.fr_oxazole(x),
+                                                            Descriptors.fr_oxime(x),
+                                                            Descriptors.fr_para_hydroxylation(x),
+                                                            Descriptors.fr_phenol(x),
+                                                            Descriptors.fr_phenol_noOrthoHbond(x),
+                                                            Descriptors.fr_phos_acid(x),
+                                                            Descriptors.fr_phos_ester(x),
+                                                            Descriptors.fr_piperdine(x),
+                                                            Descriptors.fr_piperzine(x),
+                                                            Descriptors.fr_priamide(x),
+                                                            Descriptors.fr_prisulfonamd(x),
+                                                            Descriptors.fr_pyridine(x),
+                                                            Descriptors.fr_quatN(x),
+                                                            Descriptors.fr_sulfide(x),
+                                                            Descriptors.fr_sulfonamd(x),
+                                                            Descriptors.fr_sulfone(x),
+                                                            Descriptors.fr_term_acetylene(x),
+                                                            Descriptors.fr_tetrazole(x),
+                                                            Descriptors.fr_thiazole(x),
+                                                            Descriptors.fr_thiocyan(x),
+                                                            Descriptors.fr_thiophene(x),
+                                                            Descriptors.fr_unbrch_alkane(x),
+                                                            Descriptors.fr_urea(x),
+                                                            Descriptors.qed(x)])
+            # 将 RDKit 描述符转换为 DataFrame
+            rdkit_descriptors_df = pd.DataFrame(list(rdkit_descriptors),
+                                                columns=['BalabanJ', 'BertzCT', 'Chi0', 'Chi0n', 'Chi0v', 'Chi1', 'Chi1n', 'Chi1v', 'Chi2n', 'Chi2v', 'Chi3n', 'Chi3v', 'Chi4n', 'Chi4v', 'EState_VSA1', 'EState_VSA10', 'EState_VSA11', 'EState_VSA2', 'EState_VSA3', 'EState_VSA4', 'EState_VSA5', 'EState_VSA6', 'EState_VSA7', 'EState_VSA8', 'EState_VSA9', 'ExactMolWt', 'FpDensityMorgan1',
+                                                         'FpDensityMorgan2', 'FpDensityMorgan3', 'FractionCSP3', 'HallKierAlpha', 'HeavyAtomCount', 'HeavyAtomMolWt', 'Ipc', 'Kappa1', 'Kappa2', 'Kappa3', 'LabuteASA', 'MaxAbsEStateIndex', 'MaxAbsPartialCharge', 'MaxEStateIndex', 'MaxPartialCharge', 'MinAbsEStateIndex', 'MinAbsPartialCharge', 'MinEStateIndex', 'MinPartialCharge', 'MolLogP', 'MolMR',
+                                                         'MolWt', 'NHOHCount', 'NOCount', 'NumAliphaticCarbocycles', 'NumAliphaticHeterocycles', 'NumAliphaticRings', 'NumAromaticCarbocycles', 'NumAromaticHeterocycles', 'NumAromaticRings', 'NumHAcceptors', 'NumHDonors', 'NumHeteroatoms', 'NumRadicalElectrons', 'NumRotatableBonds', 'NumSaturatedCarbocycles', 'NumSaturatedHeterocycles',
+                                                         'NumSaturatedRings', 'NumValenceElectrons', 'PEOE_VSA1', 'PEOE_VSA10', 'PEOE_VSA11', 'PEOE_VSA12', 'PEOE_VSA13', 'PEOE_VSA14', 'PEOE_VSA2', 'PEOE_VSA3', 'PEOE_VSA4', 'PEOE_VSA5', 'PEOE_VSA6', 'PEOE_VSA7', 'PEOE_VSA8', 'PEOE_VSA9', 'RingCount', 'SMR_VSA1', 'SMR_VSA10', 'SMR_VSA2', 'SMR_VSA3', 'SMR_VSA4', 'SMR_VSA5', 'SMR_VSA6', 'SMR_VSA7',
+                                                         'SMR_VSA8', 'SMR_VSA9', 'SlogP_VSA1', 'SlogP_VSA10', 'SlogP_VSA11', 'SlogP_VSA12', 'SlogP_VSA2', 'SlogP_VSA3', 'SlogP_VSA4', 'SlogP_VSA5', 'SlogP_VSA6', 'SlogP_VSA7', 'SlogP_VSA8', 'SlogP_VSA9', 'TPSA', 'VSA_EState1', 'VSA_EState10', 'VSA_EState2', 'VSA_EState3', 'VSA_EState4', 'VSA_EState5', 'VSA_EState6', 'VSA_EState7', 'VSA_EState8',
+                                                         'VSA_EState9', 'fr_Al_COO', 'fr_Al_OH', 'fr_Al_OH_noTert', 'fr_ArN', 'fr_Ar_COO', 'fr_Ar_N', 'fr_Ar_NH', 'fr_Ar_OH', 'fr_COO', 'fr_COO2', 'fr_C_O', 'fr_C_O_noCOO', 'fr_C_S', 'fr_HOCCN', 'fr_Imine', 'fr_NH0', 'fr_NH1', 'fr_NH2', 'fr_N_O', 'fr_Ndealkylation1', 'fr_Ndealkylation2', 'fr_Nhpyrrole', 'fr_SH', 'fr_aldehyde', 'fr_alkyl_carbamate',
+                                                         'fr_alkyl_halide', 'fr_allylic_oxid', 'fr_amide', 'fr_amidine', 'fr_aniline', 'fr_aryl_methyl', 'fr_azide', 'fr_azo', 'fr_barbitur', 'fr_benzene', 'fr_benzodiazepine', 'fr_bicyclic', 'fr_diazo', 'fr_dihydropyridine', 'fr_epoxide', 'fr_ester', 'fr_ether', 'fr_furan', 'fr_guanido', 'fr_halogen', 'fr_hdrzine', 'fr_hdrzone', 'fr_imidazole',
+                                                         'fr_imide', 'fr_isocyan', 'fr_isothiocyan', 'fr_ketone', 'fr_ketone_Topliss', 'fr_lactam', 'fr_lactone', 'fr_methoxy', 'fr_morpholine', 'fr_nitrile', 'fr_nitro', 'fr_nitro_arom', 'fr_nitro_arom_nonortho', 'fr_nitroso', 'fr_oxazole', 'fr_oxime', 'fr_para_hydroxylation', 'fr_phenol', 'fr_phenol_noOrthoHbond', 'fr_phos_acid', 'fr_phos_ester',
+                                                         'fr_piperdine', 'fr_piperzine', 'fr_priamide', 'fr_prisulfonamd', 'fr_pyridine', 'fr_quatN', 'fr_sulfide', 'fr_sulfonamd', 'fr_sulfone', 'fr_term_acetylene', 'fr_tetrazole', 'fr_thiazole', 'fr_thiocyan', 'fr_thiophene', 'fr_unbrch_alkane', 'fr_urea', 'qed'])
+
+            # 添加前缀
+            prefix_rdkit = f'{key}_rdkit_'
+            rdkit_descriptors_df = rdkit_descriptors_df.add_prefix(prefix_rdkit)
+
+            # 存储特征化后的数据集
+            rdkit_datasets[key] = rdkit_descriptors_df
+
+    # rdkit_datasets 包含了每个数据集的 RDKit 描述符
+
+    # 合并 RDKit 特征化后的数据集
+    merged_rdkit_result = pd.concat(rdkit_datasets.values(), axis=1)
+    merged_rdkit_result.fillna(0, inplace=True)
+    # 将合并后的结果保存为 CSV 文件
+    merged_rdkit_result.to_csv(path + '/merged_rdkit_result.csv', index=False)
+
+    # 打印或使用合并后的 RDKit 特征化结果
+    print(merged_rdkit_result)
+
+    unselected_columns = pd.DataFrame(pd.read_csv(path + '/unselected_columns.csv'))
+    # 合并前重置索引
+    merged_rdkit_result.reset_index(drop=True, inplace=True)
+    unselected_columns.reset_index(drop=True, inplace=True)
+
+    # 合并三个数据集
+    all_merged_data = pd.concat([merged_rdkit_result, unselected_columns], axis=1)
+
+    # 将合并后的结果保存为 CSV 文件
+    all_merged_data.to_csv(path + '/train_test_Multicolumn_Smiles_dataset.csv', index=False)
+
+    selected_columns = all_merged_data.loc[:, s_rfe.columns]
+    selected_columns.to_csv(path+'/virtual_generate_Multicolumn_Smiles_RDKit_final.csv', index=False)
+
 def virtual_Multicolumn_Smiles(path,csvpath):
     import pandas as pd
     def select_columns_by_suffix(df, suffix):
@@ -6535,43 +7220,43 @@ def randomforest_default_predict(csvName,path):
 
 
 
-def Visualization_for_classification(csvname,path,column_name):
-    import pandas as pd
-    import matplotlib.pyplot as plt
-    import seaborn as sns
-
-    # 设置全局字体大小和样式
-    sns.set(font_scale=3.0)
-    sns.set_style("whitegrid")
-
-    # 读取数据集
-    data = pd.read_csv(csvname)  # 替换为你的数据集文件名
-
-    # 按类别分割数据
-    try:
-        # 尝试访问data[column_name]
-        value = data[column_name]
-        class_0_data = data[data[column_name] == 0]  # 替换为你的类别列名
-        class_1_data = data[data[column_name] == 1]  # 替换为你的类别列名
-
-        # 可视化特征的分布
-        for feature in data.columns[1:]:
-            if feature != 'class':  # 排除类别列
-                plt.figure(figsize=(10, 8))
-                sns.histplot(class_0_data[feature], color='blue', label='Class 0', alpha=0.5, bins=20)
-                sns.histplot(class_1_data[feature], color='red', label='Class 1', alpha=0.5, bins=20)
-                plt.xlabel('Feature Value')
-                plt.ylabel('Frequency')
-                plt.title(f'Distribution of {feature}')
-                plt.legend()
-                plt.savefig(path + "/" + f'3_Distribution_of_{feature}.png', dpi=400)  # 保存图像，文件名为特征名
-                plt.close()
-
-        return True
-    except KeyError:
-        # 如果出现KeyError异常，说明data[column_name]不存在
-        return False
-
+# def Visualization_for_classification(csvname,path,column_name):
+#     import pandas as pd
+#     import matplotlib.pyplot as plt
+#     import seaborn as sns
+#
+#     # 设置全局字体大小和样式
+#     sns.set(font_scale=3.0)
+#     sns.set_style("whitegrid")
+#
+#     # 读取数据集
+#     data = pd.read_csv(csvname)  # 替换为你的数据集文件名
+#
+#     # 按类别分割数据
+#     try:
+#         # 尝试访问data[column_name]
+#         value = data[column_name]
+#         class_0_data = data[data[column_name] == 0]  # 替换为你的类别列名
+#         class_1_data = data[data[column_name] == 1]  # 替换为你的类别列名
+#
+#         # 可视化特征的分布
+#         for feature in data.columns[1:]:
+#             if feature != 'class':  # 排除类别列
+#                 plt.figure(figsize=(10, 8))
+#                 sns.histplot(class_0_data[feature], color='blue', label='Class 0', alpha=0.5, bins=20)
+#                 sns.histplot(class_1_data[feature], color='red', label='Class 1', alpha=0.5, bins=20)
+#                 plt.xlabel('Feature Value')
+#                 plt.ylabel('Frequency')
+#                 plt.title(f'Distribution of {feature}')
+#                 plt.legend()
+#                 plt.savefig(path + "/" + f'3_Distribution_of_{feature}.png', dpi=400)  # 保存图像，文件名为特征名
+#                 plt.close()
+#
+#         return True
+#     except KeyError:
+#         # 如果出现KeyError异常，说明data[column_name]不存在
+#         return False
+#
 
 
 
@@ -6935,6 +7620,7 @@ def Symbolicclassification(csvname,path):
     dot_data = clf._program.export_graphviz()
     graph = graphviz.Source(dot_data)
     graph.render(path + '/tree', format="png")
+
     # graph.render(output_path + "graph", format="png")
     # graph.write_png('tree_graph.png')
 
@@ -7037,8 +7723,146 @@ def Symbolicclassification(csvname,path):
     #
     # return str1,str2
 
-#shap 导入和出结果
-def Result(csvname,path,model_path):
+
+
+
+#shap 容易出错，导入和出结果
+# def Result(csvname,path,model_path):
+#     import pandas as pd
+#     import matplotlib.pyplot as plt
+#     import shap
+#     from sklearn.datasets import load_breast_cancer
+#     from sklearn.ensemble import ExtraTreesClassifier
+#     import pickle
+#     import numpy as np
+#
+#     # 将 np.bool 替换为 np.bool_
+#     np.bool = np.bool_
+#
+#     # 加载预测数据集
+#     data = pd.read_csv(csvname)
+#
+#     import pickle  # 加载训练好的ExtraTreeClassifier模型
+#
+#     model1 = pickle.load(open(model_path, "rb"))
+#
+#     # 拟合模型
+#     #column_name=data.columns[-1]
+#     #X = data.drop(columns=[column_name])
+#     #y = data[column_name]
+#
+#
+#     # X = data.drop(columns=['Potential (v)'])
+#     # y = data['Potential (v)']
+#
+#     # 获取除了最后一列之外的所有列作为特征变量
+#     X = data.iloc[:, :-1]
+#     # 获取最后一列作为目标变量
+#     y = data.iloc[:, -1]
+#
+#     # X = pd.DataFrame(data[:,:-1])
+#     # y = pd.DataFrame(data[:,-1])
+#
+#     # 初始化 SHAP explainer
+#     explainer = shap.Explainer(model1, X)
+#
+#     # 计算 SHAP 值
+#     shap_values = explainer(X)
+#
+#     # 将 shap 值转换为 pandas DataFrame
+#
+#     shap_df = pd.DataFrame(shap_values.values[:, :, 1], columns=X.columns)
+#     # shap_df = pd.DataFrame(shap_values.values[:, :], columns=X.columns)
+#
+#     """import matplotlib
+#     matplotlib.use('TkAgg')
+#
+#
+#     import matplotlib
+#     matplotlib.use('TkAgg')"""
+#
+#     # 绘制蜂群图
+#     shap.summary_plot(shap_values.values[:, :, 1], X, show=False, plot_type='dot')
+#     # shap.summary_plot(shap_values.values[:, :], X, show=False, plot_type='dot')
+#     plt.tight_layout()
+#     plt.subplots_adjust(left=0.1, right=0.9)
+#     # plt.xlim(-2, 2)  # 设置 x 轴的最小值和最大值
+#
+#     # 保存图表为 .png 格式的文件
+#     plt.savefig(path+'/summary_plot.png', format='png', dpi=300, bbox_inches='tight')
+#     plt.close()
+#
+#
+#
+#     # # 绘制不含y标签的蜂群图
+#     # shap.summary_plot(shap_values.values[:, :], X, show=False, plot_type='dot')
+#     # plt.tight_layout()
+#     # plt.gca().set_yticklabels([])
+#     # plt.subplots_adjust(left=0.1, right=0.9)
+#     # # 保存图表为 .png 格式的文件
+#     # plt.savefig(path+'/summary_plot_b.png', format='png', dpi=300, bbox_inches='tight')
+#     # plt.close()
+#
+#
+#
+#     # 绘制第一个样本的活力图，绿色表示对目标分类的贡献，红色表示对其他分类的贡献
+#     #shap.force_plot(explainer.expected_value[1], shap_values.values[0, :, 1], X.iloc[0, :],
+#                     #matplotlib=True, show=False)
+#
+#     shap.force_plot(explainer.expected_value, shap_values.values[0, :], X.iloc[0, :],
+#                     matplotlib=True, show=False)
+#     plt.tight_layout()
+#
+#     plt.savefig(path+'/Forceplot.png', bbox_inches='tight', dpi=300)
+#     plt.close()
+#
+#     import seaborn as sns
+#
+#     # 计算每个特征的 SHAP 值绝对值的平均值
+#     shap_mean = np.abs(shap_df).mean()
+#
+#     # 按平均 SHAP 值绝对值降序排列特征
+#     shap_mean_sorted = shap_mean.sort_values(ascending=False)
+#
+#     # 绘制重要性排名柱状图
+#     plt.figure(figsize=(10, 6))
+#     sns.barplot(x=shap_mean_sorted.values, y=shap_mean_sorted.index)
+#     plt.xlabel('Mean |SHAP| value', fontsize=13)
+#     plt.title('Feature Importance Rankings', fontsize=16)
+#     plt.savefig(path+'/Feature_ranking_bar.png', bbox_inches='tight', dpi=300)
+#     plt.close()
+#
+#     ## 计算 SHAP 值
+#     import matplotlib.pyplot as plt
+#     # 将 SHAP 值转换为 Explanation 对象列表
+#     shap_values = [shap.Explanation(values=sv, base_values=np.mean(data, axis=0), data=data.iloc[[i]]) for i, sv in
+#                    enumerate(shap_values)]
+#
+#     # 绘制每个样本的特征重要性瀑布图
+#     # for i, sv in enumerate(shap_values):
+#     #     plt.title(f"Sample {i}")
+#     #     shap.waterfall_plot(sv[0], max_display=10)
+#     #
+#     #     plt.savefig(path + '/Waterfall.png', bbox_inches='tight', dpi=300)
+#     #     plt.close()
+#
+#
+#     # import graphviz
+#     # from sklearn.tree import export_graphviz
+#     # # 将决策树导出为DOT格式
+#     # dot_data = export_graphviz(model1.estimators_[0], out_file=None,
+#     #                            feature_names=data.columns[:-1], class_names=['0', '1'],
+#     #                            filled=True, rounded=True,
+#     #                            special_characters=True)
+#     # # 将DOT格式转换为绘图
+#     # graph = graphviz.Source(dot_data)
+#     #
+#     # # 展示决策树状图
+#     # graph.render('decision_tree', format='png')
+#     # graph.write_png(path + '/decision_tree.png')
+
+# shap 回归，导入和出结果
+def Result_regression(csvname,path,model_path):
     import pandas as pd
     import matplotlib.pyplot as plt
     import shap
@@ -7082,7 +7906,7 @@ def Result(csvname,path,model_path):
 
     # 将 shap 值转换为 pandas DataFrame
 
-    #shap_df = pd.DataFrame(shap_values.values[:, :, 1], columns=X.columns)
+    # shap_df = pd.DataFrame(shap_values.values[:, :, 1], columns=X.columns)
     shap_df = pd.DataFrame(shap_values.values[:, :], columns=X.columns)
 
     """import matplotlib
@@ -7093,7 +7917,7 @@ def Result(csvname,path,model_path):
     matplotlib.use('TkAgg')"""
 
     # 绘制蜂群图
-    #shap.summary_plot(shap_values.values[:, :, 1], X, show=False, plot_type='dot')
+    # shap.summary_plot(shap_values.values[:, :, 1], X, show=False, plot_type='dot')
     shap.summary_plot(shap_values.values[:, :], X, show=False, plot_type='dot')
     plt.tight_layout()
     plt.subplots_adjust(left=0.1, right=0.9)
@@ -7105,23 +7929,160 @@ def Result(csvname,path,model_path):
 
 
 
-    # 绘制不含y标签的蜂群图
-    shap.summary_plot(shap_values.values[:, :], X, show=False, plot_type='dot')
-    plt.tight_layout()
-    plt.gca().set_yticklabels([])
-    plt.subplots_adjust(left=0.1, right=0.9)
-    # 保存图表为 .png 格式的文件
-    plt.savefig(path+'/summary_plot_b.png', format='png', dpi=300, bbox_inches='tight')
-    plt.close()
+    # # 绘制不含y标签的蜂群图
+    # shap.summary_plot(shap_values.values[:, :], X, show=False, plot_type='dot')
+    # plt.tight_layout()
+    # plt.gca().set_yticklabels([])
+    # plt.subplots_adjust(left=0.1, right=0.9)
+    # # 保存图表为 .png 格式的文件
+    # plt.savefig(path+'/summary_plot_b.png', format='png', dpi=300, bbox_inches='tight')
+    # plt.close()
 
 
 
     # 绘制第一个样本的活力图，绿色表示对目标分类的贡献，红色表示对其他分类的贡献
-    #shap.force_plot(explainer.expected_value[1], shap_values.values[0, :, 1], X.iloc[0, :],
-                    #matplotlib=True, show=False)
+    # shap.force_plot(explainer.expected_value[1], shap_values.values[0, :, 1], X.iloc[0, :],
+    #                 matplotlib=True, show=False)
 
     shap.force_plot(explainer.expected_value, shap_values.values[0, :], X.iloc[0, :],
                     matplotlib=True, show=False)
+    plt.tight_layout()
+
+    plt.savefig(path+'/Forceplot.png', bbox_inches='tight', dpi=300)
+    plt.close()
+
+    import seaborn as sns
+
+    # 计算每个特征的 SHAP 值绝对值的平均值
+    shap_mean = np.abs(shap_df).mean()
+
+    # 按平均 SHAP 值绝对值降序排列特征
+    shap_mean_sorted = shap_mean.sort_values(ascending=False)
+
+    # 绘制重要性排名柱状图
+    plt.figure(figsize=(10, 6))
+    sns.barplot(x=shap_mean_sorted.values, y=shap_mean_sorted.index)
+    plt.xlabel('Mean |SHAP| value', fontsize=13)
+    plt.title('Feature Importance Rankings', fontsize=16)
+    plt.savefig(path+'/Feature_ranking_bar.png', bbox_inches='tight', dpi=300)
+    plt.close()
+
+    ## 计算 SHAP 值
+    import matplotlib.pyplot as plt
+    # 将 SHAP 值转换为 Explanation 对象列表
+    shap_values = [shap.Explanation(values=sv, base_values=np.mean(data, axis=0), data=data.iloc[[i]]) for i, sv in
+                   enumerate(shap_values)]
+
+    # 绘制每个样本的特征重要性瀑布图
+    # for i, sv in enumerate(shap_values):
+    #     plt.title(f"Sample {i}")
+    #     shap.waterfall_plot(sv[0], max_display=10)
+    #
+    #     plt.savefig(path + '/Waterfall.png', bbox_inches='tight', dpi=300)
+    #     plt.close()
+
+
+    # import graphviz
+    # from sklearn.tree import export_graphviz
+    # # 将决策树导出为DOT格式
+    # dot_data = export_graphviz(model1.estimators_[0], out_file=None,
+    #                            feature_names=data.columns[:-1], class_names=['0', '1'],
+    #                            filled=True, rounded=True,
+    #                            special_characters=True)
+    # # 将DOT格式转换为绘图
+    # graph = graphviz.Source(dot_data)
+    #
+    # # 展示决策树状图
+    # graph.render('decision_tree', format='png')
+    # graph.write_png(path + '/decision_tree.png')
+
+
+
+# shap 分类，导入和出结果
+def Result_classification(csvname,path,model_path):
+    import pandas as pd
+    import matplotlib.pyplot as plt
+    import shap
+    from sklearn.datasets import load_breast_cancer
+    from sklearn.ensemble import ExtraTreesClassifier
+    import pickle
+    import numpy as np
+
+    # 将 np.bool 替换为 np.bool_
+    np.bool = np.bool_
+
+    # 加载预测数据集
+    data = pd.read_csv(csvname)
+
+    import pickle  # 加载训练好的ExtraTreeClassifier模型
+
+    model1 = pickle.load(open(model_path, "rb"))
+
+    # 拟合模型
+    #column_name=data.columns[-1]
+    #X = data.drop(columns=[column_name])
+    #y = data[column_name]
+
+
+    # X = data.drop(columns=['Potential (v)'])
+    # y = data['Potential (v)']
+
+    # 获取除了最后一列之外的所有列作为特征变量
+    X = data.iloc[:, :-1]
+    # 获取最后一列作为目标变量
+    y = data.iloc[:, -1]
+
+    # X = pd.DataFrame(data[:,:-1])
+    # y = pd.DataFrame(data[:,-1])
+
+    # 初始化 SHAP explainer
+    explainer = shap.Explainer(model1, X)
+
+    # 计算 SHAP 值
+    shap_values = explainer(X)
+
+    # 将 shap 值转换为 pandas DataFrame
+
+    shap_df = pd.DataFrame(shap_values.values[:, :, 1], columns=X.columns)
+    # shap_df = pd.DataFrame(shap_values.values[:, :], columns=X.columns)
+
+    """import matplotlib
+    matplotlib.use('TkAgg')
+
+
+    import matplotlib
+    matplotlib.use('TkAgg')"""
+
+    # 绘制蜂群图
+    shap.summary_plot(shap_values.values[:, :, 1], X, show=False, plot_type='dot')
+    # shap.summary_plot(shap_values.values[:, :], X, show=False, plot_type='dot')
+    plt.tight_layout()
+    plt.subplots_adjust(left=0.1, right=0.9)
+    # plt.xlim(-2, 2)  # 设置 x 轴的最小值和最大值
+
+    # 保存图表为 .png 格式的文件
+    plt.savefig(path+'/summary_plot.png', format='png', dpi=300, bbox_inches='tight')
+    plt.close()
+
+
+
+    # # 绘制不含y标签的蜂群图
+    # shap.summary_plot(shap_values.values[:, :], X, show=False, plot_type='dot')
+    # plt.tight_layout()
+    # plt.gca().set_yticklabels([])
+    # plt.subplots_adjust(left=0.1, right=0.9)
+    # # 保存图表为 .png 格式的文件
+    # plt.savefig(path+'/summary_plot_b.png', format='png', dpi=300, bbox_inches='tight')
+    # plt.close()
+
+
+
+    # 绘制第一个样本的活力图，绿色表示对目标分类的贡献，红色表示对其他分类的贡献
+    shap.force_plot(explainer.expected_value[1], shap_values.values[0, :, 1], X.iloc[0, :],
+                    matplotlib=True, show=False)
+
+    # shap.force_plot(explainer.expected_value, shap_values.values[0, :], X.iloc[0, :],
+    #                 matplotlib=True, show=False)
     plt.tight_layout()
 
     plt.savefig(path+'/Forceplot.png', bbox_inches='tight', dpi=300)

@@ -1,0 +1,1034 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1848</width>
+    <height>1374</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>MainWindow</string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <widget class="QLabel" name="label">
+    <property name="geometry">
+     <rect>
+      <x>800</x>
+      <y>1220</y>
+      <width>231</width>
+      <height>27</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>citation doi:10.1021/acsami.2c00564</string>
+    </property>
+   </widget>
+   <widget class="QTextBrowser" name="textBrowser">
+    <property name="geometry">
+     <rect>
+      <x>210</x>
+      <y>110</y>
+      <width>1431</width>
+      <height>1021</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_3">
+    <property name="geometry">
+     <rect>
+      <x>620</x>
+      <y>1305</y>
+      <width>591</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+   </widget>
+  </widget>
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>1848</width>
+     <height>23</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="menu">
+    <property name="title">
+     <string>Preprocessing</string>
+    </property>
+    <widget class="QMenu" name="menu_rfe_pairplot">
+     <property name="title">
+      <string>RFE visualization</string>
+     </property>
+     <addaction name="action_rfe"/>
+     <addaction name="action_rfe_pairplot"/>
+    </widget>
+    <widget class="QMenu" name="menu_3">
+     <property name="title">
+      <string>Importance ranking (Pearson)</string>
+     </property>
+     <addaction name="action_3"/>
+     <addaction name="action_4"/>
+    </widget>
+    <addaction name="actionrfe"/>
+    <addaction name="menu_rfe_pairplot"/>
+    <addaction name="menu_3"/>
+   </widget>
+   <widget class="QMenu" name="menu_2">
+    <property name="title">
+     <string>Directory</string>
+    </property>
+    <addaction name="action"/>
+    <addaction name="separator"/>
+   </widget>
+   <widget class="QMenu" name="menu_6">
+    <property name="title">
+     <string>Machine learning</string>
+    </property>
+    <widget class="QMenu" name="menuAlgorithms">
+     <property name="title">
+      <string>Algorithms</string>
+     </property>
+     <widget class="QMenu" name="menuRegression">
+      <property name="title">
+       <string>Regression</string>
+      </property>
+      <addaction name="actionXgboost"/>
+      <addaction name="actionRandom_Forest"/>
+      <addaction name="actionBagging"/>
+      <addaction name="actionAdaBoost"/>
+      <addaction name="actionGradient_Boosting"/>
+      <addaction name="actionExtra_Tree"/>
+      <addaction name="actionSvm"/>
+      <addaction name="actionDecision_Tree"/>
+      <addaction name="actionLinear_Regression"/>
+      <addaction name="actionRidge"/>
+      <addaction name="actionMLP"/>
+     </widget>
+     <widget class="QMenu" name="menuClassification">
+      <property name="title">
+       <string>Classification</string>
+      </property>
+      <addaction name="actionRamdom_Forest"/>
+      <addaction name="actionExtra_Tree_2"/>
+      <addaction name="actionGaussian_Process"/>
+      <addaction name="actionDecision_Tree_2"/>
+      <addaction name="actionSVM"/>
+     </widget>
+     <addaction name="menuRegression"/>
+     <addaction name="menuClassification"/>
+    </widget>
+    <addaction name="menuAlgorithms"/>
+   </widget>
+   <widget class="QMenu" name="menu_7">
+    <property name="title">
+     <string>Prediction</string>
+    </property>
+    <widget class="QMenu" name="menuImport_no_featurizer_no_label">
+     <property name="title">
+      <string>Import and generate (recommend)</string>
+     </property>
+     <addaction name="actionImport_2"/>
+     <addaction name="actionFeaturize"/>
+    </widget>
+    <widget class="QMenu" name="menuImport_and_generate_Multicolumn_Smiles">
+     <property name="title">
+      <string>Import and generate Multicolumn Smiles</string>
+     </property>
+     <addaction name="actionEnter_virtual_Multicolumn_Smiles"/>
+     <addaction name="actionGenerate_virtual_Multicolumn_Smiles"/>
+    </widget>
+    <addaction name="menuImport_no_featurizer_no_label"/>
+    <addaction name="menuImport_and_generate_Multicolumn_Smiles"/>
+    <addaction name="action_15"/>
+    <addaction name="actionSelect_machine_learning_model"/>
+    <addaction name="action_18"/>
+    <addaction name="actionPrediction_visualization"/>
+   </widget>
+   <widget class="QMenu" name="menu_9">
+    <property name="title">
+     <string>Genetic</string>
+    </property>
+    <addaction name="actionSymbolic_regression"/>
+    <addaction name="actionsymbolic_classification"/>
+   </widget>
+   <widget class="QMenu" name="menu_10">
+    <property name="title">
+     <string>Descriptors</string>
+    </property>
+    <widget class="QMenu" name="menu_15">
+     <property name="title">
+      <string>Organic descriptor</string>
+     </property>
+     <addaction name="action_smiles_2"/>
+     <addaction name="actionrdkit_2"/>
+    </widget>
+    <widget class="QMenu" name="menu_16">
+     <property name="title">
+      <string>Inorganic descriptor (one-hot)</string>
+     </property>
+     <addaction name="action_importonehot"/>
+     <addaction name="actionmatminer_2"/>
+    </widget>
+    <widget class="QMenu" name="menuInorganic_descriptor_matminer">
+     <property name="title">
+      <string>Inorganic descriptor (magpie)</string>
+     </property>
+     <addaction name="actionImport_magpie_formula"/>
+     <addaction name="actionGenerate_magpie"/>
+    </widget>
+    <widget class="QMenu" name="menuHybrid_inorganic_organic_2in1">
+     <property name="title">
+      <string>Hybrid inorganic organic (2in1)</string>
+     </property>
+     <addaction name="actionImport"/>
+     <addaction name="actionGenerate"/>
+    </widget>
+    <widget class="QMenu" name="menuMultiple_column_Smiles">
+     <property name="title">
+      <string>Organic Multiple column Smiles</string>
+     </property>
+     <addaction name="actionImport_Multicolumn_Smiles"/>
+     <addaction name="actionFeaturize_Multicolumn_Smiles"/>
+    </widget>
+    <addaction name="menuHybrid_inorganic_organic_2in1"/>
+    <addaction name="menuMultiple_column_Smiles"/>
+    <addaction name="menu_15"/>
+    <addaction name="menu_16"/>
+    <addaction name="menuInorganic_descriptor_matminer"/>
+   </widget>
+   <widget class="QMenu" name="menu_11">
+    <property name="title">
+     <string>Dataset</string>
+    </property>
+    <widget class="QMenu" name="menu_17">
+     <property name="title">
+      <string>Train/Test dataset import and visualization</string>
+     </property>
+     <addaction name="action_21"/>
+     <addaction name="action_22"/>
+    </widget>
+    <addaction name="menu_17"/>
+    <addaction name="action_20"/>
+   </widget>
+   <widget class="QMenu" name="menuMore_function">
+    <property name="title">
+     <string>*More functions</string>
+    </property>
+    <addaction name="actionDFT"/>
+   </widget>
+   <widget class="QMenu" name="menuNLP">
+    <property name="title">
+     <string>*NLP</string>
+    </property>
+    <widget class="QMenu" name="menuVisualization">
+     <property name="title">
+      <string>Visualization</string>
+     </property>
+     <addaction name="actionPCA_3"/>
+     <addaction name="actiont_SNE_2"/>
+     <addaction name="actionDBscan"/>
+     <addaction name="actionK_mean"/>
+    </widget>
+    <addaction name="actionData_import"/>
+    <addaction name="actionWord2vec"/>
+    <addaction name="actionCosine_similarity"/>
+    <addaction name="menuVisualization"/>
+   </widget>
+   <widget class="QMenu" name="menuShapley">
+    <property name="title">
+     <string>Shapley</string>
+    </property>
+    <addaction name="actionModel_import"/>
+    <addaction name="actionData_import_2"/>
+    <addaction name="actionResult"/>
+   </widget>
+   <widget class="QMenu" name="menuHints">
+    <property name="title">
+     <string>Help</string>
+    </property>
+    <addaction name="actionTemplates"/>
+    <addaction name="action2_csv_templates_https_github_com_Zhang_NJ_Lab_NJmatML_templates"/>
+    <addaction name="action3_number_of_columns_in_the_prediction_csv_RFE_remaining_number_you_entered_in_the_software"/>
+   </widget>
+   <widget class="QMenu" name="menuPV_efficiency_prediction_2">
+    <property name="title">
+     <string>*PV</string>
+    </property>
+    <addaction name="actionSLME_efficiency_2"/>
+    <addaction name="actionSQ_efficiency_4"/>
+   </widget>
+   <addaction name="menu_2"/>
+   <addaction name="menu_10"/>
+   <addaction name="menu_11"/>
+   <addaction name="menu"/>
+   <addaction name="menu_6"/>
+   <addaction name="menu_7"/>
+   <addaction name="menuShapley"/>
+   <addaction name="menu_9"/>
+   <addaction name="menuNLP"/>
+   <addaction name="menuPV_efficiency_prediction_2"/>
+   <addaction name="menuMore_function"/>
+   <addaction name="menuHints"/>
+  </widget>
+  <widget class="QStatusBar" name="statusbar"/>
+  <action name="action_heatmap">
+   <property name="text">
+    <string>2. 热图</string>
+   </property>
+  </action>
+  <action name="actionrfe">
+   <property name="text">
+    <string>RFE feature selection</string>
+   </property>
+  </action>
+  <action name="action1">
+   <property name="text">
+    <string>导入训练测试</string>
+   </property>
+  </action>
+  <action name="action2">
+   <property name="text">
+    <string>导入预测</string>
+   </property>
+  </action>
+  <action name="action">
+   <property name="text">
+    <string>Save directory</string>
+   </property>
+  </action>
+  <action name="action_rfe">
+   <property name="text">
+    <string>RFE heat map</string>
+   </property>
+  </action>
+  <action name="action_3">
+   <property name="text">
+    <string>Importance ranking before RFE</string>
+   </property>
+  </action>
+  <action name="action_4">
+   <property name="text">
+    <string>Importance ranking after RFE</string>
+   </property>
+  </action>
+  <action name="action_rfe_pairplot">
+   <property name="text">
+    <string>RFE pairplot</string>
+   </property>
+  </action>
+  <action name="action6_1_1xgboost">
+   <property name="text">
+    <string>6.1.1 xgboost默认超参数建模画图</string>
+   </property>
+  </action>
+  <action name="action6_1_2xgboost">
+   <property name="text">
+    <string>6.1.2 xgboost自己修改超参数, 建模</string>
+   </property>
+  </action>
+  <action name="action6_1_3xgboostRandomSearchCV">
+   <property name="text">
+    <string>6.1.3 xgboostRandomSearchCV随机超参数, 建模并观察准确率</string>
+   </property>
+  </action>
+  <action name="action6_1_4xgboost_SearchCV">
+   <property name="text">
+    <string>6.1.4 xgboost SearchCV网格搜索（并非随机）寻找最优超参数, 建模并观察准确率</string>
+   </property>
+  </action>
+  <action name="action6_2_1Random_forest">
+   <property name="text">
+    <string>6.2.1Random forest 默认超参数建模画图</string>
+   </property>
+  </action>
+  <action name="action6_2_2Random_forest">
+   <property name="text">
+    <string>6.2.2Random forest 自己修改超参数建模画图</string>
+   </property>
+  </action>
+  <action name="action6_2_3Random_forest_RandomSearchCV">
+   <property name="text">
+    <string>6.2.3Random forest RandomSearchCV 随机搜索超参数建模画图</string>
+   </property>
+  </action>
+  <action name="action6_3_1Bagging">
+   <property name="text">
+    <string>6.3.1Bagging 默认建模画图</string>
+   </property>
+  </action>
+  <action name="action6_4_1AdaBoost">
+   <property name="text">
+    <string>6.4.1AdaBoost默认建模画图</string>
+   </property>
+  </action>
+  <action name="action8_1_1pydel">
+   <property name="text">
+    <string>8.1.1 pydel描述符</string>
+   </property>
+  </action>
+  <action name="action6_5_1GradientBoosting">
+   <property name="text">
+    <string>6.5.1GradientBoosting默认建模画图</string>
+   </property>
+  </action>
+  <action name="action6_6_1ExtraTree">
+   <property name="text">
+    <string>6.6.1ExtraTree默认建模画图</string>
+   </property>
+  </action>
+  <action name="action6_7_1svm">
+   <property name="text">
+    <string>6.7.1svm默认建模画图</string>
+   </property>
+  </action>
+  <action name="action6_8_1DecisionTree">
+   <property name="text">
+    <string>6.8.1DecisionTree默认建模画图</string>
+   </property>
+  </action>
+  <action name="action6_9_1LinearRegression">
+   <property name="text">
+    <string>6.9.1LinearRegression默认建模画图</string>
+   </property>
+  </action>
+  <action name="action6_10_1Ridge">
+   <property name="text">
+    <string>6.10.1Ridge默认建模画图</string>
+   </property>
+  </action>
+  <action name="action6_11_1MLP">
+   <property name="text">
+    <string>6.11.1MLP默认建模画图</string>
+   </property>
+  </action>
+  <action name="action6_11_2MLP_modify">
+   <property name="text">
+    <string>6.11.2MLP_modify手动修改超参数建模画图</string>
+   </property>
+  </action>
+  <action name="action3">
+   <property name="text">
+    <string>导入有机smiles</string>
+   </property>
+  </action>
+  <action name="action4">
+   <property name="text">
+    <string>导入无机化学式</string>
+   </property>
+  </action>
+  <action name="action_2">
+   <property name="text">
+    <string>训练测试集地址</string>
+   </property>
+  </action>
+  <action name="action_5">
+   <property name="text">
+    <string>导入预测集</string>
+   </property>
+  </action>
+  <action name="action_smiles">
+   <property name="text">
+    <string>导入有机smiles</string>
+   </property>
+  </action>
+  <action name="action_6">
+   <property name="text">
+    <string>导入无机化学式</string>
+   </property>
+  </action>
+  <action name="action_7">
+   <property name="text">
+    <string>导入并可视化</string>
+   </property>
+  </action>
+  <action name="actionrdkit">
+   <property name="text">
+    <string>rdkit描述符生成</string>
+   </property>
+  </action>
+  <action name="actionmatminer">
+   <property name="text">
+    <string>matminer无机材料描述符生成</string>
+   </property>
+  </action>
+  <action name="action7_3_rnd_search_cv_xgboost">
+   <property name="text">
+    <string>7.3 待加</string>
+   </property>
+  </action>
+  <action name="action9_1">
+   <property name="text">
+    <string>9.1 遗传算法默认普通运算符</string>
+   </property>
+  </action>
+  <action name="action9_2">
+   <property name="text">
+    <string>9.2 遗传算法更多运算符</string>
+   </property>
+  </action>
+  <action name="action9_3_tSR">
+   <property name="text">
+    <string>9.3 tSR 默认方法</string>
+   </property>
+  </action>
+  <action name="action8_1_2_rdkit">
+   <property name="text">
+    <string>8.1.2 rdkit描述符</string>
+   </property>
+  </action>
+  <action name="action_9">
+   <property name="text">
+    <string>导入文件</string>
+   </property>
+  </action>
+  <action name="action_10">
+   <property name="text">
+    <string>10.1 RandomForestClassifier</string>
+   </property>
+  </action>
+  <action name="actionExtraTreesClassifier">
+   <property name="text">
+    <string>10.2 ExtraTreesClassifier</string>
+   </property>
+  </action>
+  <action name="actiondefault">
+   <property name="text">
+    <string>7.1.1 default预测</string>
+   </property>
+  </action>
+  <action name="actionmodify">
+   <property name="text">
+    <string>7.1.2 modify预测</string>
+   </property>
+  </action>
+  <action name="actionrnd_search_cv_xgboost">
+   <property name="text">
+    <string>7.1.3 rnd_search_cv预测</string>
+   </property>
+  </action>
+  <action name="actiondefault_2">
+   <property name="text">
+    <string>7.2.1 default预测</string>
+   </property>
+  </action>
+  <action name="action10_3_GaussianProcessClassifier">
+   <property name="text">
+    <string>10.3 GaussianProcess_Classifier</string>
+   </property>
+  </action>
+  <action name="action10_4_KNeighbors_classifier">
+   <property name="text">
+    <string>10.4 KNeighbors_Classifier</string>
+   </property>
+  </action>
+  <action name="action10_5_DecisionTreeClassifier">
+   <property name="text">
+    <string>10.5 DecisionTree_Classifier</string>
+   </property>
+  </action>
+  <action name="action10_6_SVCClassifier">
+   <property name="text">
+    <string>10.6 SVC_Classifier</string>
+   </property>
+  </action>
+  <action name="action_12">
+   <property name="text">
+    <string>导入连续型数据集</string>
+   </property>
+  </action>
+  <action name="actionn_2">
+   <property name="text">
+    <string>n=2</string>
+   </property>
+  </action>
+  <action name="actionn_3">
+   <property name="text">
+    <string>n=2</string>
+   </property>
+  </action>
+  <action name="actionn_4">
+   <property name="text">
+    <string>n=3</string>
+   </property>
+  </action>
+  <action name="actionn_5">
+   <property name="text">
+    <string>n=4</string>
+   </property>
+  </action>
+  <action name="action_8">
+   <property name="text">
+    <string>机器学习建模</string>
+   </property>
+  </action>
+  <action name="action_11">
+   <property name="text">
+    <string>预测集建立</string>
+   </property>
+  </action>
+  <action name="action_15">
+   <property name="text">
+    <string>Import virtual data (without label)</string>
+   </property>
+  </action>
+  <action name="action_16">
+   <property name="text">
+    <string>Prediction construction (without label)</string>
+   </property>
+  </action>
+  <action name="actionshap">
+   <property name="text">
+    <string>Shap</string>
+   </property>
+  </action>
+  <action name="actionslme_efficiency">
+   <property name="text">
+    <string>slme efficiency</string>
+   </property>
+  </action>
+  <action name="actionSQ_efficiency">
+   <property name="text">
+    <string>SQ efficiency</string>
+   </property>
+  </action>
+  <action name="actionpermutation">
+   <property name="text">
+    <string>permutation</string>
+   </property>
+  </action>
+  <action name="actionPCA">
+   <property name="text">
+    <string>PCA</string>
+   </property>
+  </action>
+  <action name="actiondecision_boundary">
+   <property name="text">
+    <string>Decision boundary</string>
+   </property>
+  </action>
+  <action name="actionsymbolic_classification">
+   <property name="text">
+    <string>Symbolic classification</string>
+   </property>
+  </action>
+  <action name="actionmodel_construction">
+   <property name="text">
+    <string>Model construction</string>
+   </property>
+  </action>
+  <action name="actionfitting_curve">
+   <property name="text">
+    <string>Fitting plot</string>
+   </property>
+  </action>
+  <action name="actionfitting_table">
+   <property name="text">
+    <string>Learning curve</string>
+   </property>
+  </action>
+  <action name="actionfuture_analysis">
+   <property name="text">
+    <string>Feature analysis</string>
+   </property>
+  </action>
+  <action name="actionexpression_tree">
+   <property name="text">
+    <string>Expression tree</string>
+   </property>
+  </action>
+  <action name="action_18">
+   <property name="text">
+    <string>Prediction generation (with label)</string>
+   </property>
+  </action>
+  <action name="actionslme_efficiency_2">
+   <property name="text">
+    <string>SLME efficiency</string>
+   </property>
+  </action>
+  <action name="actionSQ_efficiency_2">
+   <property name="text">
+    <string>SQ efficiency</string>
+   </property>
+  </action>
+  <action name="action_smiles_2">
+   <property name="text">
+    <string>Import smiles</string>
+   </property>
+  </action>
+  <action name="actionpydel">
+   <property name="text">
+    <string>* PaDEL</string>
+   </property>
+  </action>
+  <action name="actionrdkit_2">
+   <property name="text">
+    <string>RDKit</string>
+   </property>
+  </action>
+  <action name="action_importonehot">
+   <property name="text">
+    <string>Import formula </string>
+   </property>
+  </action>
+  <action name="actionmatminer_2">
+   <property name="text">
+    <string>Generate descriptors</string>
+   </property>
+  </action>
+  <action name="action_20">
+   <property name="text">
+    <string>Heat map</string>
+   </property>
+  </action>
+  <action name="action_21">
+   <property name="text">
+    <string>Import</string>
+   </property>
+  </action>
+  <action name="action_22">
+   <property name="text">
+    <string>Visualize</string>
+   </property>
+  </action>
+  <action name="action_14">
+   <property name="text">
+    <string>Model selection</string>
+   </property>
+  </action>
+  <action name="actionlabel_conversion">
+   <property name="text">
+    <string>* Label conversion</string>
+   </property>
+  </action>
+  <action name="actionExperimental_validation">
+   <property name="text">
+    <string>Experimental validation</string>
+   </property>
+  </action>
+  <action name="actionDFT_validation">
+   <property name="text">
+    <string>DFT validation</string>
+   </property>
+  </action>
+  <action name="actionMaterial_screening">
+   <property name="text">
+    <string>Material screening</string>
+   </property>
+  </action>
+  <action name="actionShap">
+   <property name="text">
+    <string>Shap</string>
+   </property>
+  </action>
+  <action name="actionpermutation_2">
+   <property name="text">
+    <string>Permutation</string>
+   </property>
+  </action>
+  <action name="actionPCA_2">
+   <property name="text">
+    <string>PCA</string>
+   </property>
+  </action>
+  <action name="actionDecision_boundary">
+   <property name="text">
+    <string>Decision boundary</string>
+   </property>
+  </action>
+  <action name="actiont_SNE">
+   <property name="text">
+    <string>t-SNE</string>
+   </property>
+  </action>
+  <action name="actionPageRank">
+   <property name="text">
+    <string>PageRank</string>
+   </property>
+  </action>
+  <action name="actionExperimental_validation_2">
+   <property name="text">
+    <string>Experimental validation</string>
+   </property>
+  </action>
+  <action name="actionDFT_validation_2">
+   <property name="text">
+    <string>DFT validation</string>
+   </property>
+  </action>
+  <action name="actionSLME_efficiency">
+   <property name="text">
+    <string>SLME efficiency</string>
+   </property>
+  </action>
+  <action name="actionSQ_efficiency_3">
+   <property name="text">
+    <string>SQ efficiency</string>
+   </property>
+  </action>
+  <action name="actionData_import">
+   <property name="text">
+    <string>Data import</string>
+   </property>
+  </action>
+  <action name="actionWord2vec">
+   <property name="text">
+    <string>Word2vec</string>
+   </property>
+  </action>
+  <action name="actionCosine_similarity">
+   <property name="text">
+    <string>Cosine similarity</string>
+   </property>
+  </action>
+  <action name="actionPCA_3">
+   <property name="text">
+    <string>PCA</string>
+   </property>
+  </action>
+  <action name="actiont_SNE_2">
+   <property name="text">
+    <string>t-SNE</string>
+   </property>
+  </action>
+  <action name="actionDBscan">
+   <property name="text">
+    <string>DBscan</string>
+   </property>
+  </action>
+  <action name="actionK_mean">
+   <property name="text">
+    <string>K-mean</string>
+   </property>
+  </action>
+  <action name="actionSelect_machine_learning_model">
+   <property name="text">
+    <string>Select machine learning model</string>
+   </property>
+  </action>
+  <action name="actionPrediction_visualization">
+   <property name="text">
+    <string>Prediction visualization (only for classification)</string>
+   </property>
+  </action>
+  <action name="actionMore_visualization_only_for_classification">
+   <property name="text">
+    <string>*More visualization (only for classification)</string>
+   </property>
+  </action>
+  <action name="actionMae">
+   <property name="text">
+    <string>Mae</string>
+   </property>
+  </action>
+  <action name="actionSymbolic_regression">
+   <property name="text">
+    <string>Symbolic regression</string>
+   </property>
+  </action>
+  <action name="actionShap_2">
+   <property name="text">
+    <string>Shapley analysis</string>
+   </property>
+  </action>
+  <action name="actionModel_import">
+   <property name="text">
+    <string>Model import </string>
+   </property>
+  </action>
+  <action name="actionData_import_2">
+   <property name="text">
+    <string>Data import</string>
+   </property>
+  </action>
+  <action name="actionResult">
+   <property name="text">
+    <string>Result</string>
+   </property>
+  </action>
+  <action name="actionImport_magpie_formula">
+   <property name="text">
+    <string>Import formula</string>
+   </property>
+  </action>
+  <action name="actionGenerate_magpie">
+   <property name="checkable">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Generate magpie features</string>
+   </property>
+  </action>
+  <action name="actionTemplates">
+   <property name="text">
+    <string>1. only csv files are accepted.</string>
+   </property>
+  </action>
+  <action name="action2_csv_templates_https_github_com_Zhang_NJ_Lab_NJmatML_templates">
+   <property name="text">
+    <string>2. four csv templates:  https://github.com/Zhang-NJ-Lab/NJmatML-templates</string>
+   </property>
+  </action>
+  <action name="action3_number_of_columns_in_the_prediction_csv_RFE_remaining_number_you_entered_in_the_software">
+   <property name="text">
+    <string>3. number of columns in prediction csv = remaining RFE number you entered in the software!</string>
+   </property>
+  </action>
+  <action name="actionXgboost">
+   <property name="text">
+    <string>Xgboost</string>
+   </property>
+  </action>
+  <action name="actionRandom_Forest">
+   <property name="text">
+    <string>Random Forest</string>
+   </property>
+  </action>
+  <action name="actionBagging">
+   <property name="text">
+    <string>Bagging</string>
+   </property>
+  </action>
+  <action name="actionAdaBoost">
+   <property name="text">
+    <string>AdaBoost</string>
+   </property>
+  </action>
+  <action name="actionGradient_Boosting">
+   <property name="text">
+    <string>Gradient Boosting</string>
+   </property>
+  </action>
+  <action name="actionExtra_Tree">
+   <property name="text">
+    <string>Extra Tree</string>
+   </property>
+  </action>
+  <action name="actionSvm">
+   <property name="text">
+    <string>SVM</string>
+   </property>
+  </action>
+  <action name="actionDecision_Tree">
+   <property name="text">
+    <string>Decision Tree</string>
+   </property>
+  </action>
+  <action name="actionLinear_Regression">
+   <property name="text">
+    <string>Linear Regression</string>
+   </property>
+  </action>
+  <action name="actionRidge">
+   <property name="text">
+    <string>Ridge</string>
+   </property>
+  </action>
+  <action name="actionMLP">
+   <property name="text">
+    <string>MLP</string>
+   </property>
+  </action>
+  <action name="actionRamdom_Forest">
+   <property name="text">
+    <string>Ramdom Forest</string>
+   </property>
+  </action>
+  <action name="actionExtra_Tree_2">
+   <property name="text">
+    <string>Extra Tree</string>
+   </property>
+  </action>
+  <action name="actionGaussian_Process">
+   <property name="text">
+    <string>Gaussian Process</string>
+   </property>
+  </action>
+  <action name="actionKNeighbors">
+   <property name="text">
+    <string>*KNeighbors</string>
+   </property>
+  </action>
+  <action name="actionDecision_Tree_2">
+   <property name="text">
+    <string>Decision Tree</string>
+   </property>
+  </action>
+  <action name="actionSVM">
+   <property name="text">
+    <string>SVM</string>
+   </property>
+  </action>
+  <action name="actionImport">
+   <property name="text">
+    <string>Import</string>
+   </property>
+  </action>
+  <action name="actionGenerate">
+   <property name="text">
+    <string>Featurize</string>
+   </property>
+  </action>
+  <action name="actionImport_2">
+   <property name="text">
+    <string>Import</string>
+   </property>
+  </action>
+  <action name="actionFeaturize">
+   <property name="text">
+    <string>Generate</string>
+   </property>
+  </action>
+  <action name="actionImport_Multicolumn_Smiles">
+   <property name="text">
+    <string>Import</string>
+   </property>
+  </action>
+  <action name="actionFeaturize_Multicolumn_Smiles">
+   <property name="text">
+    <string>Featurize</string>
+   </property>
+  </action>
+  <action name="actionEnter_virtual_Multicolumn_Smiles">
+   <property name="text">
+    <string>Import</string>
+   </property>
+  </action>
+  <action name="actionGenerate_virtual_Multicolumn_Smiles">
+   <property name="text">
+    <string>Generate</string>
+   </property>
+  </action>
+  <action name="actionUnder_development">
+   <property name="text">
+    <string>Under development</string>
+   </property>
+  </action>
+  <action name="actionSLME_efficiency_2">
+   <property name="text">
+    <string>SLME efficiency</string>
+   </property>
+  </action>
+  <action name="actionSQ_efficiency_4">
+   <property name="text">
+    <string>SQ efficiency</string>
+   </property>
+  </action>
+  <action name="actionDFT">
+   <property name="text">
+    <string>DFT</string>
+   </property>
+  </action>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
