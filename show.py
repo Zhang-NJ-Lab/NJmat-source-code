@@ -3,7 +3,7 @@ from PyQt5.QtWidgets import QFileDialog, QMessageBox
 from PyQt5.QtGui import QImage, QPixmap
 from PyQt5.QtCore import QTimer
 
-from NJmatML.dataML import Symbolicregression_Modelconstruction, Symbolicclassification
+from NJmatML.dataML import Symbolicregression_Modelconstruction, Symbolicclassification,plot_word_vectors_highlighted
 from mainwindow import Ui_MainWindow
 import dialog_Machinelearningmodeling_Algorithms
 import dialog_Preprocessing_Featureranking,dialog_continuous_data_Xgboost,dialog_continuous_data_Random_Forest\
@@ -11,8 +11,10 @@ import dialog_Preprocessing_Featureranking,dialog_continuous_data_Xgboost,dialog
     dialog_continuous_data_ExtraTree,dialog_continuous_data_Svm,dialog_continuous_data_DecisionTree,\
     dialog_continuous_data_LinearRegression,dialog_continuous_data_Ridge,dialog_continuous_data_MLP
 import dialog_classified_data_two_RandomForest,dialog_classified_data_two_ExtraTree,dialog_classified_data_two_GaussianProcess,\
-    dialog_classified_data_two_DecisionTree,dialog_classified_data_two_SVM
-
+    dialog_classified_data_two_DecisionTree,dialog_classified_data_two_SVM,dialog_wordlist_tsne
+import dialog_wordlist_tsne
+import dialog_classified_data_two_Adaboost
+import dialog_classified_data_two_xgboost
 
 from NJmatML import dataML
 import argparse
@@ -24,6 +26,7 @@ import os
 import shutil
 import numpy as np
 import pandas
+import gensim
 
 # untitled1.py 加 self.textBrowser.setLineWrapMode(0) 水平滑轮                   #Todo
 
@@ -55,6 +58,9 @@ class mywindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.parser.add_argument("--origin_path_7", type=str,
                                  default="D:/project_zl/new_generate/Shapley/Model import/.dat",
                                  help="shapley_Model import")
+        self.parser.add_argument("--origin_path_30", type=str,
+                                 default="D:/project_zl/NLP.txt",
+                                 help="NLP model import!")
 
         # self.parser.add_argument("--origin_path_17", type=str,
         #                          default="D:/project_zl/new_generate/Shapley/Model import/.dat",
@@ -155,10 +161,8 @@ class mywindow(QtWidgets.QMainWindow, Ui_MainWindow):
         #self.actionKNeighbors.triggered.connect(self.show_dialog_continuous_data_MLP)
         self.actionDecision_Tree_2.triggered.connect(self.show_dialog_classified_data_two_DecisionTree)
         self.actionSVM.triggered.connect(self.show_dialog_classified_data_two_SVM)
-
-
-
-
+        self.actionAdaboostC.triggered.connect(self.show_dialog_classified_data_two_AdaBoost)
+        self.actionXgboostC.triggered.connect(self.show_dialog_classified_data_two_xgBoost)
 
         # 符号回归
         self.actionSymbolic_regression.triggered.connect(self.GP_Symbolicregression)
@@ -196,6 +200,13 @@ class mywindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.actionShap_Classification_Data_import.triggered.connect(self.shapley_Classification_Dataimport)
         self.actionShap_Classification_Result.triggered.connect(self.shapley_Classification_Result)
 
+        # NLP
+        self.actionImport_NLP_model.triggered.connect(self.NLP_model)
+        self.actiont_tSNE.triggered.connect(self.show_dialog_NLP_model_tsne)
+        self.actionCosine_similarity_2.triggered.connect(self.NLP_Cosine_similarity)
+
+
+
 
         self.enter_organic_smiles_state =self.opt.if_control
         self.enter_inorganic_fomula_state = self.opt.if_control
@@ -208,11 +219,14 @@ class mywindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.Import_Multicolumn_Smiles_Morgan_state=self.opt.if_control
         self.Featurize_Multicolumn_Smiles_Morgan_state=self.opt.if_control
 
-
         self.enter_virtual_Multicolumn_Smiles_state = self.opt.if_control
         self.enter_virtual_Multicolumn_Smiles_RDKit_state = self.opt.if_control
 
         self.enter_training_test_set_path_state=self.opt.if_control                      # 由于本电脑有默认导入文件路径，所以可由if_control控制，方便测试
+
+
+
+
 
 
         # 控制按钮触发前后顺序
@@ -221,6 +235,7 @@ class mywindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.import_model_dat_state=self.opt.if_control
         self.import_prediction_dataset_state=self.opt.if_control
         self.import_prediction_dataset_state = self.opt.if_control
+        self.NLP_model_tsne_state = self.opt.if_control
 
 
     # 状态重置
@@ -823,20 +838,16 @@ class mywindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
             self.Preprocessing_Featureranking_Featureimportancebeforefeatureselection()
         if self.enter_training_test_set_path_state == True:
-            if self.heatmap_state == True:
-                if self.rfe_feature_selection_state == True:
-                    self.di = QtWidgets.QDialog()
-                    d = dialog_Preprocessing_Featureranking.Ui_Dialog()
-                    d.setupUi(self.di)
-                    self.di.show()
-                    d.buttonBox.accepted.connect(lambda :give(d.lineEdit.text(),d.lineEdit_2.text(),d.lineEdit_3.text(),d.lineEdit_4.text()))
-                    d.buttonBox.rejected.connect(self.di.close)
+            if self.rfe_feature_selection_state == True:
+                self.di = QtWidgets.QDialog()
+                d = dialog_Preprocessing_Featureranking.Ui_Dialog()
+                d.setupUi(self.di)
+                self.di.show()
+                d.buttonBox.accepted.connect(lambda :give(d.lineEdit.text(),d.lineEdit_2.text(),d.lineEdit_3.text(),d.lineEdit_4.text()))
+                d.buttonBox.rejected.connect(self.di.close)
 
-                else:
-                    QMessageBox.information(self, 'Hint', 'Do "RFE feature selection"!', QMessageBox.Ok | QMessageBox.Close,
-                                            QMessageBox.Close)
             else:
-                QMessageBox.information(self, 'Hint', 'Do "Heat map"!', QMessageBox.Ok | QMessageBox.Close,
+                QMessageBox.information(self, 'Hint', 'Do "RFE feature selection"!', QMessageBox.Ok | QMessageBox.Close,
                                         QMessageBox.Close)
         else:
             QMessageBox.information(self, 'Hint', 'Do "Train/Test -> Import"!', QMessageBox.Ok | QMessageBox.Close,
@@ -871,21 +882,17 @@ class mywindow(QtWidgets.QMainWindow, Ui_MainWindow):
             self.Preprocessing_Featureranking_Featureimportanceafterfeatureselection()
 
         if self.enter_training_test_set_path_state == True:
-            if self.heatmap_state == True:
-                if self.rfe_feature_selection_state == True:
-                    self.di = QtWidgets.QDialog()
-                    d = dialog_Preprocessing_Featureranking.Ui_Dialog()
-                    d.setupUi(self.di)
-                    self.di.show()
+            if self.rfe_feature_selection_state == True:
+                self.di = QtWidgets.QDialog()
+                d = dialog_Preprocessing_Featureranking.Ui_Dialog()
+                d.setupUi(self.di)
+                self.di.show()
 
-                    d.buttonBox.accepted.connect(
-                        lambda: give(d.lineEdit.text(), d.lineEdit_2.text(), d.lineEdit_3.text(), d.lineEdit_4.text()))
-                    d.buttonBox.rejected.connect(self.di.close)
-                else:
-                    QMessageBox.information(self, 'Hint', 'Do "RFE feature selection"!', QMessageBox.Ok | QMessageBox.Close,
-                                            QMessageBox.Close)
+                d.buttonBox.accepted.connect(
+                    lambda: give(d.lineEdit.text(), d.lineEdit_2.text(), d.lineEdit_3.text(), d.lineEdit_4.text()))
+                d.buttonBox.rejected.connect(self.di.close)
             else:
-                QMessageBox.information(self, 'Hint', 'Do "Heat map"!', QMessageBox.Ok | QMessageBox.Close,
+                QMessageBox.information(self, 'Hint', 'Do "RFE feature selection"!', QMessageBox.Ok | QMessageBox.Close,
                                         QMessageBox.Close)
         else:
             QMessageBox.information(self, 'Hint', 'Do "Train/Test -> Import"!', QMessageBox.Ok | QMessageBox.Close,
@@ -2011,11 +2018,129 @@ class mywindow(QtWidgets.QMainWindow, Ui_MainWindow):
                                     QMessageBox.Close)
 
 
+    def Classifieddata_Two_AdaBoost(self,n_estimators_enter,learning_rate_enter,random_state_enter):
+        try:
+
+            path = self.opt.save_path + "/Machine Learning Modeling/Algorithms/Classified data(two)/AdaBoost"
+            csvname = self.opt.save_path + "/Preprocessing/Rfe feature selection" + "/data_rfe.csv"
+            if os.path.exists(path):
+                shutil.rmtree(path)
+            os.makedirs(path)
+            self.di.close()
+
+            str1,str2,str3=dataML.AdaBoost_classifier((int)(n_estimators_enter),(float)(learning_rate_enter),(int)(random_state_enter),path,csvname)
 
 
+            self.textBrowser.append(str1)
+            self.textBrowser.append(str2)
+            self.textBrowser.append(str3)
+            self.textBrowser.append("*" * 150)
+
+            QMessageBox.information(self, 'Hint', 'Completed!', QMessageBox.Ok | QMessageBox.Close,
+                                    QMessageBox.Close)
+            if self.opt.if_open == True:
+                str1 = (path + '/ABC_test_ROC.png').replace("/", "\\")
+                os.startfile(str1)
+                str2 = (path + '/ABC_test_CM.png').replace("/", "\\")
+                os.startfile(str2)
+                str3 = (path + '/ABC_train_ROC.png').replace("/", "\\")
+                os.startfile(str3)
+                str4 = (path + '/ABC_train_CM.png').replace("/", "\\")
+                os.startfile(str4)
+
+        except Exception as e:
+            print(e)
+    def show_dialog_classified_data_two_AdaBoost(self):
+        def give(a,b,c):
+            n_estimators_enter=a
+            learning_rate_enter=b
+            random_state_enter=c
+            self.Classifieddata_Two_AdaBoost(n_estimators_enter,learning_rate_enter,random_state_enter)
+
+        if self.enter_training_test_set_path_state == True:
+            if self.rfe_feature_selection_state == True:
+                self.di = QtWidgets.QDialog()
+                d = dialog_classified_data_two_Adaboost.Ui_Dialog()
+                d.setupUi(self.di)
+                self.di.show()
+
+                d.buttonBox.accepted.connect(lambda :give(d.lineEdit.text(),d.lineEdit_2.text(),d.lineEdit_3.text()))
+                d.buttonBox.rejected.connect(self.di.close)
+            else:
+                QMessageBox.information(self, 'Hint', 'Do "RFE feature selection"!', QMessageBox.Ok | QMessageBox.Close,
+                                        QMessageBox.Close)
+
+        else:
+            QMessageBox.information(self, 'Hint', 'Do "Train/Test -> Import"!', QMessageBox.Ok | QMessageBox.Close,
+                                    QMessageBox.Close)
+
+    # show_dialog_classified_data_two_xgBoost-------------------------------------------------------
+
+    def Classifieddata_Two_xgboost(self,max_depth_enter, random_state_enter,min_child_weight_enter,subsample_enter, colsample_bytree_enter,n_estimators_enter):
+        try:
+
+            path = self.opt.save_path + "/Machine Learning Modeling/Algorithms/Classified data(two)/xgBoost"
+            csvname = self.opt.save_path + "/Preprocessing/Rfe feature selection" + "/data_rfe.csv"
+            if os.path.exists(path):
+                shutil.rmtree(path)
+            os.makedirs(path)
+            self.di.close()
+
+            str2,str3=dataML.xgboost_classifier((int)(max_depth_enter),(int)(random_state_enter),(int)(min_child_weight_enter),(float)(subsample_enter),(float)(colsample_bytree_enter),(int)(n_estimators_enter),path,csvname)
 
 
+            # self.textBrowser.append(str1)
+            self.textBrowser.append(str2)
+            self.textBrowser.append(str3)
+            self.textBrowser.append("*" * 150)
 
+            QMessageBox.information(self, 'Hint', 'Completed!', QMessageBox.Ok | QMessageBox.Close,
+                                    QMessageBox.Close)
+            if self.opt.if_open == True:
+                str1 = (path + '/xgboost_test_ROC.png').replace("/", "\\")
+                os.startfile(str1)
+                str2 = (path + '/xgboost_test_CM.png').replace("/", "\\")
+                os.startfile(str2)
+                str3 = (path + '/xgboost_train_ROC.png').replace("/", "\\")
+                os.startfile(str3)
+                str4 = (path + '/xgboost_train_CM.png').replace("/", "\\")
+                os.startfile(str4)
+
+        except Exception as e:
+            print(e)
+    def show_dialog_classified_data_two_xgBoost(self):
+        def give(a,b,c,d,e,f):
+            # n_estimators_enter=a
+            # learning_rate_enter=b
+            # random_state_enter=c
+            max_depth_enter=a
+            random_state_enter = b
+            min_child_weight_enter = c
+            subsample_enter = d
+            colsample_bytree_enter = e
+            n_estimators_enter = f
+
+
+            self.Classifieddata_Two_xgboost(max_depth_enter, random_state_enter,min_child_weight_enter,subsample_enter, colsample_bytree_enter,n_estimators_enter)
+
+        if self.enter_training_test_set_path_state == True:
+            if self.rfe_feature_selection_state == True:
+                self.di = QtWidgets.QDialog()
+                d = dialog_classified_data_two_xgboost.Ui_Dialog()
+                d.setupUi(self.di)
+                self.di.show()
+
+                d.buttonBox.accepted.connect(lambda :give(d.lineEdit.text(),d.lineEdit_2.text(),d.lineEdit_3.text(),d.lineEdit_4.text(),d.lineEdit_5.text(),d.lineEdit_6.text()))
+                d.buttonBox.rejected.connect(self.di.close)
+            else:
+                QMessageBox.information(self, 'Hint', 'Do "RFE feature selection"!', QMessageBox.Ok | QMessageBox.Close,
+                                        QMessageBox.Close)
+
+        else:
+            QMessageBox.information(self, 'Hint', 'Do "Train/Test -> Import"!', QMessageBox.Ok | QMessageBox.Close,
+                                    QMessageBox.Close)
+
+    # ----------------------------------------------
     # 预测集建立------------------------------------------------------------------------------------------------------
     # 用户导入虚拟数据集
     def enter_virtual_2in1(self):
@@ -2651,6 +2776,249 @@ class mywindow(QtWidgets.QMainWindow, Ui_MainWindow):
             print(e)
 
 
+#NLP模型导入
+    def NLP_model(self):
+        directory_temp, filetype = QFileDialog.getOpenFileNames(self, "Select file")
+        if len(directory_temp) > 0:
+            str_root = str(directory_temp)
+            f_dat = str_root.rfind('.txt')
+            if f_dat != -1:  # 判断是不是.txt
+                self.opt.origin_path_30 = str((str_root.replace("\\", '/'))[2:-2])
+
+                #self.import_model_dat_state = True
+                QMessageBox.information(self, 'Hint', 'Completed!', QMessageBox.Ok | QMessageBox.Close,
+                                        QMessageBox.Close)
+            else:
+                QMessageBox.information(self, 'Hint', 'Not .txt file, please re-enter!',
+                                        QMessageBox.Ok | QMessageBox.Close,
+                                        QMessageBox.Close)
+        else:
+            QMessageBox.information(self, 'Hint', 'Please choose a model!', QMessageBox.Ok | QMessageBox.Close,
+                                    QMessageBox.Close)
+    #
+    # def NLP_model_tsne(self):
+    #     try:
+    #         path = self.opt.save_path + "/NLP/tsne"
+    #         if os.path.exists(path):
+    #             shutil.rmtree(path)
+    #         os.makedirs(path)
+    #
+    #         dataML.NLP_model_tsne(self.opt.origin_path_2, path, self.opt.origin_path_7)
+    #
+    #         if self.opt.if_open == True:
+    #             str1 = (path + '/tsne_with_words.png').replace("/", "\\")
+    #             os.startfile(str1)
+    #             str2 = (path + '/tsne_without_words.png').replace("/", "\\")
+    #             os.startfile(str2)
+    #             # str3 = (path + '/Feature_ranking_bar.png').replace("/", "\\")
+    #             # os.startfile(str3)
+    #             # str4 = (path + '/Waterfall.png').replace("/", "\\")
+    #             # os.startfile(str4)
+    #             # str5 = (path + '/decision_tree.png').replace("/", "\\")
+    #             # os.startfile(str5)
+    #
+    #         QMessageBox.information(self, 'Hint', 'Completed!', QMessageBox.Ok | QMessageBox.Close,
+    #                                 QMessageBox.Close)
+    #     except Exception as e:
+    #         print(e)
+
+
+    def NLP_model_tsne(self, highlight_words_blue, highlight_words_red, highlight_words_yellow, highlight_words_green,
+                       highlight_words_orange):
+        try:
+
+            path = self.opt.save_path + "/NLP/tsne"
+            if os.path.exists(path):
+                shutil.rmtree(path)
+            os.makedirs(path)
+
+            self.di.close()
+            # 加载导入的 NLP 模型
+            from gensim.models import word2vec, KeyedVectors
+
+            model = KeyedVectors.load_word2vec_format(self.opt.origin_path_30)
+            plot_word_vectors_highlighted(model, highlight_words_blue, highlight_words_red, highlight_words_yellow,
+                                          highlight_words_green, highlight_words_orange,path)
+            # # 将模型传递给 plot_word_vectors_highlighted 函数
+            # plot_word_vectors_highlighted(model, highlight_words_blue, highlight_words_red, highlight_words_yellow,
+            #                               highlight_words_green, highlight_words_orange)
+
+            self.NLP_model_tsne_state=True
+            if self.opt.if_open == True:
+                str1 = (path + '/tsne_clustering_plot_withword.png').replace("/", "\\")
+                os.startfile(str1)
+                str2 = (path + '/tsne_clustering_plot_withoutword.png').replace("/", "\\")
+                os.startfile(str2)
+
+            QMessageBox.information(self, 'Hint', 'Completed!', QMessageBox.Ok | QMessageBox.Close, QMessageBox.Close)
+
+        except Exception as e:
+            print(e)
+
+
+    def show_dialog_NLP_model_tsne(self):
+        def give(a, b, c, d, e):
+            highlight_words_blue = a.split(',')
+            highlight_words_orange = b.split(',')
+            highlight_words_green = c.split(',')
+            highlight_words_yellow = d.split(',')
+            highlight_words_red = e.split(',')
+            self.NLP_model_tsne(highlight_words_blue, highlight_words_red, highlight_words_yellow, highlight_words_green,
+                                highlight_words_orange)
+
+        self.di = QtWidgets.QDialog()
+        d = dialog_wordlist_tsne.Ui_Dialog()
+        d.setupUi(self.di)
+        self.di.show()
+        d.buttonBox.accepted.connect(
+            lambda: give(d.lineEdit.text(), d.lineEdit_2.text(), d.lineEdit_3.text(), d.lineEdit_4.text(),
+                         d.lineEdit_5.text()))
+        d.buttonBox.rejected.connect(self.di.close)
+
+    def NLP_Cosine_similarity(self):
+        try:
+            if(self.NLP_model_tsne_state==True):
+                path = self.opt.save_path + "/NLP/Cosine_similarity"
+                if os.path.exists(path):
+                    shutil.rmtree(path)
+                os.makedirs(path)
+                value,ok=QtWidgets.QInputDialog.getText(self,"Cosine similarity","formula or material name:",QtWidgets.QLineEdit.Normal,"perovskite")
+                dataML.cosine_similarity_model(value,path)
+
+                if self.opt.if_open == True:
+                    str1 = (path + '/cosine_similarity.csv').replace("/", "\\")
+                    os.startfile(str1)
+
+                QMessageBox.information(self, 'Hint', 'Completed!', QMessageBox.Ok | QMessageBox.Close, QMessageBox.Close)
+
+            else:
+                QMessageBox.information(self, 'Hint', 'Do t-SNE!',
+                                        QMessageBox.Ok | QMessageBox.Close,
+                                        QMessageBox.Close)
+
+
+
+        except Exception as e:
+            print(e)
+
+"""    def NLP_model_tsne(self):
+        try:
+            # 加载导入的 NLP 模型
+            from gensim.models import word2vec, KeyedVectors
+            model = KeyedVectors.load_word2vec_format(self.opt.origin_path_30)
+            self.dialog_wordlist_tsne()
+
+            path = self.opt.save_path + "/NLPne"
+            if os.path.exists(path):
+                shutil.rmtree(path)
+            os.makedirs(path)
+
+            # # 将模型传递给 plot_word_vectors_highlighted 函数
+            # plot_word_vectors_highlighted(model, highlight_words_blue, highlight_words_red, highlight_words_yellow,
+            #                               highlight_words_green, highlight_words_orange)
+
+            if self.opt.if_open == True:
+                str1 = (path + 'ne_with_words.png').replace("/", "\\")
+                os.startfile(str1)
+                str2 = (path + 'ne_without_words.png').replace("/", "\\")
+                os.startfile(str2)
+
+            QMessageBox.information(self, 'Hint', 'Completed!', QMessageBox.Ok | QMessageBox.Close, QMessageBox.Close)
+
+        except Exception as e:
+            print(e)
+
+    # def show_dialog(self):
+    #     # 弹出对话框，提示用户输入蓝色高亮显示的单词
+    #     input_text, ok_pressed = QtWidgets.QInputDialog.getText(self, "Enter blue-highlighted words",
+    #                                                             "Enter words (separated by comma):")
+    #     if ok_pressed:
+    #         # 将用户输入的单词以逗号分隔，转换为列表
+    #         highlight_words_blue = input_text.split(',')
+    #         highlight_words_red = input_text.split(',')
+    #         highlight_words_yellow = input_text.split(',')
+    #         highlight_words_green = input_text.split(',')
+    #         highlight_words_orange = input_text.split(',')
+    #         # 调用绘制函数，并传递用户输入的单词列表
+    #         plot_word_vectors_highlighted(model, highlight_words_blue, highlight_words_red, highlight_words_yellow,highlight_words_green, highlight_words_orange)
+    # #
+
+    # def show_dialog(self):
+    # def dialog_wordlist_tsne(self):
+    def dialog_wordlist_tsne(self):
+    # 获取蓝色高亮显示的单词
+        blue_text = self.blueLineEdit.text()
+        highlight_words_blue = blue_text.split(',')
+        # 获取红色高亮显示的单词
+        red_text = self.redLineEdit.text()
+        highlight_words_red = red_text.split(',')
+
+        # 获取黄色高亮显示的单词
+        yellow_text = self.yellowLineEdit.text()
+        highlight_words_yellow = yellow_text.split(',')
+
+        # 获取绿色高亮显示的单词
+        green_text = self.greenLineEdit.text()
+        highlight_words_green = green_text.split(',')
+
+        # 获取橙色高亮显示的单词
+        orange_text = self.orangeLineEdit.text()
+        highlight_words_orange = orange_text.split(',')
+
+        # 调用绘制函数，并传递用户输入的单词列表
+        from gensim.models import word2vec, KeyedVectors
+        model = KeyedVectors.load_word2vec_format(self.opt.origin_path_30)
+        plot_word_vectors_highlighted(model, highlight_words_blue, highlight_words_red, highlight_words_yellow, highlight_words_green, highlight_words_orange)
+
+        #
+    # def Prediction_Predictiongeneration(self):
+    #     try:
+    #         if self.import_prediction_dataset_state == True:
+    #             if self. import_model_dat_state== True:
+    #                 path = self.opt.save_path + "/Prediction/Prediction generation (with label)"
+    #                 # if os.path.exists(path) == False:
+    #                 #     os.makedirs(path)
+    #                 if os.path.exists(path):
+    #                     shutil.rmtree(path)
+    #                 os.makedirs(path)
+    #
+    #                 generate_file=dataML.tSNE(self.opt.origin_path_2, path,self.opt.origin_path_6)
+    #
+    #
+    #                 self.opt.prediction_visualization_path=generate_file
+    #                 self.prediction_generation = True
+    #
+    #                 QMessageBox.information(self, 'Hint', 'Completed!', QMessageBox.Ok | QMessageBox.Close,
+    #                                         QMessageBox.Close)
+    #                 if self.opt.if_open == True:
+    #                     os.startfile(generate_file)
+    #             else:
+    #                 QMessageBox.information(self, 'Hint', 'Do "Select machine learning model"!', QMessageBox.Ok | QMessageBox.Close,
+    #                                         QMessageBox.Close)
+    #         else:
+    #             QMessageBox.information(self, 'Hint', 'Do "Import virtual data (without label)"!', QMessageBox.Ok | QMessageBox.Close,
+    #                                     QMessageBox.Close)
+    #     except Exception as e:
+    #         print(e)
+    #
+    #"""
+    #
+    #
+    #
+    #
+    #
+    #
+    #
+    #
+
+
+
+
+
+
+
+
+
 
 
 
@@ -2663,3 +3031,5 @@ if __name__ == "__main__":
 
     ui.show()
     sys.exit(app.exec_())
+
+

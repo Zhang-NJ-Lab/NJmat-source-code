@@ -122,6 +122,8 @@
       <addaction name="actionGaussian_Process"/>
       <addaction name="actionDecision_Tree_2"/>
       <addaction name="actionSVM"/>
+      <addaction name="actionAdaboostC"/>
+      <addaction name="actionXgboostC"/>
      </widget>
      <addaction name="menuRegression"/>
      <addaction name="menuClassification"/>
@@ -266,6 +268,14 @@
     <addaction name="action2_csv_templates_https_github_com_Zhang_NJ_Lab_NJmatML_templates"/>
     <addaction name="action3_number_of_columns_in_the_prediction_csv_RFE_remaining_number_you_entered_in_the_software"/>
    </widget>
+   <widget class="QMenu" name="menuNLP">
+    <property name="title">
+     <string>NLP</string>
+    </property>
+    <addaction name="actionImport_NLP_model"/>
+    <addaction name="actiont_tSNE"/>
+    <addaction name="actionCosine_similarity_2"/>
+   </widget>
    <addaction name="menu_2"/>
    <addaction name="menu_10"/>
    <addaction name="menu_11"/>
@@ -275,6 +285,7 @@
    <addaction name="menuShapley"/>
    <addaction name="menu_9"/>
    <addaction name="menuHints"/>
+   <addaction name="menuNLP"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
   <action name="action_heatmap">
@@ -937,7 +948,7 @@
   </action>
   <action name="actionRamdom_Forest">
    <property name="text">
-    <string>Ramdom Forest</string>
+    <string>Random Forest</string>
    </property>
   </action>
   <action name="actionExtra_Tree_2">
@@ -1073,6 +1084,31 @@
   <action name="actionGenerate_virtual_Multicolumn_Smiles_RDKit">
    <property name="text">
     <string>Generate</string>
+   </property>
+  </action>
+  <action name="actionImport_NLP_model">
+   <property name="text">
+    <string>Import NLP model</string>
+   </property>
+  </action>
+  <action name="actionCosine_similarity_2">
+   <property name="text">
+    <string>Cosine similarity</string>
+   </property>
+  </action>
+  <action name="actiont_tSNE">
+   <property name="text">
+    <string>t-SNE</string>
+   </property>
+  </action>
+  <action name="actionAdaboostC">
+   <property name="text">
+    <string>Adaboost</string>
+   </property>
+  </action>
+  <action name="actionXgboostC">
+   <property name="text">
+    <string>Xgboost</string>
    </property>
   </action>
  </widget>

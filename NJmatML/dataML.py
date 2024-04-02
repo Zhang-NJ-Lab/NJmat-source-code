@@ -1233,7 +1233,6 @@ def heatmap_before(path):
     import seaborn as sns
     import matplotlib.pyplot as plt
     featureData=data.iloc[:,:]
-    global corMat
     corMat = pd.DataFrame(featureData.corr())  #corr 求相关系数矩阵
     corMat.to_csv(path+'/heatmap-before.csv')
     plt.figure(figsize=(20, 30))
@@ -1333,6 +1332,8 @@ def pairplot_afterRFE(path):
 def FeatureImportance_before(rotationDeg,fontsize_axis,figure_size_xaxis,figure_size_yaxis,path):
 
     import pandas as pd
+    featureData = data.iloc[:, :]
+    corMat = pd.DataFrame(featureData.corr())  # corr 求相关系数矩阵
     FirstLine=corMat.iloc[-1,:]
     FirstLine=pd.DataFrame(FirstLine)
     FirstLine_Del_Target=FirstLine.iloc[:-1,:]
@@ -6581,6 +6582,372 @@ def SVM_classifier(a, b, c, d,e,path,csvName):
 
 
 
+def AdaBoost_classifier(a, b, c,path,csvname):
+    from sklearn import preprocessing
+    from sklearn.model_selection import KFold
+    from sklearn.metrics import mean_squared_error
+    from matplotlib.ticker import MultipleLocator, FormatStrFormatter
+    import matplotlib.pyplot as plt
+    from sklearn.model_selection import train_test_split
+    import pandas as pd
+    # 数据切分
+def AdaBoost_classifier(a, b, c,path,csvName):
+    from sklearn import preprocessing
+    from sklearn.model_selection import KFold
+    from sklearn.metrics import mean_squared_error
+    from matplotlib.ticker import MultipleLocator, FormatStrFormatter
+    import matplotlib.pyplot as plt
+    from sklearn.model_selection import train_test_split
+    import pandas as pd
+    from sklearn import preprocessing
+    from pandas import DataFrame
+    from sklearn.ensemble import RandomForestClassifier
+    from sklearn.model_selection import KFold
+    from sklearn.metrics import roc_curve, auc
+    from sklearn.metrics import confusion_matrix
+    from sklearn.model_selection import train_test_split
+    from sklearn.metrics import accuracy_score
+    from sklearn.metrics import f1_score
+    from sklearn.tree import DecisionTreeClassifier
+    from sklearn.neighbors import KNeighborsClassifier
+    from sklearn.svm import SVC
+    from sklearn.model_selection import GridSearchCV
+    from sklearn.metrics import classification_report
+    import pickle
+
+    data = pd.DataFrame(pd.read_csv(csvName))
+
+
+    X = data.values[:, :-1]
+    y = data.values[:, -1]
+
+
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=1)
+
+    for i in range(X_train.shape[1]):
+        X_train[:, [i]] = preprocessing.MinMaxScaler().fit_transform(X_train[:, [i]])
+
+    for i in range(X_test.shape[1]):
+        X_test[:, [i]] = preprocessing.MinMaxScaler().fit_transform(X_test[:, [i]])
+
+    from sklearn.model_selection import GridSearchCV
+    from sklearn.model_selection import train_test_split
+
+    from sklearn.ensemble import AdaBoostClassifier
+    from sklearn.model_selection import GridSearchCV
+
+    param_grid = {
+        'n_estimators': [50, 80, 100, 120],
+        'learning_rate': [0.01, 0.1, 1, 10],
+        'random_state': [0, 1]
+    }
+
+    # Create an AdaBoostClassifier object
+    abc = AdaBoostClassifier()
+
+    # Create a GridSearchCV object
+    grid_search = GridSearchCV(estimator=abc, param_grid=param_grid, cv=5)
+
+    # Fit the GridSearchCV object to the data
+    grid_search.fit(X_train, y_train)
+
+    # Print the best parameters and score
+    print(f"Best parameters: {grid_search.best_params_}")
+    print(f"Best score: {grid_search.best_score_}")
+    str1 = f"Best parameters: {grid_search.best_params_}" + "\n" + f"Best score: {grid_search.best_score_}"
+
+    clf = AdaBoostClassifier(n_estimators=a, learning_rate=b, random_state=c)
+    Classified_two_ABC = clf.fit(X_train, y_train)
+
+
+    # 画出ROC曲线 RandomForest test
+    y_score = Classified_two_ABC.predict_proba(X_test)
+    fpr, tpr, threshold = roc_curve(y_test, y_score[:, 1])
+    roc_auc = auc(fpr, tpr)
+    plt.figure()
+    lw = 2
+    plt.figure(figsize=(10, 10))
+    plt.plot(fpr, tpr, color='darkorange',
+             lw=lw, label='ROC curve (area = %0.2f)' % roc_auc)  ###假正率为横坐标，真正率为纵坐标做曲线
+    print(fpr)
+    print(tpr)
+
+
+    plt.plot([0, 1], [0, 1], color='navy', lw=lw, linestyle='--')
+    plt.xlim([0.01, 1.0])
+    plt.ylim([0, 1.05])
+    plt.xlabel('False Positive Rate', fontsize=20)
+    plt.ylabel('True Positive Rate', fontsize=20)
+    plt.xticks(fontsize=20)
+    plt.yticks(fontsize=20)
+
+    plt.title('AUC')
+    plt.legend(loc="lower right", fontsize=20, frameon=False)
+    #plt.show()
+    plt.savefig(path + '/ABC_test_ROC.png', dpi=300, bbox_inches='tight')
+    plt.close()
+
+    # 画出混淆矩阵 RandomForest test
+    # clf.fit(X, y)
+    prey = Classified_two_ABC.predict(X_test)
+    true = 0
+    for i in range(0, len(y_test)):
+        if prey[i] == y_test[i]:
+            true = true + 1
+    C = confusion_matrix(y_test, prey, labels=[0, 1])
+    plt.imshow(C, cmap=plt.cm.Blues)
+    indices = range(len(C))
+    plt.xticks(indices, [0, 1], fontsize=20)
+    plt.yticks(indices, [0, 1], fontsize=20)
+    plt.colorbar()
+    for first_index in range(len(C)):  # 第几行
+        for second_index in range(len(C)):  # 第几列
+            plt.text(first_index, second_index, C[first_index][second_index], fontsize=20, horizontalalignment='center')
+    #plt.show()
+    plt.savefig(path + '/ABC_test_CM.png', dpi=300, bbox_inches='tight')
+    plt.close()
+    print("true:", true)
+    str2 = "fpr:"+str(fpr) + '\n' + "tpr:"+str(tpr)+"\n"+"true:"+str(true)
+
+    # 画出ROC曲线 RandomForest train的AUC
+    y_score = Classified_two_ABC.predict_proba(X_train)
+    fpr, tpr, threshold = roc_curve(y_train, y_score[:, 1])
+    roc_auc = auc(fpr, tpr)
+    plt.figure()
+    lw = 2
+    plt.figure(figsize=(10, 10))
+    plt.plot(fpr, tpr, color='darkorange',
+             lw=lw, label='ROC curve (area = %0.2f)' % roc_auc)  ###假正率为横坐标，真正率为纵坐标做曲线
+    print(fpr)
+    print(tpr)
+    plt.plot([0, 1], [0, 1], color='navy', lw=lw, linestyle='--')
+    plt.xlim([0.01, 1.0])
+    plt.ylim([0, 1.05])
+    plt.xlabel('False Positive Rate', fontsize=20)
+    plt.ylabel('True Positive Rate', fontsize=20)
+    plt.xticks(fontsize=20)
+    plt.yticks(fontsize=20)
+    plt.title('AUC')
+    plt.legend(loc="lower right", fontsize=20, frameon=False)
+    #plt.show()
+    plt.savefig(path + '/ABC_train_ROC.png', dpi=300, bbox_inches='tight')
+    plt.close()
+
+    # 画出混淆矩阵 RandomForest train 混淆矩阵
+    prey = Classified_two_ABC.predict(X_train)
+    true = 0
+    for i in range(0, len(y_train)):
+        if prey[i] == y_train[i]:
+            true = true + 1
+    C = confusion_matrix(y_train, prey, labels=[0, 1])
+    plt.imshow(C, cmap=plt.cm.Blues)
+    indices = range(len(C))
+    plt.xticks(indices, [0, 1], fontsize=20)
+    plt.yticks(indices, [0, 1], fontsize=20)
+    plt.colorbar()
+    for first_index in range(len(C)):  # 第几行
+        for second_index in range(len(C)):  # 第几列
+            plt.text(first_index, second_index, C[first_index][second_index], fontsize=20, horizontalalignment='center')
+    #plt.show()
+    plt.savefig(path + '/ABC_train_CM.png', dpi=300, bbox_inches='tight')
+    plt.close()
+    print("true:", true)
+    str3 = "fpr:"+str(fpr) + '\n' + "tpr:"+str(tpr)+"\n"+"true:"+str(true)
+
+    pickle.dump(Classified_two_ABC, open(path+"/Classified_two_ABC.dat", "wb"))
+
+    return str1,str2,str3
+
+# --------------------------------------------------------
+def xgboost_classifier(a, b, c, d, e, f,path,csvName):
+    from sklearn import preprocessing
+    from sklearn.model_selection import KFold
+    from sklearn.metrics import mean_squared_error
+    from matplotlib.ticker import MultipleLocator, FormatStrFormatter
+    from xgboost import XGBClassifier
+    import matplotlib.pyplot as plt
+    from sklearn.model_selection import train_test_split
+    import pandas as pd
+    from sklearn import preprocessing
+    from pandas import DataFrame
+    from sklearn.ensemble import RandomForestClassifier
+    from sklearn.model_selection import KFold
+    from sklearn.metrics import roc_curve, auc
+    from sklearn.metrics import confusion_matrix
+    from sklearn.model_selection import train_test_split
+    from sklearn.metrics import accuracy_score
+    from sklearn.metrics import f1_score
+    from sklearn.tree import DecisionTreeClassifier
+    from sklearn.neighbors import KNeighborsClassifier
+    from sklearn.svm import SVC
+    from sklearn.model_selection import GridSearchCV
+    from sklearn.metrics import classification_report
+    import pickle
+
+    data = pd.DataFrame(pd.read_csv(csvName))
+
+
+    X = data.values[:, :-1]
+    y = data.values[:, -1]
+
+
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=1)
+
+    for i in range(X_train.shape[1]):
+        X_train[:, [i]] = preprocessing.MinMaxScaler().fit_transform(X_train[:, [i]])
+
+    for i in range(X_test.shape[1]):
+        X_test[:, [i]] = preprocessing.MinMaxScaler().fit_transform(X_test[:, [i]])
+
+    from sklearn.model_selection import GridSearchCV
+    from sklearn.model_selection import train_test_split
+
+    # from sklearn.ensemble import AdaBoostClassifier
+    # from sklearn.model_selection import GridSearchCV
+    #
+    # param_grid = {
+    #     'n_estimators': [50, 80, 100, 120],
+    #     'max_depth': [6, 7],
+    #     'min_child_weight': [1, 2, 4],
+    #     'gamma': [0, 1, 5],
+    #     'subsample': [0.6, 0.8, 1.0],
+    #     'colsample_bytree': [0.6, 0.8, 1.0],
+    #     'random_state': [0, 1]
+    # }
+
+    # # Create an XGBClassifier object
+    # xgbc = XGBClassifier()
+    #
+    # # Create a GridSearchCV object
+    # grid_search = GridSearchCV(estimator=xgbc, param_grid=param_grid, cv=5)
+    #
+    # # Fit the GridSearchCV object to the data
+    # grid_search.fit(X_train, y_train)
+    #
+    # # Print the best parameters and score
+    # print(f"Best parameters: {grid_search.best_params_}")
+    # print(f"Best score: {grid_search.best_score_}")
+    # str1 = f"Best parameters: {grid_search.best_params_}" + "\n" + f"Best score: {grid_search.best_score_}"
+
+    clf = XGBClassifier(max_depth=a, random_state=b, min_child_weight=c, subsample=d, colsample_bytree=e,
+                        n_estimators=f)
+    clf = clf.fit(X_train, y_train)
+
+    # clf = AdaBoostClassifier(n_estimators=a, learning_rate=b, random_state=c)
+    # Classified_two_ABC = clf.fit(X_train, y_train)
+
+
+    # 画出ROC曲线 RandomForest test
+    y_score = clf.predict_proba(X_test)
+    fpr, tpr, threshold = roc_curve(y_test, y_score[:, 1])
+    roc_auc = auc(fpr, tpr)
+    plt.figure()
+    lw = 2
+    plt.figure(figsize=(10, 10))
+    plt.plot(fpr, tpr, color='darkorange',
+             lw=lw, label='ROC curve (area = %0.2f)' % roc_auc)  ###假正率为横坐标，真正率为纵坐标做曲线
+    print(fpr)
+    print(tpr)
+
+
+    plt.plot([0, 1], [0, 1], color='navy', lw=lw, linestyle='--')
+    plt.xlim([0.01, 1.0])
+    plt.ylim([0, 1.05])
+    plt.xlabel('False Positive Rate', fontsize=20)
+    plt.ylabel('True Positive Rate', fontsize=20)
+    plt.xticks(fontsize=20)
+    plt.yticks(fontsize=20)
+
+    plt.title('AUC')
+    plt.legend(loc="lower right", fontsize=20, frameon=False)
+    #plt.show()
+    plt.savefig(path + '/xgboost_test_ROC.png', dpi=300, bbox_inches='tight')
+    plt.close()
+
+    # 画出混淆矩阵 RandomForest test
+    # clf.fit(X, y)
+    prey = clf.predict(X_test)
+    true = 0
+    for i in range(0, len(y_test)):
+        if prey[i] == y_test[i]:
+            true = true + 1
+    C = confusion_matrix(y_test, prey, labels=[0, 1])
+    plt.imshow(C, cmap=plt.cm.Blues)
+    indices = range(len(C))
+    plt.xticks(indices, [0, 1], fontsize=20)
+    plt.yticks(indices, [0, 1], fontsize=20)
+    plt.colorbar()
+    for first_index in range(len(C)):  # 第几行
+        for second_index in range(len(C)):  # 第几列
+            plt.text(first_index, second_index, C[first_index][second_index], fontsize=20, horizontalalignment='center')
+    #plt.show()
+    plt.savefig(path + '/xgboost_test_CM.png', dpi=300, bbox_inches='tight')
+    plt.close()
+    print("true:", true)
+    str2 = "fpr:"+str(fpr) + '\n' + "tpr:"+str(tpr)+"\n"+"true:"+str(true)
+
+    # 画出ROC曲线 RandomForest train的AUC
+    y_score = clf.predict_proba(X_train)
+    fpr, tpr, threshold = roc_curve(y_train, y_score[:, 1])
+    roc_auc = auc(fpr, tpr)
+    plt.figure()
+    lw = 2
+    plt.figure(figsize=(10, 10))
+    plt.plot(fpr, tpr, color='darkorange',
+             lw=lw, label='ROC curve (area = %0.2f)' % roc_auc)  ###假正率为横坐标，真正率为纵坐标做曲线
+    print(fpr)
+    print(tpr)
+    plt.plot([0, 1], [0, 1], color='navy', lw=lw, linestyle='--')
+    plt.xlim([0.01, 1.0])
+    plt.ylim([0, 1.05])
+    plt.xlabel('False Positive Rate', fontsize=20)
+    plt.ylabel('True Positive Rate', fontsize=20)
+    plt.xticks(fontsize=20)
+    plt.yticks(fontsize=20)
+    plt.title('AUC')
+    plt.legend(loc="lower right", fontsize=20, frameon=False)
+    #plt.show()
+    plt.savefig(path + '/xgboost_train_ROC.png', dpi=300, bbox_inches='tight')
+    plt.close()
+
+    # 画出混淆矩阵 RandomForest train 混淆矩阵
+    prey = clf.predict(X_train)
+    true = 0
+    for i in range(0, len(y_train)):
+        if prey[i] == y_train[i]:
+            true = true + 1
+    C = confusion_matrix(y_train, prey, labels=[0, 1])
+    plt.imshow(C, cmap=plt.cm.Blues)
+    indices = range(len(C))
+    plt.xticks(indices, [0, 1], fontsize=20)
+    plt.yticks(indices, [0, 1], fontsize=20)
+    plt.colorbar()
+    for first_index in range(len(C)):  # 第几行
+        for second_index in range(len(C)):  # 第几列
+            plt.text(first_index, second_index, C[first_index][second_index], fontsize=20, horizontalalignment='center')
+    #plt.show()
+    plt.savefig(path + '/xgboost_train_CM.png', dpi=300, bbox_inches='tight')
+    plt.close()
+    print("true:", true)
+    str3 = "fpr:"+str(fpr) + '\n' + "tpr:"+str(tpr)+"\n"+"true:"+str(true)
+
+    pickle.dump(clf, open(path+"/Classified_two_xgboost.dat", "wb"))
+
+    return str2,str3
+
+# -----------------------------------------------------------------------
+
+
+
+
+
+
+
+
+
+
+
+
 # 用户导入虚拟数据集(只有输入的smiles和化学式，无target)，自动生成输出结果(实际有2in1特征)
 def virtual_two_in_one(path,csvpath):
     import pandas as pd
@@ -8579,6 +8946,150 @@ def Result_classification(csvname,path,model_path):
     # # 展示决策树状图
     # graph.render('decision_tree', format='png')
     # graph.write_png(path + '/decision_tree.png')
+
+
+
+
+
+
+
+
+#  NLP t-SNE 画图
+#def plot_word_vectors_highlighted(model, highlight_words_blue, highlight_words_red, highlight_words_yellow, highlight_words_green, highlight_words_orange):
+def plot_word_vectors_highlighted(model, highlight_words_blue, highlight_words_red, highlight_words_yellow,highlight_words_green, highlight_words_orange,path):
+    import logging
+    import gensim
+    from gensim.models import word2vec, KeyedVectors
+    import pandas as pd
+    import matplotlib.pyplot as plt
+    import seaborn as sns
+    from sklearn.decomposition import PCA
+    import numpy as np
+    import itertools
+    from gensim.models import KeyedVectors
+    from gensim.models import Word2Vec
+    from gensim.models.word2vec import LineSentence
+    from sklearn.manifold import TSNE
+    # model1 = pickle.load(open(model_path, "rb")
+    # ------------------------------------------------global model--------------------
+    global model_NLP
+    model_NLP =model
+
+
+
+    # -----------------------------------------------------
+    # model = KeyedVectors.load_word2vec_format(open(model_path))
+    # model_path=
+    # loaded_model =KeyedVectors.load.word2vec_format(model_path)
+    word_vectors = model.vectors
+    tsne = TSNE(n_components=2, random_state=42)
+    word_vectors_tsne = tsne.fit_transform(word_vectors)
+
+    word_vectors_dict = {}
+    for i, word in enumerate(model.index_to_key):
+        word_vectors_dict[word] = model.get_vector(word)
+    #
+    # word_vectors = model.vectors
+    # tsne = TSNE(n_components=2, random_state=42)
+    # word_vectors_tsne = tsne.fit_transform(word_vectors)
+    #
+    # word_vectors_dict = {}
+    # for i, word in enumerate(model.index_to_key):
+    #     word_vectors_dict[word] = model.get_vector(word)
+
+    plt.figure(figsize=(12, 8))
+    dpi = 2000
+    plt.scatter(word_vectors_tsne[:, 0], word_vectors_tsne[:, 1], color='lightgray')
+
+
+    for word in highlight_words_blue:
+        if word in word_vectors_dict:
+            print(1)
+            index = list(word_vectors_dict.keys()).index(word)
+            plt.scatter(word_vectors_tsne[index, 0], word_vectors_tsne[index, 1], color='blue')
+            # plt.annotate(word, (word_vectors_tsne[index, 0], word_vectors_tsne[index, 1]), fontsize=12)
+
+    for word in highlight_words_red:
+        if word in word_vectors_dict:
+            index = list(word_vectors_dict.keys()).index(word)
+            plt.scatter(word_vectors_tsne[index, 0], word_vectors_tsne[index, 1], color='red')
+            # plt.annotate(word, (word_vectors_tsne[index, 0], word_vectors_tsne[index, 1]), fontsize=12)
+
+    for word in highlight_words_yellow:
+        if word in word_vectors_dict:
+            index = list(word_vectors_dict.keys()).index(word)
+            plt.scatter(word_vectors_tsne[index, 0], word_vectors_tsne[index, 1], color='yellow')
+            # plt.annotate(word, (word_vectors_tsne[index, 0], word_vectors_tsne[index, 1]), fontsize=12)
+
+    for word in highlight_words_green:
+        if word in word_vectors_dict:
+            index = list(word_vectors_dict.keys()).index(word)
+            plt.scatter(word_vectors_tsne[index, 0], word_vectors_tsne[index, 1], color='green')
+            # plt.annotate(word, (word_vectors_tsne[index, 0], word_vectors_tsne[index, 1]), fontsize=12)
+
+    for word in highlight_words_orange:
+        if word in word_vectors_dict:
+            index = list(word_vectors_dict.keys()).index(word)
+            plt.scatter(word_vectors_tsne[index, 0], word_vectors_tsne[index, 1], color='orange')
+            # plt.annotate(word, (word_vectors_tsne[index, 0], word_vectors_tsne[index, 1]), fontsize=12)
+
+
+    plt.savefig(path + '/tsne_clustering_plot_withoutword.png')
+    #plt.savefig('tsne_clustering_plot_withoutword.png')
+    #plt.show()
+
+    for word in highlight_words_blue:
+        if word in word_vectors_dict:
+            index = list(word_vectors_dict.keys()).index(word)
+            plt.scatter(word_vectors_tsne[index, 0], word_vectors_tsne[index, 1], color='blue')
+            plt.annotate(word, (word_vectors_tsne[index, 0], word_vectors_tsne[index, 1]), fontsize=12)
+
+    for word in highlight_words_red:
+        if word in word_vectors_dict:
+            index = list(word_vectors_dict.keys()).index(word)
+            plt.scatter(word_vectors_tsne[index, 0], word_vectors_tsne[index, 1], color='red')
+            plt.annotate(word, (word_vectors_tsne[index, 0], word_vectors_tsne[index, 1]), fontsize=12)
+
+    for word in highlight_words_yellow:
+        if word in word_vectors_dict:
+            index = list(word_vectors_dict.keys()).index(word)
+            plt.scatter(word_vectors_tsne[index, 0], word_vectors_tsne[index, 1], color='yellow')
+            plt.annotate(word, (word_vectors_tsne[index, 0], word_vectors_tsne[index, 1]), fontsize=12)
+
+    for word in highlight_words_green:
+        if word in word_vectors_dict:
+            index = list(word_vectors_dict.keys()).index(word)
+            plt.scatter(word_vectors_tsne[index, 0], word_vectors_tsne[index, 1], color='green')
+            plt.annotate(word, (word_vectors_tsne[index, 0], word_vectors_tsne[index, 1]), fontsize=12)
+
+    for word in highlight_words_orange:
+        if word in word_vectors_dict:
+            index = list(word_vectors_dict.keys()).index(word)
+            plt.scatter(word_vectors_tsne[index, 0], word_vectors_tsne[index, 1], color='orange')
+            plt.annotate(word, (word_vectors_tsne[index, 0], word_vectors_tsne[index, 1]), fontsize=12)
+
+    #plt.savefig('tsne_clustering_plot_withword.png')
+    plt.savefig(path + '/tsne_clustering_plot_withword.png')
+    #plt.show()
+
+def cosine_similarity_model(a,path):
+    related_words = model_NLP.most_similar(a, topn=1000)  # 打印选择的向量名
+    with open(path + '/cosine_similarity.csv', 'w', encoding='utf-8') as f:
+        for word in related_words:
+            f.write(f"{word[0]}, {word[1]}\n")
+    #for word in related_words:
+     #   print(word)
+
+
+
+
+
+
+
+
+
+
+
 
 
 
