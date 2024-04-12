@@ -1,0 +1,8 @@
+#BSUB -J example-mtp
+#BSUB -n 4
+#BSUB -e err
+#BSUB -o out
+#BSUB -q e52692v2ib!
+
+. activate magus
+magus search -m

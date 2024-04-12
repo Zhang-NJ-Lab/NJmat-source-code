@@ -52,6 +52,7 @@ class Ui_Dialog(object):
     def retranslateUi(self, Dialog):
         _translate = QtCore.QCoreApplication.translate
         Dialog.setWindowTitle(_translate("Dialog", "Dialog"))
+        Dialog.setWindowIcon(QtGui.QIcon("test.ico"))
         self.label_4.setText(_translate("Dialog", "n_jobs"))
         self.lineEdit.setText(_translate("Dialog", "True"))
         self.label.setText(_translate("Dialog", "fit_intercept"))

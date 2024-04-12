@@ -1,0 +1,32 @@
+#Lennard-Jones cluster
+formulaType: fix
+structureType: cluster 
+initSize: 40
+popSize: 40
+numGen: 10
+saveGood: 5                 # number of good structures kept to the next generation
+
+#structure parameters
+symbols: ['H']
+formula: [1]                # Not used
+min_n_atoms: 26
+max_n_atoms: 26
+spacegroup: [2-56]
+
+cutoff: 3                   #check connection
+vacuum_thickness: 10
+d_ratio: 1.3
+volume_ratio: 8
+
+Comparator:
+ comparator_list: ['naive']
+  
+# main calculator settings
+MainCalculator:
+ calculator: 'lj'
+ jobPrefix: 'lj'
+ relax_lattice: False
+ eps: 0.02
+ max_step: 400
+ 
+

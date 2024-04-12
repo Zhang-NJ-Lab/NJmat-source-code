@@ -226,15 +226,49 @@ def inorganic_featurizer(path):
     return data8,element_fraction_labels
 
 # 0.2.3 magpie（matminer)无机材料描述符生成
+# def inorganic_magpie_featurizer(path):
+#     #magpie from matminer
+#     from matminer.featurizers.conversions import StrToComposition
+#     from matminer.featurizers.composition import ElementProperty
+#     import pandas as pd
+#
+#
+#     str_to_comp = StrToComposition(target_col_id='composition')
+#     df_comp = str_to_comp.featurize_dataframe(data20, col_id='Formula')   #此处规定csv中第一列列名必须是 Formula  否则软件闪退！！！！！
+#     features = ['Number', 'MendeleevNumber', 'AtomicWeight', 'MeltingT',
+#                 'Column', 'Row', 'CovalentRadius', 'Electronegativity',
+#                 'NsValence', 'NpValence', 'NdValence', 'NfValence', 'NValence',
+#                 'NsUnfilled', 'NpUnfilled', 'NdUnfilled', 'NfUnfilled', 'NUnfilled',
+#                 'GSvolume_pa', 'GSbandgap', 'GSmagmom', 'SpaceGroupNumber']
+#
+#     stats = ['mean', 'minimum', 'maximum', 'range', 'avg_dev', 'mode']
+#
+#     featurizer = ElementProperty(data_source='magpie',
+#                                  features=features,
+#                                  stats=stats)
+#     df_features = featurizer.featurize_dataframe(df_comp, col_id='composition')
+#     # df_features = df_features.iloc[:, 2:-1]
+#     # print(df_features)
+#     df_features.to_csv(path+"/1_magpie.csv",index=None)
+#     return df_features
 def inorganic_magpie_featurizer(path):
-    #magpie from matminer
+    # Importing necessary libraries
     from matminer.featurizers.conversions import StrToComposition
     from matminer.featurizers.composition import ElementProperty
     import pandas as pd
 
 
+    # Extracting columns with 'Formula' suffix
+    formula_columns = [col for col in data20.columns if col.endswith('Formula')]
+
+    # Extracting 'Formula' column and converting it to composition
     str_to_comp = StrToComposition(target_col_id='composition')
-    df_comp = str_to_comp.featurize_dataframe(data20, col_id='formula')   #此处规定csv中第一列列名必须是 formula  否则软件闪退！！！！！
+    df_comp = str_to_comp.featurize_dataframe(data20, col_id=formula_columns[0])
+
+    # Extracting other columns
+    unselected_columns = [col for col in data20.columns if col not in formula_columns]
+
+    # Featurizing compositions
     features = ['Number', 'MendeleevNumber', 'AtomicWeight', 'MeltingT',
                 'Column', 'Row', 'CovalentRadius', 'Electronegativity',
                 'NsValence', 'NpValence', 'NdValence', 'NfValence', 'NValence',
@@ -244,14 +278,31 @@ def inorganic_magpie_featurizer(path):
     stats = ['mean', 'minimum', 'maximum', 'range', 'avg_dev', 'mode']
 
     featurizer = ElementProperty(data_source='magpie',
-                                 features=features,
-                                 stats=stats)
+                                  features=features,
+                                  stats=stats)
     df_features = featurizer.featurize_dataframe(df_comp, col_id='composition')
-    df_features = df_features.iloc[:, 2:-1]
-    print(df_features)
-    df_features.to_csv(path+"/1_magpie.csv",index=None)
-    return df_features
+    # df_features = df_features.iloc[:, 2:-1]
 
+    # Saving features to csv
+    df_features.to_csv(path + "/1_magpie_features.csv", index=None)
+
+    # Saving unselected columns to csv
+    df_unselected = data20[unselected_columns]
+    df_unselected.to_csv(path + "/2_unselected.csv", index=None)
+
+    # Merging features and unselected columns
+    df_total = pd.concat([df_features.reset_index(drop=True), df_unselected.reset_index(drop=True)], axis=1)
+
+    # Remove duplicate columns and keep the last occurrence
+    df_total = df_total.loc[:,~df_total.columns.duplicated(keep='last')]
+
+    # Remove 'Formula' and 'composition' columns
+    df_total = df_total.drop(columns=['Formula', 'composition'], errors='ignore')
+
+    # Saving total dataframe to csv
+    df_total.to_csv(path + "/train-test.csv", index=None)
+
+    return df_total
 
 # 2in1
 def two_in_one(path,csvpath):
@@ -389,7 +440,7 @@ def two_in_one(path,csvpath):
     # 打印或使用合并后的结果
     print(merged_result)
 
-    # 有机部分
+    ######## 有机部分
     original_data2 = pd.DataFrame(pd.read_csv(path+'/Smiles_selected_columns.csv'))
 
     new_datasets2 = {}
@@ -2338,7 +2389,7 @@ def RandomForest_modify(a, b, c, d, e,path,csvname):
         X_test[:, [i]] = preprocessing.MinMaxScaler().fit_transform(X_test[:, [i]])
     # RandomForest建模
     from sklearn import ensemble
-    clf = ensemble.RandomForestRegressor(max_depth=a,max_features=b, min_samples_split=c,n_estimators=d,random_state=e)
+    clf = ensemble.RandomForestRegressor(max_depth=a,max_features=b, min_samples_split=c, n_estimators=d,random_state=e)
     clf.fit(X_train, y_train)
     Continuous_RF=clf.fit(X_train, y_train)
     y_prediction = clf.predict(X_test)
@@ -2478,40 +2529,80 @@ def RandomForest_modify(a, b, c, d, e,path,csvname):
     pickle.dump(Continuous_RF, open(path+"/Continuous_RF.dat", "wb"))
     return str1,scores,str2
 
-# 6.2.3 RandomForest randomSearchCV, 包含了交叉验证
-def RandomForest_RandomSearchCV(path):
+
+
+def RandomForest_GridSearch(path,csvname):
+# max_depth, max_features, min_samples_split, n_estimators, random_state
+# 20, 0.3, 2, 10, 10
     # 数据切分
-    import numpy as np
     from sklearn import preprocessing
     from sklearn.model_selection import KFold
     from sklearn.metrics import mean_squared_error
     from matplotlib.ticker import MultipleLocator, FormatStrFormatter
     import matplotlib.pyplot as plt
     from sklearn.model_selection import train_test_split
-    X = s_rfe
+    import pandas as pd
+    from sklearn.ensemble import RandomForestRegressor
+    """X = s_rfe
     y = target
     X = X.values[:, :]
-    y = y.values[:, :]
-    X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=42)
-    # 数据归一化
-    for i in range(X_train.shape[1]):
-        X_train[:, [i]] = preprocessing.MinMaxScaler().fit_transform(X_train[:, [i]])
-    for i in range(X_test.shape[1]):
-        X_test[:, [i]] = preprocessing.MinMaxScaler().fit_transform(X_test[:, [i]])
-    # 尝试random search
-    from sklearn.model_selection import RandomizedSearchCV
+    y = y.values[:, :]"""
+
+    data = pd.DataFrame(pd.read_csv(csvname))
+
+    X = data.values[:, :-1]
+    y = data.values[:, -1]
+
+    # 数据归一化处理
+    from sklearn.preprocessing import MinMaxScaler
+    scaler = MinMaxScaler()
+    X_scaled = scaler.fit_transform(X)
+
+    # 将归一化后的数据分为训练集和测试集
+    X_train, X_test, y_train, y_test = train_test_split(X_scaled, y, test_size=0.2, random_state=4)
+    # 设置参数范围
+    param_grid = [
+        {'n_estimators': [20,30,50, 100],
+         'max_depth': [None, 10, 20],
+         'min_samples_split': [2, 5, 10],
+         'min_samples_leaf': [1, 2, 4],
+         'max_features': ['auto', 'sqrt', 'log2']}
+    ]
+
+    # X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=4)
+    # # 数据归一化
+    # for i in range(X_train.shape[1]):
+    #     X_train[:, [i]] = preprocessing.MinMaxScaler().fit_transform(X_train[:, [i]])
+    # for i in range(X_test.shape[1]):
+    #     X_test[:, [i]] = preprocessing.MinMaxScaler().fit_transform(X_test[:, [i]])
+    # RandomForest建模
     from sklearn import ensemble
-    param_distribs = {'bootstrap': [True, False],
-               'max_depth': [10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 200, None],
-               'max_features': ['auto', 'sqrt'],
-               'min_samples_leaf': [1, 2, 4],
-               'min_samples_split': [2, 5, 10],
-               'n_estimators': [130, 180, 230]}
-    clf = ensemble.RandomForestRegressor()
-    global rnd_search_cv_Random_forest
-    rnd_search_cv_Random_forest = RandomizedSearchCV(clf, param_distribs, n_iter=300, cv=10, scoring='neg_mean_squared_error')
-    rnd_search_cv_Random_forest.fit(X_train, y_train)
-    y_prediction = rnd_search_cv_Random_forest.predict(X_test)
+    # clf = ensemble.RandomForestRegressor(max_depth=a,max_features=b, min_samples_split=c, n_estimators=d,random_state=e)
+
+    from sklearn.model_selection import train_test_split, GridSearchCV
+    # 创建随机森林模型
+    random_forest_model = RandomForestRegressor()
+    # 使用网格搜索进行参数优化
+    grid_search = GridSearchCV(estimator=random_forest_model, param_grid=param_grid, cv=5, scoring='neg_mean_squared_error', verbose=2, n_jobs=-1)
+    grid_search.fit(X_train, y_train)
+
+    # 打印最佳参数
+    print("Best parameters found: ", grid_search.best_params_)
+
+    # 使用最佳参数的模型进行预测
+    best_model = grid_search.best_estimator_
+    y_train_prediction = best_model.predict(X_train)
+    y_prediction = best_model.predict(X_test)
+
+    # clf.fit(X_train, y_train)
+    # Continuous_RF=clf.fit(X_train, y_train)
+    # y_prediction = grid_search.predict(X_test)
+
+    #看是否有预测集
+    # if xxx:
+    #     pass
+    # else:
+    #     print(clf.predict(input))
     # 打印准确率
     mse = mean_squared_error(y_test, y_prediction)
     rmse = mse ** (1 / 2)
@@ -2525,7 +2616,7 @@ def RandomForest_RandomSearchCV(path):
     MSE = mean_squared_error(y_test, y_prediction)
     print("R2:", R2)
     print("MSE:", MSE)
-    str1 = "RMSE:" + str(rmse) + '\n' + "MAE:" + str(MAE) + '\n' + "R2:" + str(R2) + '\n' + "MSE:" + str(MSE) + '\n'
+    str1 = "RMSE:" + str(rmse)+'\n'+"MAE:"+str(MAE)+'\n'+"R2:"+str(R2)+'\n'+"MSE:"+str(MSE)+'\n'
 
     # plot图
     plt.yticks(fontproperties='Times New Roman', size=14)
@@ -2554,18 +2645,18 @@ def RandomForest_RandomSearchCV(path):
     plt.ylabel("Prediction", fontproperties='Times New Roman', size=20)
     plt.gcf().text(0.0, -0.3, 'MAE = %.3f \nMSE =  %.3f \nR2 =  %.3f \n' % (MAE, MSE, R2), fontproperties='Times New Roman',
              size=20, horizontalalignment='center')
-    plt.savefig(path+'/RandomForest-RandomizedSearchCV.png', dpi=300, bbox_inches='tight')
+    plt.savefig(path+'/RandomForest-GridSearch-test.png', dpi=300, bbox_inches='tight')
     plt.close()
     # 使用KFold交叉验证建模
     from sklearn.model_selection import cross_val_score
     kfold = KFold(n_splits=10)
-    scores = cross_val_score(rnd_search_cv_Random_forest, X_train, y_train, scoring='r2', cv=kfold)
+    scores = cross_val_score(best_model, X_scaled, y, scoring='r2', cv=kfold)
     # scoring='neg_mean_squared_error'
-    print("scores:", scores)
+    print("scores:",scores)
     scores_fold = []
     for i in range(len(scores)):
         scores_mean = scores[:i + 1].mean()
-        print(i + 1, "scores_mean:", scores_mean)
+        print(i+1,"scores_mean:",scores_mean)
         scores_fold.append(scores_mean)
     # 使用KFold交叉验证plot图
     plt.yticks(fontproperties='Times New Roman', size=14)
@@ -2593,10 +2684,10 @@ def RandomForest_RandomSearchCV(path):
     plt.ylim(0, 1.2)
     plt.xlabel("k", fontproperties='Times New Roman', size=24)
     plt.ylabel("score", fontproperties='Times New Roman', size=24)
-    plt.savefig(path+'/RandomForest_rnd_search_cv-10-fold-crossvalidation.png', dpi=300, bbox_inches='tight')
+    plt.savefig(path+'/RandomForest-GridSearch-10-fold-crossvalidation.png', dpi=300, bbox_inches='tight')
     plt.close()
-   # 训练集也可以打印准确率并plot图
-    y_train_prediction = clf.predict(X_train)
+    # 训练集也可以打印准确率并plot图
+    # y_train_prediction = grid_search.predict(X_train)
     mse_train = mean_squared_error(y_train, y_train_prediction)
     rmse_train = mse_train ** (1/2)
     from sklearn.metrics import mean_absolute_error
@@ -2610,7 +2701,7 @@ def RandomForest_RandomSearchCV(path):
     print("R2:",R2_train)
     print("MSE:",MSE_train)
     str2 = "RMSE:" + str(rmse_train) + '\n' + "MAE:" + str(MAE_train) + '\n' + "R2:" + str(R2_train) + '\n' \
-           + "MSE:" + str(MSE_train) + '\n'
+            + "MSE:" + str(MSE_train) + '\n'
 
     plt.yticks(fontproperties = 'Times New Roman', size = 14)
     plt.xticks(fontproperties = 'Times New Roman', size = 14)
@@ -2637,9 +2728,176 @@ def RandomForest_RandomSearchCV(path):
     plt.xlabel("True", fontproperties = 'Times New Roman', size = 20)
     plt.ylabel("Prediction", fontproperties = 'Times New Roman', size = 20)
     plt.gcf().text(0.0, -0.3, 'MAE = %.3f \nMSE =  %.3f \nR2 =  %.3f \n' % (MAE_train, MSE_train, R2_train), fontproperties = 'Times New Roman', size = 20, horizontalalignment='center')
-    plt.savefig(path+'/RandomForest-train-randomSearchCV.png', dpi=300, bbox_inches = 'tight')
+    plt.savefig(path+'/RandomForest-GridSearch-train.png', dpi=300, bbox_inches = 'tight')
     plt.close()
-    return str1, scores, str2
+    import pickle
+    pickle.dump(best_model, open(path+"/Continuous_RF-GridSearch.dat", "wb"))
+    return str1,scores,str2
+
+
+#
+# # 6.2.3 RandomForest randomSearchCV, 包含了交叉验证
+# def RandomForest_RandomSearchCV(path):
+#     # 数据切分
+#     import numpy as np
+#     from sklearn import preprocessing
+#     from sklearn.model_selection import KFold
+#     from sklearn.metrics import mean_squared_error
+#     from matplotlib.ticker import MultipleLocator, FormatStrFormatter
+#     import matplotlib.pyplot as plt
+#     from sklearn.model_selection import train_test_split
+#     X = s_rfe
+#     y = target
+#     X = X.values[:, :]
+#     y = y.values[:, :]
+#     X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=42)
+#     # 数据归一化
+#     for i in range(X_train.shape[1]):
+#         X_train[:, [i]] = preprocessing.MinMaxScaler().fit_transform(X_train[:, [i]])
+#     for i in range(X_test.shape[1]):
+#         X_test[:, [i]] = preprocessing.MinMaxScaler().fit_transform(X_test[:, [i]])
+#     # 尝试random search
+#     from sklearn.model_selection import RandomizedSearchCV
+#     from sklearn import ensemble
+#     param_distribs = {'bootstrap': [True, False],
+#                'max_depth': [10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 200, None],
+#                'max_features': ['auto', 'sqrt'],
+#                'min_samples_leaf': [1, 2, 4],
+#                'min_samples_split': [2, 5, 10],
+#                'n_estimators': [130, 180, 230]}
+#     clf = ensemble.RandomForestRegressor()
+#     global rnd_search_cv_Random_forest
+#     rnd_search_cv_Random_forest = RandomizedSearchCV(clf, param_distribs, n_iter=300, cv=10, scoring='neg_mean_squared_error')
+#     rnd_search_cv_Random_forest.fit(X_train, y_train)
+#     y_prediction = rnd_search_cv_Random_forest.predict(X_test)
+#     # 打印准确率
+#     mse = mean_squared_error(y_test, y_prediction)
+#     rmse = mse ** (1 / 2)
+#     from sklearn.metrics import mean_absolute_error
+#     MAE = mean_absolute_error(y_test, y_prediction)
+#     print("RMSE:", rmse)
+#     print("MAE:", MAE)
+#     from sklearn.metrics import r2_score
+#     from sklearn.metrics import mean_squared_error
+#     R2 = r2_score(y_test, y_prediction)
+#     MSE = mean_squared_error(y_test, y_prediction)
+#     print("R2:", R2)
+#     print("MSE:", MSE)
+#     str1 = "RMSE:" + str(rmse) + '\n' + "MAE:" + str(MAE) + '\n' + "R2:" + str(R2) + '\n' + "MSE:" + str(MSE) + '\n'
+#
+#     # plot图
+#     plt.yticks(fontproperties='Times New Roman', size=14)
+#     plt.xticks(fontproperties='Times New Roman', size=14)
+#     plt.rcParams['font.sans-serif'] = 'Roman'
+#     plt.rcParams['xtick.direction'] = 'in'
+#     plt.rcParams['ytick.direction'] = 'in'
+#     plt.plot(y_test, y_test, label='Real Data')
+#     plt.scatter(y_test, y_prediction, label='Predict', c='r')
+#     ax = plt.gca()
+#     ax.spines['bottom'].set_linewidth(2);  ###设置底部坐标轴的粗细
+#     ax.spines['left'].set_linewidth(2);  ####设置左边坐标轴的粗细
+#     ax.spines['right'].set_linewidth(2);  ###设置右边坐标轴的粗细
+#     ax.spines['top'].set_linewidth(2)
+#     plt.tick_params(width=2)
+#     ax.xaxis.set_tick_params(labelsize=24)
+#     plt.tick_params(which='major', length=8)
+#     plt.tick_params(which='minor', length=4, width=2)
+#     ax.yaxis.set_tick_params(labelsize=24)
+#     xminorLocator = MultipleLocator(1000)
+#     yminorLocator = MultipleLocator(1000)
+#     ax.xaxis.set_minor_locator(xminorLocator)
+#     ax.yaxis.set_minor_locator(yminorLocator)
+#     plt.minorticks_on()
+#     plt.xlabel("True", fontproperties='Times New Roman', size=20)
+#     plt.ylabel("Prediction", fontproperties='Times New Roman', size=20)
+#     plt.gcf().text(0.0, -0.3, 'MAE = %.3f \nMSE =  %.3f \nR2 =  %.3f \n' % (MAE, MSE, R2), fontproperties='Times New Roman',
+#              size=20, horizontalalignment='center')
+#     plt.savefig(path+'/RandomForest-RandomizedSearchCV.png', dpi=300, bbox_inches='tight')
+#     plt.close()
+#     # 使用KFold交叉验证建模
+#     from sklearn.model_selection import cross_val_score
+#     kfold = KFold(n_splits=10)
+#     scores = cross_val_score(rnd_search_cv_Random_forest, X_train, y_train, scoring='r2', cv=kfold)
+#     # scoring='neg_mean_squared_error'
+#     print("scores:", scores)
+#     scores_fold = []
+#     for i in range(len(scores)):
+#         scores_mean = scores[:i + 1].mean()
+#         print(i + 1, "scores_mean:", scores_mean)
+#         scores_fold.append(scores_mean)
+#     # 使用KFold交叉验证plot图
+#     plt.yticks(fontproperties='Times New Roman', size=14)
+#     plt.xticks(fontproperties='Times New Roman', size=14)
+#     plt.rcParams['font.sans-serif'] = 'Roman'
+#     plt.rcParams['xtick.direction'] = 'in'
+#     plt.rcParams['ytick.direction'] = 'in'
+#     plt.plot(range(1, 11), scores_fold, c='r')
+#     plt.scatter(range(1, 11), scores_fold, c='r')
+#     ax.spines['bottom'].set_linewidth(2);  ###设置底部坐标轴的粗细
+#     ax.spines['left'].set_linewidth(2);  ####设置左边坐标轴的粗细
+#     ax.spines['right'].set_linewidth(2);  ###设置右边坐标轴的粗细
+#     ax.spines['top'].set_linewidth(2)
+#     plt.tick_params(width=2)
+#     ax.xaxis.set_tick_params(labelsize=24)
+#     plt.tick_params(which='major', length=8)
+#     plt.tick_params(which='minor', length=4, width=2)
+#     ax.yaxis.set_tick_params(labelsize=24)
+#     ax.xaxis.set_minor_locator(xminorLocator)
+#     ax.yaxis.set_minor_locator(yminorLocator)
+#     x_major_locator = MultipleLocator(1)  # 把x轴的刻度间隔设置为1，并存在变量里
+#     ax.xaxis.set_major_locator(x_major_locator)  # 把x轴的主刻度设置为1的倍数
+#     y_major_locator = MultipleLocator(0.2)  # 把y轴的刻度间隔设置为10，并存在变量里
+#     ax.yaxis.set_major_locator(y_major_locator)  # 把y轴的主刻度设置为10的倍数
+#     plt.ylim(0, 1.2)
+#     plt.xlabel("k", fontproperties='Times New Roman', size=24)
+#     plt.ylabel("score", fontproperties='Times New Roman', size=24)
+#     plt.savefig(path+'/RandomForest_rnd_search_cv-10-fold-crossvalidation.png', dpi=300, bbox_inches='tight')
+#     plt.close()
+#    # 训练集也可以打印准确率并plot图
+#     y_train_prediction = clf.predict(X_train)
+#     mse_train = mean_squared_error(y_train, y_train_prediction)
+#     rmse_train = mse_train ** (1/2)
+#     from sklearn.metrics import mean_absolute_error
+#     MAE_train = mean_absolute_error(y_train, y_train_prediction)
+#     print("RMSE:", rmse_train)
+#     print("MAE:", MAE_train)
+#     from sklearn.metrics import r2_score
+#     from sklearn.metrics import mean_squared_error
+#     R2_train = r2_score(y_train, y_train_prediction)
+#     MSE_train = mean_squared_error(y_train, y_train_prediction)
+#     print("R2:",R2_train)
+#     print("MSE:",MSE_train)
+#     str2 = "RMSE:" + str(rmse_train) + '\n' + "MAE:" + str(MAE_train) + '\n' + "R2:" + str(R2_train) + '\n' \
+#            + "MSE:" + str(MSE_train) + '\n'
+#
+#     plt.yticks(fontproperties = 'Times New Roman', size = 14)
+#     plt.xticks(fontproperties = 'Times New Roman', size = 14)
+#     plt.rcParams['font.sans-serif'] = 'Roman'
+#     plt.rcParams['xtick.direction'] = 'in'
+#     plt.rcParams['ytick.direction'] = 'in'
+#     plt.plot(y_train, y_train, label='Real Data')
+#     plt.scatter(y_train, y_train_prediction, label='Predict', c='r')
+#     ax=plt.gca()
+#     ax.spines['bottom'].set_linewidth(2);###设置底部坐标轴的粗细
+#     ax.spines['left'].set_linewidth(2);####设置左边坐标轴的粗细
+#     ax.spines['right'].set_linewidth(2);###设置右边坐标轴的粗细
+#     ax.spines['top'].set_linewidth(2)
+#     plt.tick_params(width=2)
+#     ax.xaxis.set_tick_params(labelsize=24)
+#     plt.tick_params(which='major',length=8)
+#     plt.tick_params(which='minor',length=4,width=2)
+#     ax.yaxis.set_tick_params(labelsize=24)
+#     xminorLocator   = MultipleLocator(1000)
+#     yminorLocator   = MultipleLocator(1000)
+#     ax.xaxis.set_minor_locator(xminorLocator)
+#     ax.yaxis.set_minor_locator(yminorLocator)
+#     plt.minorticks_on()
+#     plt.xlabel("True", fontproperties = 'Times New Roman', size = 20)
+#     plt.ylabel("Prediction", fontproperties = 'Times New Roman', size = 20)
+#     plt.gcf().text(0.0, -0.3, 'MAE = %.3f \nMSE =  %.3f \nR2 =  %.3f \n' % (MAE_train, MSE_train, R2_train), fontproperties = 'Times New Roman', size = 20, horizontalalignment='center')
+#     plt.savefig(path+'/RandomForest-train-randomSearchCV.png', dpi=300, bbox_inches = 'tight')
+#     plt.close()
+#     return str1, scores, str2
 
 
 
@@ -6936,7 +7194,177 @@ def xgboost_classifier(a, b, c, d, e, f,path,csvName):
     return str2,str3
 
 # -----------------------------------------------------------------------
+def CatBoost_classifier(a, b, c,path,csvName):
+    from sklearn import preprocessing
+    from sklearn.model_selection import KFold
+    from sklearn.metrics import mean_squared_error
+    from matplotlib.ticker import MultipleLocator, FormatStrFormatter
+    import matplotlib.pyplot as plt
+    from sklearn.model_selection import train_test_split
+    import pandas as pd
+    from sklearn import preprocessing
+    from pandas import DataFrame
+    from sklearn.ensemble import RandomForestClassifier
+    from sklearn.model_selection import KFold
+    from sklearn.metrics import roc_curve, auc
+    from sklearn.metrics import confusion_matrix
+    from sklearn.model_selection import train_test_split
+    from sklearn.metrics import accuracy_score
+    from sklearn.metrics import f1_score
+    from sklearn.tree import DecisionTreeClassifier
+    from sklearn.neighbors import KNeighborsClassifier
+    from sklearn.svm import SVC
+    from sklearn.model_selection import GridSearchCV
+    from sklearn.metrics import classification_report
+    import pickle
 
+    data = pd.DataFrame(pd.read_csv(csvName))
+
+
+    X = data.values[:, :-1]
+    y = data.values[:, -1]
+
+
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=1)
+
+    for i in range(X_train.shape[1]):
+        X_train[:, [i]] = preprocessing.MinMaxScaler().fit_transform(X_train[:, [i]])
+
+    for i in range(X_test.shape[1]):
+        X_test[:, [i]] = preprocessing.MinMaxScaler().fit_transform(X_test[:, [i]])
+
+    from sklearn.model_selection import GridSearchCV
+    from sklearn.model_selection import train_test_split
+
+    from catboost import CatBoostClassifier
+    from sklearn.model_selection import GridSearchCV
+    from sklearn.model_selection import train_test_split
+
+    param_grid = {
+        'n_estimators': [50, 80, 100, 120],
+        'learning_rate': [0.01, 0.1, 1, 10],
+        'random_state': [0, 1]
+    }
+
+    # Create a CatBoostClassifier object
+    cbc = CatBoostClassifier()
+
+    # Create a GridSearchCV object
+    grid_search = GridSearchCV(estimator=cbc, param_grid=param_grid, cv=5)
+
+    # Fit the GridSearchCV object to the data
+    grid_search.fit(X_train, y_train)
+
+    # Print the best parameters and score
+    print(f"Best parameters: {grid_search.best_params_}")
+    print(f"Best score: {grid_search.best_score_}")
+    str1 = f"Best parameters: {grid_search.best_params_}" + "\n" + f"Best score: {grid_search.best_score_}"
+
+    # Create a CatBoostClassifier with best parameters
+    clf = CatBoostClassifier(n_estimators=a,
+                             learning_rate=b,
+                             random_state=c)
+
+    # Fit the classifier to the data
+    Classified_two_CBC = clf.fit(X_train, y_train)
+
+    # 画出ROC曲线 RandomForest test
+    y_score = Classified_two_CBC.predict_proba(X_test)
+    fpr, tpr, threshold = roc_curve(y_test, y_score[:, 1])
+    roc_auc = auc(fpr, tpr)
+    plt.figure()
+    lw = 2
+    plt.figure(figsize=(10, 10))
+    plt.plot(fpr, tpr, color='darkorange',
+             lw=lw, label='ROC curve (area = %0.2f)' % roc_auc)  ###假正率为横坐标，真正率为纵坐标做曲线
+    print(fpr)
+    print(tpr)
+
+
+    plt.plot([0, 1], [0, 1], color='navy', lw=lw, linestyle='--')
+    plt.xlim([0.01, 1.0])
+    plt.ylim([0, 1.05])
+    plt.xlabel('False Positive Rate', fontsize=20)
+    plt.ylabel('True Positive Rate', fontsize=20)
+    plt.xticks(fontsize=20)
+    plt.yticks(fontsize=20)
+
+    plt.title('AUC')
+    plt.legend(loc="lower right", fontsize=20, frameon=False)
+    #plt.show()
+    plt.savefig(path + '/CBC_test_ROC.png', dpi=300, bbox_inches='tight')
+    plt.close()
+
+    # 画出混淆矩阵 RandomForest test
+    # clf.fit(X, y)
+    prey = Classified_two_CBC.predict(X_test)
+    true = 0
+    for i in range(0, len(y_test)):
+        if prey[i] == y_test[i]:
+            true = true + 1
+    C = confusion_matrix(y_test, prey, labels=[0, 1])
+    plt.imshow(C, cmap=plt.cm.Blues)
+    indices = range(len(C))
+    plt.xticks(indices, [0, 1], fontsize=20)
+    plt.yticks(indices, [0, 1], fontsize=20)
+    plt.colorbar()
+    for first_index in range(len(C)):  # 第几行
+        for second_index in range(len(C)):  # 第几列
+            plt.text(first_index, second_index, C[first_index][second_index], fontsize=20, horizontalalignment='center')
+    #plt.show()
+    plt.savefig(path + '/CBC_test_CM.png', dpi=300, bbox_inches='tight')
+    plt.close()
+    print("true:", true)
+    str2 = "fpr:"+str(fpr) + '\n' + "tpr:"+str(tpr)+"\n"+"true:"+str(true)
+
+    # 画出ROC曲线 RandomForest train的AUC
+    y_score = Classified_two_CBC.predict_proba(X_train)
+    fpr, tpr, threshold = roc_curve(y_train, y_score[:, 1])
+    roc_auc = auc(fpr, tpr)
+    plt.figure()
+    lw = 2
+    plt.figure(figsize=(10, 10))
+    plt.plot(fpr, tpr, color='darkorange',
+             lw=lw, label='ROC curve (area = %0.2f)' % roc_auc)  ###假正率为横坐标，真正率为纵坐标做曲线
+    print(fpr)
+    print(tpr)
+    plt.plot([0, 1], [0, 1], color='navy', lw=lw, linestyle='--')
+    plt.xlim([0.01, 1.0])
+    plt.ylim([0, 1.05])
+    plt.xlabel('False Positive Rate', fontsize=20)
+    plt.ylabel('True Positive Rate', fontsize=20)
+    plt.xticks(fontsize=20)
+    plt.yticks(fontsize=20)
+    plt.title('AUC')
+    plt.legend(loc="lower right", fontsize=20, frameon=False)
+    #plt.show()
+    plt.savefig(path + '/CBC_train_ROC.png', dpi=300, bbox_inches='tight')
+    plt.close()
+
+    # 画出混淆矩阵 RandomForest train 混淆矩阵
+    prey = Classified_two_CBC.predict(X_train)
+    true = 0
+    for i in range(0, len(y_train)):
+        if prey[i] == y_train[i]:
+            true = true + 1
+    C = confusion_matrix(y_train, prey, labels=[0, 1])
+    plt.imshow(C, cmap=plt.cm.Blues)
+    indices = range(len(C))
+    plt.xticks(indices, [0, 1], fontsize=20)
+    plt.yticks(indices, [0, 1], fontsize=20)
+    plt.colorbar()
+    for first_index in range(len(C)):  # 第几行
+        for second_index in range(len(C)):  # 第几列
+            plt.text(first_index, second_index, C[first_index][second_index], fontsize=20, horizontalalignment='center')
+    #plt.show()
+    plt.savefig(path + '/CBC_train_CM.png', dpi=300, bbox_inches='tight')
+    plt.close()
+    print("true:", true)
+    str3 = "fpr:"+str(fpr) + '\n' + "tpr:"+str(tpr)+"\n"+"true:"+str(true)
+
+    pickle.dump(Classified_two_CBC, open(path+"/Classified_two_CBC.dat", "wb"))
+
+    return str1,str2,str3
 
 
 
@@ -8956,7 +9384,7 @@ def Result_classification(csvname,path,model_path):
 
 #  NLP t-SNE 画图
 #def plot_word_vectors_highlighted(model, highlight_words_blue, highlight_words_red, highlight_words_yellow, highlight_words_green, highlight_words_orange):
-def plot_word_vectors_highlighted(model, highlight_words_blue, highlight_words_red, highlight_words_yellow,highlight_words_green, highlight_words_orange,path):
+def plot_word_vectors_tsne(model, highlight_words_blue, highlight_words_red, highlight_words_yellow,highlight_words_green, highlight_words_orange,path):
     import logging
     import gensim
     from gensim.models import word2vec, KeyedVectors
@@ -8974,6 +9402,7 @@ def plot_word_vectors_highlighted(model, highlight_words_blue, highlight_words_r
     # ------------------------------------------------global model--------------------
     global model_NLP
     model_NLP =model
+    global word_vectors_tsne
 
 
 
@@ -9004,7 +9433,6 @@ def plot_word_vectors_highlighted(model, highlight_words_blue, highlight_words_r
 
     for word in highlight_words_blue:
         if word in word_vectors_dict:
-            print(1)
             index = list(word_vectors_dict.keys()).index(word)
             plt.scatter(word_vectors_tsne[index, 0], word_vectors_tsne[index, 1], color='blue')
             # plt.annotate(word, (word_vectors_tsne[index, 0], word_vectors_tsne[index, 1]), fontsize=12)
@@ -9071,6 +9499,96 @@ def plot_word_vectors_highlighted(model, highlight_words_blue, highlight_words_r
     #plt.savefig('tsne_clustering_plot_withword.png')
     plt.savefig(path + '/tsne_clustering_plot_withword.png')
     #plt.show()
+
+
+
+
+# ------------------------------NLP高亮画图------------------、
+
+#     word_vectors = model.vectors
+#     tsne = TSNE(n_components=2, random_state=42)
+#     word_vectors_tsne = tsne.fit_transform(word_vectors)
+
+def visualize_word_embeddings(path,words, word1, word2,word3,word4,word5):
+
+    import matplotlib.pyplot as plt
+    from sklearn.metrics.pairwise import cosine_similarity
+    import numpy as np
+    from gensim.models import KeyedVectors
+    from sklearn.manifold import TSNE
+    from sklearn.metrics.pairwise import cosine_similarity
+    import numpy as np
+    import matplotlib.pyplot as plt
+
+
+    word_vectors = model_NLP.vectors
+
+    words_set = model_NLP.index_to_key
+    #word_embeddings 换成 word_vectors
+    # tsne_embeddings  换成  word_vectors_tsne
+    # 找到词语的位置
+    # 找到词语的位置
+    word_index = words_set.index(words[0])
+
+    word1_index = words_set.index(word1[0])
+    word2_index = words_set.index(word2[0])
+    word3_index = words_set.index(word3[0])
+    word4_index = words_set.index(word4[0])
+    word5_index = words_set.index(word5[0])
+
+
+
+
+    # 计算 "word1" 与其他词语之间的余弦相似性
+    cosine_similarities = cosine_similarity(word_vectors, [word_vectors[word_index]])
+
+
+
+    cmap = plt.cm.Blues
+
+
+
+    # 可视化词向量图
+    plt.figure(figsize=(10, 8))
+
+    # 根据余弦相似性调整颜色深浅并绘制散点图
+    colors = plt.cm.Blues(cosine_similarities.ravel())  # 将二维数组展平为一维，并根据余弦相似性设置颜色深浅
+    plt.scatter(word_vectors_tsne[:, 0], word_vectors_tsne[:, 1], c=colors, alpha=0.5)
+
+    # 绘制 "word1" 和 "word2" 的位置
+    plt.scatter(word_vectors_tsne[word1_index, 0], word_vectors_tsne[word1_index, 1], c='red', marker='*', s=100, label=word1)
+    plt.scatter(word_vectors_tsne[word2_index, 0], word_vectors_tsne[word2_index, 1], c='green', marker='^', s=100, label=word2)
+    plt.scatter(word_vectors_tsne[word3_index, 0], word_vectors_tsne[word3_index, 1], c='blue', marker='*', s=100, label=word3)
+    plt.scatter(word_vectors_tsne[word4_index, 0], word_vectors_tsne[word4_index, 1], c='violet', marker='^', s=100, label=word4)
+    plt.scatter(word_vectors_tsne[word5_index, 0], word_vectors_tsne[word5_index, 1], c='orange', marker='*', s=100, label=word5)
+
+
+
+
+
+    plt.xlabel('t-SNE Dimension 1')
+    plt.ylabel('t-SNE Dimension 2')
+    plt.title('t-SNE Visualization of Word Embeddings with Cosine Similarity')
+    plt.legend()
+
+
+    #cbar = plt.colorbar()
+
+    # 添加颜色条
+
+    #cbar.set_label('Cosine Similarity')
+    #cbar.set_ticks(np.linspace(0,1,6))
+    #cbar.ax.tick_params(axis='y', colors='blue')
+    plt.savefig(path + '/tsne_highlight.png')
+    #plt.show()
+
+
+
+
+
+
+
+
 
 def cosine_similarity_model(a,path):
     related_words = model_NLP.most_similar(a, topn=1000)  # 打印选择的向量名

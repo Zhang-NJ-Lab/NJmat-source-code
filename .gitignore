@@ -3,3 +3,7 @@ Ignore/Inorganic_formula.csv
 Ignore/Organic_rdkit.csv
 dist/NJmat/xgboost/lib/xgboost.dll
 dist/NJmat.rar
+dist/NJmat.rar
+dist/*
+*.rar
+NJmatML-UIUI.rar

@@ -1,0 +1,9 @@
+[submodule "gensym"]
+	path = gensym
+	url = https://gitlab.com/bigd4/gensym.git
+[submodule "pybind11"]
+	path = pybind11
+	url = https://gitlab.com/bigd4/pybind11.git
+[submodule "nepdes"]
+	path = nepdes
+	url = https://gitlab.com/bigd4/nepdes.git

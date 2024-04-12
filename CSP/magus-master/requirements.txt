@@ -1,0 +1,11 @@
+BeautifulReport
+numpy
+ase>=3.18
+pyyaml>=6.0
+networkx
+scipy
+spglib
+pandas
+prettytable
+packaging
+scikit-learn

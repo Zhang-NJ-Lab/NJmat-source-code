@@ -101,6 +101,20 @@
       <property name="title">
        <string>Regression</string>
       </property>
+      <widget class="QMenu" name="menuGrid_Search">
+       <property name="title">
+        <string>Grid Search</string>
+       </property>
+       <addaction name="actionRandom_Forest_Grid_Search"/>
+      </widget>
+      <widget class="QMenu" name="menuDeep_Learning">
+       <property name="title">
+        <string>Deep Learning</string>
+       </property>
+       <addaction name="actionDNN"/>
+       <addaction name="actionCNN"/>
+       <addaction name="actionRNN"/>
+      </widget>
       <addaction name="actionXgboost"/>
       <addaction name="actionRandom_Forest"/>
       <addaction name="actionBagging"/>
@@ -112,11 +126,21 @@
       <addaction name="actionLinear_Regression"/>
       <addaction name="actionRidge"/>
       <addaction name="actionMLP"/>
+      <addaction name="menuGrid_Search"/>
+      <addaction name="menuDeep_Learning"/>
      </widget>
      <widget class="QMenu" name="menuClassification">
       <property name="title">
        <string>Classification</string>
       </property>
+      <widget class="QMenu" name="menuDeep_Learning_2">
+       <property name="title">
+        <string>Deep Learning</string>
+       </property>
+       <addaction name="actionDNN_2"/>
+       <addaction name="actionCNN_2"/>
+       <addaction name="actionRNN_2"/>
+      </widget>
       <addaction name="actionRamdom_Forest"/>
       <addaction name="actionExtra_Tree_2"/>
       <addaction name="actionGaussian_Process"/>
@@ -124,6 +148,8 @@
       <addaction name="actionSVM"/>
       <addaction name="actionAdaboostC"/>
       <addaction name="actionXgboostC"/>
+      <addaction name="actionCatboostC"/>
+      <addaction name="menuDeep_Learning_2"/>
      </widget>
      <addaction name="menuRegression"/>
      <addaction name="menuClassification"/>
@@ -272,9 +298,59 @@
     <property name="title">
      <string>NLP</string>
     </property>
-    <addaction name="actionImport_NLP_model"/>
-    <addaction name="actiont_tSNE"/>
-    <addaction name="actionCosine_similarity_2"/>
+    <widget class="QMenu" name="menuMatBERT">
+     <property name="title">
+      <string>MatBERT</string>
+     </property>
+     <widget class="QMenu" name="menuCosine_Similarity_Plot">
+      <property name="title">
+       <string>Cosine Similarity Plot</string>
+      </property>
+      <addaction name="actionTarget_Word"/>
+      <addaction name="actionUMAP"/>
+      <addaction name="actionCosine_Similarity_Ranking"/>
+      <addaction name="actionPlot_UMAP"/>
+     </widget>
+     <widget class="QMenu" name="menuClustering">
+      <property name="title">
+       <string>Clustering Plot</string>
+      </property>
+      <addaction name="actionInput_Highlight_Word"/>
+      <addaction name="actionPlot_Clustering_Words"/>
+     </widget>
+     <addaction name="actionImport_MatBERT_model"/>
+     <addaction name="menuCosine_Similarity_Plot"/>
+     <addaction name="menuClustering"/>
+    </widget>
+    <widget class="QMenu" name="menuword2vec">
+     <property name="title">
+      <string>Word2Vec</string>
+     </property>
+     <addaction name="actionImport_NLP_model"/>
+     <addaction name="actiont_tSNE"/>
+     <addaction name="actionCosine_similarity_2"/>
+     <addaction name="actiont_SNE_Highlight"/>
+    </widget>
+    <addaction name="menuword2vec"/>
+    <addaction name="menuMatBERT"/>
+   </widget>
+   <widget class="QMenu" name="menuVisualizer">
+    <property name="title">
+     <string>Visualizer</string>
+    </property>
+    <addaction name="actionASE_Visualizer"/>
+   </widget>
+   <widget class="QMenu" name="menuMaterials_Project">
+    <property name="title">
+     <string>Materials Project</string>
+    </property>
+    <addaction name="actionMP_cif"/>
+   </widget>
+   <widget class="QMenu" name="menuCSP">
+    <property name="title">
+     <string>CSP</string>
+    </property>
+    <addaction name="actionCrystal_structure_generate_magus"/>
    </widget>
    <addaction name="menu_2"/>
    <addaction name="menu_10"/>
@@ -284,8 +360,11 @@
    <addaction name="menu_7"/>
    <addaction name="menuShapley"/>
    <addaction name="menu_9"/>
-   <addaction name="menuHints"/>
    <addaction name="menuNLP"/>
+   <addaction name="menuVisualizer"/>
+   <addaction name="menuMaterials_Project"/>
+   <addaction name="menuCSP"/>
+   <addaction name="menuHints"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
   <action name="action_heatmap">
@@ -883,12 +962,12 @@
   </action>
   <action name="action2_csv_templates_https_github_com_Zhang_NJ_Lab_NJmatML_templates">
    <property name="text">
-    <string>2. four csv templates:  https://github.com/Zhang-NJ-Lab/NJmatML-templates</string>
+    <string>2. four csv templates:  https://github.com/huangyiru123/NJmat_dataset</string>
    </property>
   </action>
   <action name="action3_number_of_columns_in_the_prediction_csv_RFE_remaining_number_you_entered_in_the_software">
    <property name="text">
-    <string>3. number of columns in prediction csv = remaining RFE number you entered in the software!</string>
+    <string>3. resources:  https://figshare.com/articles/software/NJmatML/24607893</string>
    </property>
   </action>
   <action name="actionXgboost">
@@ -1109,6 +1188,111 @@
   <action name="actionXgboostC">
    <property name="text">
     <string>Xgboost</string>
+   </property>
+  </action>
+  <action name="actionCatboostC">
+   <property name="text">
+    <string>Catboost</string>
+   </property>
+  </action>
+  <action name="actiont_SNE_Highlight">
+   <property name="text">
+    <string>t-SNE Highlight</string>
+   </property>
+  </action>
+  <action name="actionRandom_Forest_Grid_Search">
+   <property name="text">
+    <string>Random Forest Grid Search</string>
+   </property>
+  </action>
+  <action name="actionASE_Visualizer">
+   <property name="text">
+    <string>ASE Visualizer</string>
+   </property>
+  </action>
+  <action name="actionMP_cif">
+   <property name="text">
+    <string>MP cif</string>
+   </property>
+  </action>
+  <action name="actionCrystal_structure_generate_magus">
+   <property name="text">
+    <string>Crystal structure generate (magus)</string>
+   </property>
+  </action>
+  <action name="actionxxx">
+   <property name="text">
+    <string>Import NLP model</string>
+   </property>
+  </action>
+  <action name="actionImport_MatBERT_model">
+   <property name="text">
+    <string>Import MatBERT Model</string>
+   </property>
+  </action>
+  <action name="actionCosine_MatBERT">
+   <property name="text">
+    <string>Cosine MatBERT</string>
+   </property>
+  </action>
+  <action name="actionTarget_Word">
+   <property name="text">
+    <string>Target Word</string>
+   </property>
+  </action>
+  <action name="actionUMAP">
+   <property name="text">
+    <string>Dimension Reduction (UMAP)</string>
+   </property>
+  </action>
+  <action name="actionCosine_Similarity_Ranking">
+   <property name="text">
+    <string>Cosine Similarity Ranking</string>
+   </property>
+  </action>
+  <action name="actionPlot_UMAP">
+   <property name="text">
+    <string>Plot UMAP</string>
+   </property>
+  </action>
+  <action name="actionInput_Highlight_Word">
+   <property name="text">
+    <string>Input Highlight Words</string>
+   </property>
+  </action>
+  <action name="actionPlot_Clustering_Words">
+   <property name="text">
+    <string>Plot Clustering Words</string>
+   </property>
+  </action>
+  <action name="actionDNN">
+   <property name="text">
+    <string>DNN</string>
+   </property>
+  </action>
+  <action name="actionCNN">
+   <property name="text">
+    <string>CNN</string>
+   </property>
+  </action>
+  <action name="actionRNN">
+   <property name="text">
+    <string>RNN</string>
+   </property>
+  </action>
+  <action name="actionDNN_2">
+   <property name="text">
+    <string>DNN</string>
+   </property>
+  </action>
+  <action name="actionCNN_2">
+   <property name="text">
+    <string>CNN</string>
+   </property>
+  </action>
+  <action name="actionRNN_2">
+   <property name="text">
+    <string>RNN</string>
    </property>
   </action>
  </widget>

@@ -1,8 +1,0 @@
-layer1_Formula,layer2_Formula,SMILES_Smiles,target
-CH3NH3SnF2Cl,CH3NH3SnI3,C1=CC(=CC(=C1)Br)/C=C/C(=O)O ,
-CsSnClBr2,CH3NH3SnI3,[NH4+].[Cl-],
-CH3NH3PbI3,(NH2)2CHSnI3,C(=N)N.[I-],
-CsSnF2Cl,(NH2)2CHSnI3,[Li+].[Cl-],
-(NH2)2CHSnI3,CH3NH3SnI3,[Na+].[Cl-],
-CsSnBr2I,CsPbI3,[Mg+2].[Cl-].[Cl-],
-CsSnBr2I,CsPbFCl2,[Cl-].[K+],

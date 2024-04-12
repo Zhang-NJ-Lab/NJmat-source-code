@@ -58,6 +58,7 @@ class Ui_Dialog(object):
     def retranslateUi(self, Dialog):
         _translate = QtCore.QCoreApplication.translate
         Dialog.setWindowTitle(_translate("Dialog", "Dialog"))
+        Dialog.setWindowIcon(QtGui.QIcon("test.ico"))
         self.lineEdit.setText(_translate("Dialog", "1.0"))
         self.label_3.setText(_translate("Dialog", "normalize"))
         self.label_4.setText(_translate("Dialog", "copy_X"))
