@@ -8,3 +8,7 @@ dist/*
 *.rar
 NJmatML-UIUI.rar
 *.rar
+NJmatML-UIUI.rar
+/dist
+*.rar
+*.rar

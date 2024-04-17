@@ -133,13 +133,13 @@
       <property name="title">
        <string>Classification</string>
       </property>
-      <widget class="QMenu" name="menuDeep_Learning_2">
+      <widget class="QMenu" name="menuDeep_Learning_DNN">
        <property name="title">
         <string>Deep Learning</string>
        </property>
-       <addaction name="actionDNN_2"/>
-       <addaction name="actionCNN_2"/>
-       <addaction name="actionRNN_2"/>
+       <addaction name="actionDNN_clf"/>
+       <addaction name="actionCNN_clf"/>
+       <addaction name="actionRNN_clf"/>
       </widget>
       <addaction name="actionRamdom_Forest"/>
       <addaction name="actionExtra_Tree_2"/>
@@ -149,7 +149,7 @@
       <addaction name="actionAdaboostC"/>
       <addaction name="actionXgboostC"/>
       <addaction name="actionCatboostC"/>
-      <addaction name="menuDeep_Learning_2"/>
+      <addaction name="menuDeep_Learning_DNN"/>
      </widget>
      <addaction name="menuRegression"/>
      <addaction name="menuClassification"/>
@@ -291,8 +291,8 @@
      <string>Help</string>
     </property>
     <addaction name="actionTemplates"/>
-    <addaction name="action2_csv_templates_https_github_com_Zhang_NJ_Lab_NJmatML_templates"/>
-    <addaction name="action3_number_of_columns_in_the_prediction_csv_RFE_remaining_number_you_entered_in_the_software"/>
+    <addaction name="actioncsv_templates_github_website"/>
+    <addaction name="actionResources_figshare_website"/>
    </widget>
    <widget class="QMenu" name="menuNLP">
     <property name="title">
@@ -960,12 +960,12 @@
     <string>1. only csv files are accepted.</string>
    </property>
   </action>
-  <action name="action2_csv_templates_https_github_com_Zhang_NJ_Lab_NJmatML_templates">
+  <action name="actioncsv_templates_github_website">
    <property name="text">
     <string>2. four csv templates:  https://github.com/huangyiru123/NJmat_dataset</string>
    </property>
   </action>
-  <action name="action3_number_of_columns_in_the_prediction_csv_RFE_remaining_number_you_entered_in_the_software">
+  <action name="actionResources_figshare_website">
    <property name="text">
     <string>3. resources:  https://figshare.com/articles/software/NJmatML/24607893</string>
    </property>
@@ -1280,17 +1280,17 @@
     <string>RNN</string>
    </property>
   </action>
-  <action name="actionDNN_2">
+  <action name="actionDNN_clf">
    <property name="text">
     <string>DNN</string>
    </property>
   </action>
-  <action name="actionCNN_2">
+  <action name="actionCNN_clf">
    <property name="text">
     <string>CNN</string>
    </property>
   </action>
-  <action name="actionRNN_2">
+  <action name="actionRNN_clf">
    <property name="text">
     <string>RNN</string>
    </property>

@@ -52,6 +52,7 @@ def smiles_csv_rdkit(name3):
     import pandas as pd
     global data3
     data3 = pd.read_csv(name3)
+
     print(data3.iloc[:,0])
     return data3
 
@@ -308,6 +309,15 @@ def inorganic_magpie_featurizer(path):
 def two_in_one(path,csvpath):
     #magpie (matminer) and rdkit, 2in1
     import pandas as pd
+    import csv
+    def is_csv_empty(file_path):
+        with open(file_path, 'r', encoding='utf-8') as csv_file:
+            csv_reader = csv.reader(csv_file)
+            for row in csv_reader:
+                if row:
+                    return False  # 只要有一行数据，就不为空
+        return True  # 如果没有任何数据行，则为空
+
     def select_columns_by_suffix(df, suffix):
         filtered_columns = df.filter(regex=f'{suffix}$')
         return filtered_columns
@@ -318,17 +328,23 @@ def two_in_one(path,csvpath):
 
         selected_columns = {}
         for suffix in suffixes:
-            selected_columns[suffix] = select_columns_by_suffix(df, suffix)
-            print('********************************************************************************')
-            print(f"Columns ending with '{suffix}':")
-            print('********************************************************************************')
-            print(selected_columns[suffix])
-            # 如果需要保存到新的DataFrame中，取消注释下一行
-            #global df_selected
-            df_selected = pd.concat(selected_columns, axis=1)
-            # df_combined = pd.concat(selected_columns.values(), axis=1)
-            # df_combined.to_csv('selected_columns.csv', index=False)
-            selected_columns[suffix].to_csv(path+'/'+f'{suffix}_selected_columns.csv', index=False)
+            if df.filter(regex=f'{suffix}$').empty:
+                filename = f'{suffix}_selected_columns.csv'
+                with open(path+'/'+filename, 'w') as file:
+                    pass
+                continue
+            else:
+                selected_columns[suffix] = select_columns_by_suffix(df, suffix)
+                print('********************************************************************************')
+                print(f"Columns ending with '{suffix}':")
+                print('********************************************************************************')
+                print(selected_columns[suffix])
+                # 如果需要保存到新的DataFrame中，取消注释下一行
+                #global df_selected
+                df_selected = pd.concat(selected_columns, axis=1)
+                # df_combined = pd.concat(selected_columns.values(), axis=1)
+                # df_combined.to_csv('selected_columns.csv', index=False)
+                selected_columns[suffix].to_csv(path+'/'+f'{suffix}_selected_columns.csv', index=False)
 
         # 获取未被选中的列
         unselected_columns = df.drop(columns=[col for cols in selected_columns.values() for col in cols.columns])
@@ -343,397 +359,418 @@ def two_in_one(path,csvpath):
     suffixes = ['Formula', 'Smiles']
     selected_columns = extract_and_store_columns(file_path, suffixes)
 
-    original_data = pd.DataFrame(pd.read_csv(path+'/Formula_selected_columns.csv'))
 
-    import pandas as pd
+    if is_csv_empty(path+'/Formula_selected_columns.csv'):
+        Formular_state=0
+    else:
+        Formular_state=1
 
-    # 假设 original_data 是您的原始数据集
-    # 创建一个空字典，用于存储新的数据集
-    new_datasets = {}
+    if Formular_state==1:
+        original_data = pd.DataFrame(pd.read_csv(path + '/Formula_selected_columns.csv'))
+        import pandas as pd
 
-    # 遍历原始数据集的每一列
-    for col_name in original_data.columns:
-        # 创建新的数据集，将当前列命名为 'Name'
-        new_dataset = pd.DataFrame({'Name': original_data[col_name]})
+        # 假设 original_data 是您的原始数据集
+        # 创建一个空字典，用于存储新的数据集
+        new_datasets = {}
 
-        # 将新数据集存储在字典中，字典的键是 'data1'，'data2'，依此类推
-        new_datasets['data' + str(len(new_datasets) + 1)] = new_dataset
+        # 遍历原始数据集的每一列
+        for col_name in original_data.columns:
+            # 创建新的数据集，将当前列命名为 'Name'
+            new_dataset = pd.DataFrame({'Name': original_data[col_name]})
 
-    # 打印或使用新的数据集
-    for key, value in new_datasets.items():
-        print(f"{key}:\n{value}\n")
+            # 将新数据集存储在字典中，字典的键是 'data1'，'data2'，依此类推
+            new_datasets['data' + str(len(new_datasets) + 1)] = new_dataset
+
+        # 打印或使用新的数据集
+        for key, value in new_datasets.items():
+            print(f"{key}:\n{value}\n")
 
 
 
 
-    import pandas as pd
-    from matminer.featurizers.conversions import StrToComposition
-    from matminer.featurizers.composition.orbital import AtomicOrbitals
-    from matminer.featurizers.composition import ElementProperty
-    from matminer.featurizers.composition.element import ElementFraction
-    from pymatgen.core import Composition
+        import pandas as pd
+        from matminer.featurizers.conversions import StrToComposition
+        from matminer.featurizers.composition.orbital import AtomicOrbitals
+        from matminer.featurizers.composition import ElementProperty
+        from matminer.featurizers.composition.element import ElementFraction
+        from pymatgen.core import Composition
 
-    ignore_errors = True
-    # 假设 new_datasets 是包含拆分数据集的字典，如 'data1', 'data2', ...
-    # 每个数据集中应该有 'Name' 列
+        ignore_errors = True
+        # 假设 new_datasets 是包含拆分数据集的字典，如 'data1', 'data2', ...
+        # 每个数据集中应该有 'Name' 列
 
-    # 初始化 StrToComposition
-    str_to_comp = StrToComposition(target_col_id='composition')
+        # 初始化 StrToComposition
+        str_to_comp = StrToComposition(target_col_id='composition')
 
-    # 初始化 AtomicOrbitals
-    comp_to_orbital = AtomicOrbitals()
+        # 初始化 AtomicOrbitals
+        comp_to_orbital = AtomicOrbitals()
 
-    # 初始化 ElementProperty
-    features_element_property = ['Number', 'MendeleevNumber', 'AtomicWeight', 'MeltingT',
-                                 'Column', 'Row', 'CovalentRadius', 'Electronegativity',
-                                 'NsValence', 'NpValence', 'NdValence', 'NfValence', 'NValence',
-                                 'NsUnfilled', 'NpUnfilled', 'NdUnfilled', 'NfUnfilled', 'NUnfilled',
-                                 'GSvolume_pa', 'GSbandgap', 'GSmagmom', 'SpaceGroupNumber']
-    stats_element_property = ['mean', 'minimum', 'maximum', 'range', 'avg_dev', 'mode']
-    element_property_featurizer = ElementProperty(data_source='magpie', features=features_element_property,
-                                                  stats=stats_element_property)
+        # 初始化 ElementProperty
+        features_element_property = ['Number', 'MendeleevNumber', 'AtomicWeight', 'MeltingT',
+                                     'Column', 'Row', 'CovalentRadius', 'Electronegativity',
+                                     'NsValence', 'NpValence', 'NdValence', 'NfValence', 'NValence',
+                                     'NsUnfilled', 'NpUnfilled', 'NdUnfilled', 'NfUnfilled', 'NUnfilled',
+                                     'GSvolume_pa', 'GSbandgap', 'GSmagmom', 'SpaceGroupNumber']
+        stats_element_property = ['mean', 'minimum', 'maximum', 'range', 'avg_dev', 'mode']
+        element_property_featurizer = ElementProperty(data_source='magpie', features=features_element_property,
+                                                      stats=stats_element_property)
 
-    # 初始化 ElementFraction
-    element_fraction = ElementFraction()
+        # 初始化 ElementFraction
+        element_fraction = ElementFraction()
 
-    # 用于存储特征转换后的数据集
-    result_datasets = {}
+        # 用于存储特征转换后的数据集
+        result_datasets = {}
 
-    # 遍历拆分的数据集
-    for i, (key, dataset) in enumerate(new_datasets.items(), start=1):
-        # 特征转换1: StrToComposition
+        # 遍历拆分的数据集
+        for i, (key, dataset) in enumerate(new_datasets.items(), start=1):
+            # 特征转换1: StrToComposition
 
-        df_comp = str_to_comp.featurize_dataframe(dataset, col_id='Name')
+            df_comp = str_to_comp.featurize_dataframe(dataset, col_id='Name')
 
-        # 特征转换2: AtomicOrbitals
-        orbital_features = comp_to_orbital.featurize_dataframe(df_comp, col_id='composition')
-        orbital_features = orbital_features.iloc[:, [4, 7, 8]]  # 选择感兴趣的列
+            # 特征转换2: AtomicOrbitals
+            orbital_features = comp_to_orbital.featurize_dataframe(df_comp, col_id='composition')
+            orbital_features = orbital_features.iloc[:, [4, 7, 8]]  # 选择感兴趣的列
 
-        # 特征转换3: ElementProperty
-        element_property_features = element_property_featurizer.featurize_dataframe(df_comp, col_id='composition')
-        element_property_features = element_property_features.iloc[:, 2:-1]  # 选择感兴趣的列
+            # 特征转换3: ElementProperty
+            element_property_features = element_property_featurizer.featurize_dataframe(df_comp, col_id='composition')
+            element_property_features = element_property_features.iloc[:, 2:-1]  # 选择感兴趣的列
 
-        # 特征转换4: ElementFraction
-        element_fraction_features = element_fraction.featurize_dataframe(df_comp, col_id='composition')
-        element_fraction_features = element_fraction_features.iloc[:, 2:-1]  # 选择感兴趣的列
-
-        # 添加前缀
-        prefix_orbital = f'_formula_{i}_orbital_'
-        orbital_features = orbital_features.add_prefix(prefix_orbital)
-
-        prefix_element_property = f'_formula_{i}_element_property_'
-        element_property_features = element_property_features.add_prefix(prefix_element_property)
-
-        prefix_element_fraction = f'_formula_{i}_element_fraction_'
-        element_fraction_features = element_fraction_features.add_prefix(prefix_element_fraction)
-
-        # 合并特征转换后的数据集
-        result_datasets[key] = pd.concat([orbital_features, element_property_features, element_fraction_features],
-                                         axis=1)
-
-    # 合并所有数据集
-    merged_result = pd.concat(result_datasets.values(), axis=1)
-
-    # 将合并后的结果保存为 CSV 文件
-    merged_result.to_csv(path+'/merged_result.csv', index=False)
-
-    # 打印或使用合并后的结果
-    print(merged_result)
-
-    ######## 有机部分
-    original_data2 = pd.DataFrame(pd.read_csv(path+'/Smiles_selected_columns.csv'))
-
-    new_datasets2 = {}
-
-    # 遍历原始数据集的每一列
-    for col_name in original_data2.columns:
-        # 创建新的数据集，将当前列命名为 'Name'
-        new_dataset2 = pd.DataFrame({'Name': original_data2[col_name]})
-
-        # 将新数据集存储在字典中，字典的键是 'organic_data1'，'organic_data2'，依此类推
-        new_datasets2['organic_data' + str(len(new_datasets2) + 1)] = new_dataset2
-
-    # 打印或使用新的数据集
-    for key, value in new_datasets2.items():
-        print(f"{key}:\n{value}\n")
-
-    import pandas as pd
-    import numpy as np
-    from rdkit import Chem
-    from rdkit.Chem import AllChem
-
-    # 假设 new_datasets2 是包含拆分数据集的字典，如 'organic_data1', 'organic_data2', ...
-    # 每个数据集中应该有 'Name' 列
-
-    # 用于存储 RDKit 特征化后的数据集
-    rdkit_datasets = {}
-
-    # # 遍历拆分的数据集
-    # for key, dataset in new_datasets2.items():
-    #     # 特征化 RDKit
-    #     rdkit_features = dataset['Name'].apply(
-    #         lambda x: AllChem.GetMorganFingerprintAsBitVect(Chem.MolFromSmiles(x), 2))
-    #
-    #     # 将 RDKit 指纹转换为 DataFrame
-    #     rdkit_features_df = pd.DataFrame(
-    #         list(rdkit_features.apply(lambda x: np.frombuffer(x.ToBinary(), dtype=np.uint8))))
-    #
-    #     # 添加前缀
-    #     prefix_rdkit = f'{key}_rdkit_'
-    #     rdkit_features_df = rdkit_features_df.add_prefix(prefix_rdkit)
-    #
-    #     # 存储特征化后的数据集
-    #     rdkit_datasets[key] = rdkit_features_df
-    from rdkit import Chem
-    from rdkit.Chem import Descriptors
-    import pandas as pd
-    for key, dataset in new_datasets2.items():
-        # 特征化 RDKit
-        rdkit_features = dataset['Name'].apply(lambda x: Chem.MolFromSmiles(x))
-
-        # 检查分子是否有效
-        valid_mols = rdkit_features.dropna()
-
-        if not valid_mols.empty:
-            # 计算所有 RDKit 描述符
-            # rdkit_descriptors = valid_mols.apply(lambda x: [Descriptors.MolWt(x), Descriptors.NumRotatableBonds(x)])
-            rdkit_descriptors = valid_mols.apply(lambda x: [Descriptors.BalabanJ(x),
-                                                            Descriptors.BertzCT(x),
-                                                            Descriptors.Chi0(x),
-                                                            Descriptors.Chi0n(x),
-                                                            Descriptors.Chi0v(x),
-                                                            Descriptors.Chi1(x),
-                                                            Descriptors.Chi1n(x),
-                                                            Descriptors.Chi1v(x),
-                                                            Descriptors.Chi2n(x),
-                                                            Descriptors.Chi2v(x),
-                                                            Descriptors.Chi3n(x),
-                                                            Descriptors.Chi3v(x),
-                                                            Descriptors.Chi4n(x),
-                                                            Descriptors.Chi4v(x),
-                                                            Descriptors.EState_VSA1(x),
-                                                            Descriptors.EState_VSA10(x),
-                                                            Descriptors.EState_VSA11(x),
-                                                            Descriptors.EState_VSA2(x),
-                                                            Descriptors.EState_VSA3(x),
-                                                            Descriptors.EState_VSA4(x),
-                                                            Descriptors.EState_VSA5(x),
-                                                            Descriptors.EState_VSA6(x),
-                                                            Descriptors.EState_VSA7(x),
-                                                            Descriptors.EState_VSA8(x),
-                                                            Descriptors.EState_VSA9(x),
-                                                            Descriptors.ExactMolWt(x),
-                                                            Descriptors.FpDensityMorgan1(x),
-                                                            Descriptors.FpDensityMorgan2(x),
-                                                            Descriptors.FpDensityMorgan3(x),
-                                                            Descriptors.FractionCSP3(x),
-                                                            Descriptors.HallKierAlpha(x),
-                                                            Descriptors.HeavyAtomCount(x),
-                                                            Descriptors.HeavyAtomMolWt(x),
-                                                            Descriptors.Ipc(x),
-                                                            Descriptors.Kappa1(x),
-                                                            Descriptors.Kappa2(x),
-                                                            Descriptors.Kappa3(x),
-                                                            Descriptors.LabuteASA(x),
-                                                            Descriptors.MaxAbsEStateIndex(x),
-                                                            Descriptors.MaxAbsPartialCharge(x),
-                                                            Descriptors.MaxEStateIndex(x),
-                                                            Descriptors.MaxPartialCharge(x),
-                                                            Descriptors.MinAbsEStateIndex(x),
-                                                            Descriptors.MinAbsPartialCharge(x),
-                                                            Descriptors.MinEStateIndex(x),
-                                                            Descriptors.MinPartialCharge(x),
-                                                            Descriptors.MolLogP(x),
-                                                            Descriptors.MolMR(x),
-                                                            Descriptors.MolWt(x),
-                                                            Descriptors.NHOHCount(x),
-                                                            Descriptors.NOCount(x),
-                                                            Descriptors.NumAliphaticCarbocycles(x),
-                                                            Descriptors.NumAliphaticHeterocycles(x),
-                                                            Descriptors.NumAliphaticRings(x),
-                                                            Descriptors.NumAromaticCarbocycles(x),
-                                                            Descriptors.NumAromaticHeterocycles(x),
-                                                            Descriptors.NumAromaticRings(x),
-                                                            Descriptors.NumHAcceptors(x),
-                                                            Descriptors.NumHDonors(x),
-                                                            Descriptors.NumHeteroatoms(x),
-                                                            Descriptors.NumRadicalElectrons(x),
-                                                            Descriptors.NumRotatableBonds(x),
-                                                            Descriptors.NumSaturatedCarbocycles(x),
-                                                            Descriptors.NumSaturatedHeterocycles(x),
-                                                            Descriptors.NumSaturatedRings(x),
-                                                            Descriptors.NumValenceElectrons(x),
-                                                            Descriptors.PEOE_VSA1(x),
-                                                            Descriptors.PEOE_VSA10(x),
-                                                            Descriptors.PEOE_VSA11(x),
-                                                            Descriptors.PEOE_VSA12(x),
-                                                            Descriptors.PEOE_VSA13(x),
-                                                            Descriptors.PEOE_VSA14(x),
-                                                            Descriptors.PEOE_VSA2(x),
-                                                            Descriptors.PEOE_VSA3(x),
-                                                            Descriptors.PEOE_VSA4(x),
-                                                            Descriptors.PEOE_VSA5(x),
-                                                            Descriptors.PEOE_VSA6(x),
-                                                            Descriptors.PEOE_VSA7(x),
-                                                            Descriptors.PEOE_VSA8(x),
-                                                            Descriptors.PEOE_VSA9(x),
-                                                            Descriptors.RingCount(x),
-                                                            Descriptors.SMR_VSA1(x),
-                                                            Descriptors.SMR_VSA10(x),
-                                                            Descriptors.SMR_VSA2(x),
-                                                            Descriptors.SMR_VSA3(x),
-                                                            Descriptors.SMR_VSA4(x),
-                                                            Descriptors.SMR_VSA5(x),
-                                                            Descriptors.SMR_VSA6(x),
-                                                            Descriptors.SMR_VSA7(x),
-                                                            Descriptors.SMR_VSA8(x),
-                                                            Descriptors.SMR_VSA9(x),
-                                                            Descriptors.SlogP_VSA1(x),
-                                                            Descriptors.SlogP_VSA10(x),
-                                                            Descriptors.SlogP_VSA11(x),
-                                                            Descriptors.SlogP_VSA12(x),
-                                                            Descriptors.SlogP_VSA2(x),
-                                                            Descriptors.SlogP_VSA3(x),
-                                                            Descriptors.SlogP_VSA4(x),
-                                                            Descriptors.SlogP_VSA5(x),
-                                                            Descriptors.SlogP_VSA6(x),
-                                                            Descriptors.SlogP_VSA7(x),
-                                                            Descriptors.SlogP_VSA8(x),
-                                                            Descriptors.SlogP_VSA9(x),
-                                                            Descriptors.TPSA(x),
-                                                            Descriptors.VSA_EState1(x),
-                                                            Descriptors.VSA_EState10(x),
-                                                            Descriptors.VSA_EState2(x),
-                                                            Descriptors.VSA_EState3(x),
-                                                            Descriptors.VSA_EState4(x),
-                                                            Descriptors.VSA_EState5(x),
-                                                            Descriptors.VSA_EState6(x),
-                                                            Descriptors.VSA_EState7(x),
-                                                            Descriptors.VSA_EState8(x),
-                                                            Descriptors.VSA_EState9(x),
-                                                            Descriptors.fr_Al_COO(x),
-                                                            Descriptors.fr_Al_OH(x),
-                                                            Descriptors.fr_Al_OH_noTert(x),
-                                                            Descriptors.fr_ArN(x),
-                                                            Descriptors.fr_Ar_COO(x),
-                                                            Descriptors.fr_Ar_N(x),
-                                                            Descriptors.fr_Ar_NH(x),
-                                                            Descriptors.fr_Ar_OH(x),
-                                                            Descriptors.fr_COO(x),
-                                                            Descriptors.fr_COO2(x),
-                                                            Descriptors.fr_C_O(x),
-                                                            Descriptors.fr_C_O_noCOO(x),
-                                                            Descriptors.fr_C_S(x),
-                                                            Descriptors.fr_HOCCN(x),
-                                                            Descriptors.fr_Imine(x),
-                                                            Descriptors.fr_NH0(x),
-                                                            Descriptors.fr_NH1(x),
-                                                            Descriptors.fr_NH2(x),
-                                                            Descriptors.fr_N_O(x),
-                                                            Descriptors.fr_Ndealkylation1(x),
-                                                            Descriptors.fr_Ndealkylation2(x),
-                                                            Descriptors.fr_Nhpyrrole(x),
-                                                            Descriptors.fr_SH(x),
-                                                            Descriptors.fr_aldehyde(x),
-                                                            Descriptors.fr_alkyl_carbamate(x),
-                                                            Descriptors.fr_alkyl_halide(x),
-                                                            Descriptors.fr_allylic_oxid(x),
-                                                            Descriptors.fr_amide(x),
-                                                            Descriptors.fr_amidine(x),
-                                                            Descriptors.fr_aniline(x),
-                                                            Descriptors.fr_aryl_methyl(x),
-                                                            Descriptors.fr_azide(x),
-                                                            Descriptors.fr_azo(x),
-                                                            Descriptors.fr_barbitur(x),
-                                                            Descriptors.fr_benzene(x),
-                                                            Descriptors.fr_benzodiazepine(x),
-                                                            Descriptors.fr_bicyclic(x),
-                                                            Descriptors.fr_diazo(x),
-                                                            Descriptors.fr_dihydropyridine(x),
-                                                            Descriptors.fr_epoxide(x),
-                                                            Descriptors.fr_ester(x),
-                                                            Descriptors.fr_ether(x),
-                                                            Descriptors.fr_furan(x),
-                                                            Descriptors.fr_guanido(x),
-                                                            Descriptors.fr_halogen(x),
-                                                            Descriptors.fr_hdrzine(x),
-                                                            Descriptors.fr_hdrzone(x),
-                                                            Descriptors.fr_imidazole(x),
-                                                            Descriptors.fr_imide(x),
-                                                            Descriptors.fr_isocyan(x),
-                                                            Descriptors.fr_isothiocyan(x),
-                                                            Descriptors.fr_ketone(x),
-                                                            Descriptors.fr_ketone_Topliss(x),
-                                                            Descriptors.fr_lactam(x),
-                                                            Descriptors.fr_lactone(x),
-                                                            Descriptors.fr_methoxy(x),
-                                                            Descriptors.fr_morpholine(x),
-                                                            Descriptors.fr_nitrile(x),
-                                                            Descriptors.fr_nitro(x),
-                                                            Descriptors.fr_nitro_arom(x),
-                                                            Descriptors.fr_nitro_arom_nonortho(x),
-                                                            Descriptors.fr_nitroso(x),
-                                                            Descriptors.fr_oxazole(x),
-                                                            Descriptors.fr_oxime(x),
-                                                            Descriptors.fr_para_hydroxylation(x),
-                                                            Descriptors.fr_phenol(x),
-                                                            Descriptors.fr_phenol_noOrthoHbond(x),
-                                                            Descriptors.fr_phos_acid(x),
-                                                            Descriptors.fr_phos_ester(x),
-                                                            Descriptors.fr_piperdine(x),
-                                                            Descriptors.fr_piperzine(x),
-                                                            Descriptors.fr_priamide(x),
-                                                            Descriptors.fr_prisulfonamd(x),
-                                                            Descriptors.fr_pyridine(x),
-                                                            Descriptors.fr_quatN(x),
-                                                            Descriptors.fr_sulfide(x),
-                                                            Descriptors.fr_sulfonamd(x),
-                                                            Descriptors.fr_sulfone(x),
-                                                            Descriptors.fr_term_acetylene(x),
-                                                            Descriptors.fr_tetrazole(x),
-                                                            Descriptors.fr_thiazole(x),
-                                                            Descriptors.fr_thiocyan(x),
-                                                            Descriptors.fr_thiophene(x),
-                                                            Descriptors.fr_unbrch_alkane(x),
-                                                            Descriptors.fr_urea(x),
-                                                            Descriptors.qed(x)])
-            # 将 RDKit 描述符转换为 DataFrame
-            rdkit_descriptors_df = pd.DataFrame(list(rdkit_descriptors),
-                                                columns=['BalabanJ', 'BertzCT', 'Chi0', 'Chi0n', 'Chi0v', 'Chi1', 'Chi1n', 'Chi1v', 'Chi2n', 'Chi2v', 'Chi3n', 'Chi3v', 'Chi4n', 'Chi4v', 'EState_VSA1', 'EState_VSA10', 'EState_VSA11', 'EState_VSA2', 'EState_VSA3', 'EState_VSA4', 'EState_VSA5', 'EState_VSA6', 'EState_VSA7', 'EState_VSA8', 'EState_VSA9', 'ExactMolWt', 'FpDensityMorgan1',
-                                                         'FpDensityMorgan2', 'FpDensityMorgan3', 'FractionCSP3', 'HallKierAlpha', 'HeavyAtomCount', 'HeavyAtomMolWt', 'Ipc', 'Kappa1', 'Kappa2', 'Kappa3', 'LabuteASA', 'MaxAbsEStateIndex', 'MaxAbsPartialCharge', 'MaxEStateIndex', 'MaxPartialCharge', 'MinAbsEStateIndex', 'MinAbsPartialCharge', 'MinEStateIndex', 'MinPartialCharge', 'MolLogP', 'MolMR',
-                                                         'MolWt', 'NHOHCount', 'NOCount', 'NumAliphaticCarbocycles', 'NumAliphaticHeterocycles', 'NumAliphaticRings', 'NumAromaticCarbocycles', 'NumAromaticHeterocycles', 'NumAromaticRings', 'NumHAcceptors', 'NumHDonors', 'NumHeteroatoms', 'NumRadicalElectrons', 'NumRotatableBonds', 'NumSaturatedCarbocycles', 'NumSaturatedHeterocycles',
-                                                         'NumSaturatedRings', 'NumValenceElectrons', 'PEOE_VSA1', 'PEOE_VSA10', 'PEOE_VSA11', 'PEOE_VSA12', 'PEOE_VSA13', 'PEOE_VSA14', 'PEOE_VSA2', 'PEOE_VSA3', 'PEOE_VSA4', 'PEOE_VSA5', 'PEOE_VSA6', 'PEOE_VSA7', 'PEOE_VSA8', 'PEOE_VSA9', 'RingCount', 'SMR_VSA1', 'SMR_VSA10', 'SMR_VSA2', 'SMR_VSA3', 'SMR_VSA4', 'SMR_VSA5', 'SMR_VSA6', 'SMR_VSA7',
-                                                         'SMR_VSA8', 'SMR_VSA9', 'SlogP_VSA1', 'SlogP_VSA10', 'SlogP_VSA11', 'SlogP_VSA12', 'SlogP_VSA2', 'SlogP_VSA3', 'SlogP_VSA4', 'SlogP_VSA5', 'SlogP_VSA6', 'SlogP_VSA7', 'SlogP_VSA8', 'SlogP_VSA9', 'TPSA', 'VSA_EState1', 'VSA_EState10', 'VSA_EState2', 'VSA_EState3', 'VSA_EState4', 'VSA_EState5', 'VSA_EState6', 'VSA_EState7', 'VSA_EState8',
-                                                         'VSA_EState9', 'fr_Al_COO', 'fr_Al_OH', 'fr_Al_OH_noTert', 'fr_ArN', 'fr_Ar_COO', 'fr_Ar_N', 'fr_Ar_NH', 'fr_Ar_OH', 'fr_COO', 'fr_COO2', 'fr_C_O', 'fr_C_O_noCOO', 'fr_C_S', 'fr_HOCCN', 'fr_Imine', 'fr_NH0', 'fr_NH1', 'fr_NH2', 'fr_N_O', 'fr_Ndealkylation1', 'fr_Ndealkylation2', 'fr_Nhpyrrole', 'fr_SH', 'fr_aldehyde', 'fr_alkyl_carbamate',
-                                                         'fr_alkyl_halide', 'fr_allylic_oxid', 'fr_amide', 'fr_amidine', 'fr_aniline', 'fr_aryl_methyl', 'fr_azide', 'fr_azo', 'fr_barbitur', 'fr_benzene', 'fr_benzodiazepine', 'fr_bicyclic', 'fr_diazo', 'fr_dihydropyridine', 'fr_epoxide', 'fr_ester', 'fr_ether', 'fr_furan', 'fr_guanido', 'fr_halogen', 'fr_hdrzine', 'fr_hdrzone', 'fr_imidazole',
-                                                         'fr_imide', 'fr_isocyan', 'fr_isothiocyan', 'fr_ketone', 'fr_ketone_Topliss', 'fr_lactam', 'fr_lactone', 'fr_methoxy', 'fr_morpholine', 'fr_nitrile', 'fr_nitro', 'fr_nitro_arom', 'fr_nitro_arom_nonortho', 'fr_nitroso', 'fr_oxazole', 'fr_oxime', 'fr_para_hydroxylation', 'fr_phenol', 'fr_phenol_noOrthoHbond', 'fr_phos_acid', 'fr_phos_ester',
-                                                         'fr_piperdine', 'fr_piperzine', 'fr_priamide', 'fr_prisulfonamd', 'fr_pyridine', 'fr_quatN', 'fr_sulfide', 'fr_sulfonamd', 'fr_sulfone', 'fr_term_acetylene', 'fr_tetrazole', 'fr_thiazole', 'fr_thiocyan', 'fr_thiophene', 'fr_unbrch_alkane', 'fr_urea', 'qed'])
+            # 特征转换4: ElementFraction
+            element_fraction_features = element_fraction.featurize_dataframe(df_comp, col_id='composition')
+            element_fraction_features = element_fraction_features.iloc[:, 2:-1]  # 选择感兴趣的列
 
             # 添加前缀
-            prefix_rdkit = f'{key}_rdkit_'
-            rdkit_descriptors_df = rdkit_descriptors_df.add_prefix(prefix_rdkit)
+            prefix_orbital = f'_formula_{i}_orbital_'
+            orbital_features = orbital_features.add_prefix(prefix_orbital)
 
-            # 存储特征化后的数据集
-            rdkit_datasets[key] = rdkit_descriptors_df
+            prefix_element_property = f'_formula_{i}_element_property_'
+            element_property_features = element_property_features.add_prefix(prefix_element_property)
 
-    # rdkit_datasets 包含了每个数据集的 RDKit 描述符
-    # 合并 RDKit 特征化后的数据集
-    merged_rdkit_result = pd.concat(rdkit_datasets.values(), axis=1)
-    merged_rdkit_result.fillna(0, inplace=True)
-    # 将合并后的结果保存为 CSV 文件
-    merged_rdkit_result.to_csv(path+'/merged_rdkit_result.csv', index=False)
+            prefix_element_fraction = f'_formula_{i}_element_fraction_'
+            element_fraction_features = element_fraction_features.add_prefix(prefix_element_fraction)
 
-    # 打印或使用合并后的 RDKit 特征化结果
-    print(merged_rdkit_result)
+            # 合并特征转换后的数据集
+            result_datasets[key] = pd.concat([orbital_features, element_property_features, element_fraction_features],
+                                             axis=1)
+
+        # 合并所有数据集
+        merged_result = pd.concat(result_datasets.values(), axis=1)
+
+        # 将合并后的结果保存为 CSV 文件
+        merged_result.to_csv(path+'/merged_result.csv', index=False)
+
+        # 打印或使用合并后的结果
+        print(merged_result)
+
+    ######## 有机部分
+    if is_csv_empty(path+'/Smiles_selected_columns.csv'):
+        Smiles_state=0
+    else:
+        Smiles_state=1
+
+    if Smiles_state==1:
+        original_data2 = pd.DataFrame(pd.read_csv(path+'/Smiles_selected_columns.csv'))
+
+        new_datasets2 = {}
+
+        # 遍历原始数据集的每一列
+        for col_name in original_data2.columns:
+            # 创建新的数据集，将当前列命名为 'Name'
+            new_dataset2 = pd.DataFrame({'Name': original_data2[col_name]})
+
+            # 将新数据集存储在字典中，字典的键是 'organic_data1'，'organic_data2'，依此类推
+            new_datasets2['organic_data' + str(len(new_datasets2) + 1)] = new_dataset2
+
+        # 打印或使用新的数据集
+        for key, value in new_datasets2.items():
+            print(f"{key}:\n{value}\n")
+
+        import pandas as pd
+        import numpy as np
+        from rdkit import Chem
+        from rdkit.Chem import AllChem
+
+        # 假设 new_datasets2 是包含拆分数据集的字典，如 'organic_data1', 'organic_data2', ...
+        # 每个数据集中应该有 'Name' 列
+
+        # 用于存储 RDKit 特征化后的数据集
+        rdkit_datasets = {}
+
+        # # 遍历拆分的数据集
+        # for key, dataset in new_datasets2.items():
+        #     # 特征化 RDKit
+        #     rdkit_features = dataset['Name'].apply(
+        #         lambda x: AllChem.GetMorganFingerprintAsBitVect(Chem.MolFromSmiles(x), 2))
+        #
+        #     # 将 RDKit 指纹转换为 DataFrame
+        #     rdkit_features_df = pd.DataFrame(
+        #         list(rdkit_features.apply(lambda x: np.frombuffer(x.ToBinary(), dtype=np.uint8))))
+        #
+        #     # 添加前缀
+        #     prefix_rdkit = f'{key}_rdkit_'
+        #     rdkit_features_df = rdkit_features_df.add_prefix(prefix_rdkit)
+        #
+        #     # 存储特征化后的数据集
+        #     rdkit_datasets[key] = rdkit_features_df
+        from rdkit import Chem
+        from rdkit.Chem import Descriptors
+        import pandas as pd
+        for key, dataset in new_datasets2.items():
+            # 特征化 RDKit
+            rdkit_features = dataset['Name'].apply(lambda x: Chem.MolFromSmiles(x))
+
+            # 检查分子是否有效
+            valid_mols = rdkit_features.dropna()
+
+            if not valid_mols.empty:
+                # 计算所有 RDKit 描述符
+                # rdkit_descriptors = valid_mols.apply(lambda x: [Descriptors.MolWt(x), Descriptors.NumRotatableBonds(x)])
+                rdkit_descriptors = valid_mols.apply(lambda x: [Descriptors.BalabanJ(x),
+                                                                Descriptors.BertzCT(x),
+                                                                Descriptors.Chi0(x),
+                                                                Descriptors.Chi0n(x),
+                                                                Descriptors.Chi0v(x),
+                                                                Descriptors.Chi1(x),
+                                                                Descriptors.Chi1n(x),
+                                                                Descriptors.Chi1v(x),
+                                                                Descriptors.Chi2n(x),
+                                                                Descriptors.Chi2v(x),
+                                                                Descriptors.Chi3n(x),
+                                                                Descriptors.Chi3v(x),
+                                                                Descriptors.Chi4n(x),
+                                                                Descriptors.Chi4v(x),
+                                                                Descriptors.EState_VSA1(x),
+                                                                Descriptors.EState_VSA10(x),
+                                                                Descriptors.EState_VSA11(x),
+                                                                Descriptors.EState_VSA2(x),
+                                                                Descriptors.EState_VSA3(x),
+                                                                Descriptors.EState_VSA4(x),
+                                                                Descriptors.EState_VSA5(x),
+                                                                Descriptors.EState_VSA6(x),
+                                                                Descriptors.EState_VSA7(x),
+                                                                Descriptors.EState_VSA8(x),
+                                                                Descriptors.EState_VSA9(x),
+                                                                Descriptors.ExactMolWt(x),
+                                                                Descriptors.FpDensityMorgan1(x),
+                                                                Descriptors.FpDensityMorgan2(x),
+                                                                Descriptors.FpDensityMorgan3(x),
+                                                                Descriptors.FractionCSP3(x),
+                                                                Descriptors.HallKierAlpha(x),
+                                                                Descriptors.HeavyAtomCount(x),
+                                                                Descriptors.HeavyAtomMolWt(x),
+                                                                Descriptors.Ipc(x),
+                                                                Descriptors.Kappa1(x),
+                                                                Descriptors.Kappa2(x),
+                                                                Descriptors.Kappa3(x),
+                                                                Descriptors.LabuteASA(x),
+                                                                Descriptors.MaxAbsEStateIndex(x),
+                                                                Descriptors.MaxAbsPartialCharge(x),
+                                                                Descriptors.MaxEStateIndex(x),
+                                                                Descriptors.MaxPartialCharge(x),
+                                                                Descriptors.MinAbsEStateIndex(x),
+                                                                Descriptors.MinAbsPartialCharge(x),
+                                                                Descriptors.MinEStateIndex(x),
+                                                                Descriptors.MinPartialCharge(x),
+                                                                Descriptors.MolLogP(x),
+                                                                Descriptors.MolMR(x),
+                                                                Descriptors.MolWt(x),
+                                                                Descriptors.NHOHCount(x),
+                                                                Descriptors.NOCount(x),
+                                                                Descriptors.NumAliphaticCarbocycles(x),
+                                                                Descriptors.NumAliphaticHeterocycles(x),
+                                                                Descriptors.NumAliphaticRings(x),
+                                                                Descriptors.NumAromaticCarbocycles(x),
+                                                                Descriptors.NumAromaticHeterocycles(x),
+                                                                Descriptors.NumAromaticRings(x),
+                                                                Descriptors.NumHAcceptors(x),
+                                                                Descriptors.NumHDonors(x),
+                                                                Descriptors.NumHeteroatoms(x),
+                                                                Descriptors.NumRadicalElectrons(x),
+                                                                Descriptors.NumRotatableBonds(x),
+                                                                Descriptors.NumSaturatedCarbocycles(x),
+                                                                Descriptors.NumSaturatedHeterocycles(x),
+                                                                Descriptors.NumSaturatedRings(x),
+                                                                Descriptors.NumValenceElectrons(x),
+                                                                Descriptors.PEOE_VSA1(x),
+                                                                Descriptors.PEOE_VSA10(x),
+                                                                Descriptors.PEOE_VSA11(x),
+                                                                Descriptors.PEOE_VSA12(x),
+                                                                Descriptors.PEOE_VSA13(x),
+                                                                Descriptors.PEOE_VSA14(x),
+                                                                Descriptors.PEOE_VSA2(x),
+                                                                Descriptors.PEOE_VSA3(x),
+                                                                Descriptors.PEOE_VSA4(x),
+                                                                Descriptors.PEOE_VSA5(x),
+                                                                Descriptors.PEOE_VSA6(x),
+                                                                Descriptors.PEOE_VSA7(x),
+                                                                Descriptors.PEOE_VSA8(x),
+                                                                Descriptors.PEOE_VSA9(x),
+                                                                Descriptors.RingCount(x),
+                                                                Descriptors.SMR_VSA1(x),
+                                                                Descriptors.SMR_VSA10(x),
+                                                                Descriptors.SMR_VSA2(x),
+                                                                Descriptors.SMR_VSA3(x),
+                                                                Descriptors.SMR_VSA4(x),
+                                                                Descriptors.SMR_VSA5(x),
+                                                                Descriptors.SMR_VSA6(x),
+                                                                Descriptors.SMR_VSA7(x),
+                                                                Descriptors.SMR_VSA8(x),
+                                                                Descriptors.SMR_VSA9(x),
+                                                                Descriptors.SlogP_VSA1(x),
+                                                                Descriptors.SlogP_VSA10(x),
+                                                                Descriptors.SlogP_VSA11(x),
+                                                                Descriptors.SlogP_VSA12(x),
+                                                                Descriptors.SlogP_VSA2(x),
+                                                                Descriptors.SlogP_VSA3(x),
+                                                                Descriptors.SlogP_VSA4(x),
+                                                                Descriptors.SlogP_VSA5(x),
+                                                                Descriptors.SlogP_VSA6(x),
+                                                                Descriptors.SlogP_VSA7(x),
+                                                                Descriptors.SlogP_VSA8(x),
+                                                                Descriptors.SlogP_VSA9(x),
+                                                                Descriptors.TPSA(x),
+                                                                Descriptors.VSA_EState1(x),
+                                                                Descriptors.VSA_EState10(x),
+                                                                Descriptors.VSA_EState2(x),
+                                                                Descriptors.VSA_EState3(x),
+                                                                Descriptors.VSA_EState4(x),
+                                                                Descriptors.VSA_EState5(x),
+                                                                Descriptors.VSA_EState6(x),
+                                                                Descriptors.VSA_EState7(x),
+                                                                Descriptors.VSA_EState8(x),
+                                                                Descriptors.VSA_EState9(x),
+                                                                Descriptors.fr_Al_COO(x),
+                                                                Descriptors.fr_Al_OH(x),
+                                                                Descriptors.fr_Al_OH_noTert(x),
+                                                                Descriptors.fr_ArN(x),
+                                                                Descriptors.fr_Ar_COO(x),
+                                                                Descriptors.fr_Ar_N(x),
+                                                                Descriptors.fr_Ar_NH(x),
+                                                                Descriptors.fr_Ar_OH(x),
+                                                                Descriptors.fr_COO(x),
+                                                                Descriptors.fr_COO2(x),
+                                                                Descriptors.fr_C_O(x),
+                                                                Descriptors.fr_C_O_noCOO(x),
+                                                                Descriptors.fr_C_S(x),
+                                                                Descriptors.fr_HOCCN(x),
+                                                                Descriptors.fr_Imine(x),
+                                                                Descriptors.fr_NH0(x),
+                                                                Descriptors.fr_NH1(x),
+                                                                Descriptors.fr_NH2(x),
+                                                                Descriptors.fr_N_O(x),
+                                                                Descriptors.fr_Ndealkylation1(x),
+                                                                Descriptors.fr_Ndealkylation2(x),
+                                                                Descriptors.fr_Nhpyrrole(x),
+                                                                Descriptors.fr_SH(x),
+                                                                Descriptors.fr_aldehyde(x),
+                                                                Descriptors.fr_alkyl_carbamate(x),
+                                                                Descriptors.fr_alkyl_halide(x),
+                                                                Descriptors.fr_allylic_oxid(x),
+                                                                Descriptors.fr_amide(x),
+                                                                Descriptors.fr_amidine(x),
+                                                                Descriptors.fr_aniline(x),
+                                                                Descriptors.fr_aryl_methyl(x),
+                                                                Descriptors.fr_azide(x),
+                                                                Descriptors.fr_azo(x),
+                                                                Descriptors.fr_barbitur(x),
+                                                                Descriptors.fr_benzene(x),
+                                                                Descriptors.fr_benzodiazepine(x),
+                                                                Descriptors.fr_bicyclic(x),
+                                                                Descriptors.fr_diazo(x),
+                                                                Descriptors.fr_dihydropyridine(x),
+                                                                Descriptors.fr_epoxide(x),
+                                                                Descriptors.fr_ester(x),
+                                                                Descriptors.fr_ether(x),
+                                                                Descriptors.fr_furan(x),
+                                                                Descriptors.fr_guanido(x),
+                                                                Descriptors.fr_halogen(x),
+                                                                Descriptors.fr_hdrzine(x),
+                                                                Descriptors.fr_hdrzone(x),
+                                                                Descriptors.fr_imidazole(x),
+                                                                Descriptors.fr_imide(x),
+                                                                Descriptors.fr_isocyan(x),
+                                                                Descriptors.fr_isothiocyan(x),
+                                                                Descriptors.fr_ketone(x),
+                                                                Descriptors.fr_ketone_Topliss(x),
+                                                                Descriptors.fr_lactam(x),
+                                                                Descriptors.fr_lactone(x),
+                                                                Descriptors.fr_methoxy(x),
+                                                                Descriptors.fr_morpholine(x),
+                                                                Descriptors.fr_nitrile(x),
+                                                                Descriptors.fr_nitro(x),
+                                                                Descriptors.fr_nitro_arom(x),
+                                                                Descriptors.fr_nitro_arom_nonortho(x),
+                                                                Descriptors.fr_nitroso(x),
+                                                                Descriptors.fr_oxazole(x),
+                                                                Descriptors.fr_oxime(x),
+                                                                Descriptors.fr_para_hydroxylation(x),
+                                                                Descriptors.fr_phenol(x),
+                                                                Descriptors.fr_phenol_noOrthoHbond(x),
+                                                                Descriptors.fr_phos_acid(x),
+                                                                Descriptors.fr_phos_ester(x),
+                                                                Descriptors.fr_piperdine(x),
+                                                                Descriptors.fr_piperzine(x),
+                                                                Descriptors.fr_priamide(x),
+                                                                Descriptors.fr_prisulfonamd(x),
+                                                                Descriptors.fr_pyridine(x),
+                                                                Descriptors.fr_quatN(x),
+                                                                Descriptors.fr_sulfide(x),
+                                                                Descriptors.fr_sulfonamd(x),
+                                                                Descriptors.fr_sulfone(x),
+                                                                Descriptors.fr_term_acetylene(x),
+                                                                Descriptors.fr_tetrazole(x),
+                                                                Descriptors.fr_thiazole(x),
+                                                                Descriptors.fr_thiocyan(x),
+                                                                Descriptors.fr_thiophene(x),
+                                                                Descriptors.fr_unbrch_alkane(x),
+                                                                Descriptors.fr_urea(x),
+                                                                Descriptors.qed(x)])
+                # 将 RDKit 描述符转换为 DataFrame
+                rdkit_descriptors_df = pd.DataFrame(list(rdkit_descriptors),
+                                                    columns=['BalabanJ', 'BertzCT', 'Chi0', 'Chi0n', 'Chi0v', 'Chi1', 'Chi1n', 'Chi1v', 'Chi2n', 'Chi2v', 'Chi3n', 'Chi3v', 'Chi4n', 'Chi4v', 'EState_VSA1', 'EState_VSA10', 'EState_VSA11', 'EState_VSA2', 'EState_VSA3', 'EState_VSA4', 'EState_VSA5', 'EState_VSA6', 'EState_VSA7', 'EState_VSA8', 'EState_VSA9', 'ExactMolWt', 'FpDensityMorgan1',
+                                                             'FpDensityMorgan2', 'FpDensityMorgan3', 'FractionCSP3', 'HallKierAlpha', 'HeavyAtomCount', 'HeavyAtomMolWt', 'Ipc', 'Kappa1', 'Kappa2', 'Kappa3', 'LabuteASA', 'MaxAbsEStateIndex', 'MaxAbsPartialCharge', 'MaxEStateIndex', 'MaxPartialCharge', 'MinAbsEStateIndex', 'MinAbsPartialCharge', 'MinEStateIndex', 'MinPartialCharge', 'MolLogP', 'MolMR',
+                                                             'MolWt', 'NHOHCount', 'NOCount', 'NumAliphaticCarbocycles', 'NumAliphaticHeterocycles', 'NumAliphaticRings', 'NumAromaticCarbocycles', 'NumAromaticHeterocycles', 'NumAromaticRings', 'NumHAcceptors', 'NumHDonors', 'NumHeteroatoms', 'NumRadicalElectrons', 'NumRotatableBonds', 'NumSaturatedCarbocycles', 'NumSaturatedHeterocycles',
+                                                             'NumSaturatedRings', 'NumValenceElectrons', 'PEOE_VSA1', 'PEOE_VSA10', 'PEOE_VSA11', 'PEOE_VSA12', 'PEOE_VSA13', 'PEOE_VSA14', 'PEOE_VSA2', 'PEOE_VSA3', 'PEOE_VSA4', 'PEOE_VSA5', 'PEOE_VSA6', 'PEOE_VSA7', 'PEOE_VSA8', 'PEOE_VSA9', 'RingCount', 'SMR_VSA1', 'SMR_VSA10', 'SMR_VSA2', 'SMR_VSA3', 'SMR_VSA4', 'SMR_VSA5', 'SMR_VSA6', 'SMR_VSA7',
+                                                             'SMR_VSA8', 'SMR_VSA9', 'SlogP_VSA1', 'SlogP_VSA10', 'SlogP_VSA11', 'SlogP_VSA12', 'SlogP_VSA2', 'SlogP_VSA3', 'SlogP_VSA4', 'SlogP_VSA5', 'SlogP_VSA6', 'SlogP_VSA7', 'SlogP_VSA8', 'SlogP_VSA9', 'TPSA', 'VSA_EState1', 'VSA_EState10', 'VSA_EState2', 'VSA_EState3', 'VSA_EState4', 'VSA_EState5', 'VSA_EState6', 'VSA_EState7', 'VSA_EState8',
+                                                             'VSA_EState9', 'fr_Al_COO', 'fr_Al_OH', 'fr_Al_OH_noTert', 'fr_ArN', 'fr_Ar_COO', 'fr_Ar_N', 'fr_Ar_NH', 'fr_Ar_OH', 'fr_COO', 'fr_COO2', 'fr_C_O', 'fr_C_O_noCOO', 'fr_C_S', 'fr_HOCCN', 'fr_Imine', 'fr_NH0', 'fr_NH1', 'fr_NH2', 'fr_N_O', 'fr_Ndealkylation1', 'fr_Ndealkylation2', 'fr_Nhpyrrole', 'fr_SH', 'fr_aldehyde', 'fr_alkyl_carbamate',
+                                                             'fr_alkyl_halide', 'fr_allylic_oxid', 'fr_amide', 'fr_amidine', 'fr_aniline', 'fr_aryl_methyl', 'fr_azide', 'fr_azo', 'fr_barbitur', 'fr_benzene', 'fr_benzodiazepine', 'fr_bicyclic', 'fr_diazo', 'fr_dihydropyridine', 'fr_epoxide', 'fr_ester', 'fr_ether', 'fr_furan', 'fr_guanido', 'fr_halogen', 'fr_hdrzine', 'fr_hdrzone', 'fr_imidazole',
+                                                             'fr_imide', 'fr_isocyan', 'fr_isothiocyan', 'fr_ketone', 'fr_ketone_Topliss', 'fr_lactam', 'fr_lactone', 'fr_methoxy', 'fr_morpholine', 'fr_nitrile', 'fr_nitro', 'fr_nitro_arom', 'fr_nitro_arom_nonortho', 'fr_nitroso', 'fr_oxazole', 'fr_oxime', 'fr_para_hydroxylation', 'fr_phenol', 'fr_phenol_noOrthoHbond', 'fr_phos_acid', 'fr_phos_ester',
+                                                             'fr_piperdine', 'fr_piperzine', 'fr_priamide', 'fr_prisulfonamd', 'fr_pyridine', 'fr_quatN', 'fr_sulfide', 'fr_sulfonamd', 'fr_sulfone', 'fr_term_acetylene', 'fr_tetrazole', 'fr_thiazole', 'fr_thiocyan', 'fr_thiophene', 'fr_unbrch_alkane', 'fr_urea', 'qed'])
+
+                # 添加前缀
+                prefix_rdkit = f'{key}_rdkit_'
+                rdkit_descriptors_df = rdkit_descriptors_df.add_prefix(prefix_rdkit)
+
+                # 存储特征化后的数据集
+                rdkit_datasets[key] = rdkit_descriptors_df
+
+        # rdkit_datasets 包含了每个数据集的 RDKit 描述符
+        # 合并 RDKit 特征化后的数据集
+        merged_rdkit_result = pd.concat(rdkit_datasets.values(), axis=1)
+        merged_rdkit_result.fillna(0, inplace=True)
+        # 将合并后的结果保存为 CSV 文件
+        merged_rdkit_result.to_csv(path+'/merged_rdkit_result.csv', index=False)
+
+        # 打印或使用合并后的 RDKit 特征化结果
+        print(merged_rdkit_result)
 
     unselected_columns = pd.DataFrame(pd.read_csv(path+'/unselected_columns.csv'))
     # 合并前重置索引
-    merged_result.reset_index(drop=True, inplace=True)
-    merged_rdkit_result.reset_index(drop=True, inplace=True)
     unselected_columns.reset_index(drop=True, inplace=True)
+    if Formular_state==1 and Smiles_state==1:
+        merged_result.reset_index(drop=True, inplace=True)
+        merged_rdkit_result.reset_index(drop=True, inplace=True)
 
-    # 合并三个数据集
-    all_merged_data = pd.concat([merged_result, merged_rdkit_result, unselected_columns], axis=1)
+
+        # 合并三个数据集
+        all_merged_data = pd.concat([merged_result, merged_rdkit_result, unselected_columns], axis=1)
+    elif Formular_state==1 and Smiles_state==0:
+        merged_result.reset_index(drop=True, inplace=True)
+        all_merged_data = pd.concat([merged_result, unselected_columns], axis=1)
+
+    elif Formular_state==0 and Smiles_state==1:
+        merged_rdkit_result.reset_index(drop=True, inplace=True)
+        all_merged_data = pd.concat([merged_rdkit_result, unselected_columns], axis=1)
 
     # 将合并后的结果保存为 CSV 文件
     all_merged_data.to_csv(path+'/train_test_dataset.csv', index=False)
@@ -7371,6 +7408,114 @@ def CatBoost_classifier(a, b, c,path,csvName):
 
 
 
+#deep learning classification
+
+def dnn_classifier_tensorflow(csvName, path):
+    import pandas as pd
+    from sklearn.model_selection import train_test_split
+    from sklearn.preprocessing import StandardScaler
+    from sklearn.metrics import roc_curve, auc, confusion_matrix
+    import matplotlib.pyplot as plt
+    import seaborn as sns
+    import tensorflow as tf
+    # 加载数据
+    data = pd.read_csv(csvName)
+    X = data.iloc[:, :-1].values
+    y = data.iloc[:, -1].values
+
+    # 数据划分
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
+
+    # 数据标准化
+    scaler = StandardScaler().fit(X_train)
+    X_train_scaled = scaler.transform(X_train)
+    X_test_scaled = scaler.transform(X_test)
+
+    # 构建模型
+    model = tf.keras.models.Sequential([
+        tf.keras.layers.Dense(128, activation='relu', input_shape=(X_train_scaled.shape[1],)),
+        tf.keras.layers.Dropout(0.2),
+        tf.keras.layers.Dense(64, activation='relu'),
+        tf.keras.layers.Dense(1, activation='sigmoid')
+    ])
+
+    model.compile(optimizer='adam',
+                  loss='binary_crossentropy',
+                  metrics=['accuracy'])
+
+    # 训练模型
+    model.fit(X_train_scaled, y_train, epochs=10, batch_size=32, validation_split=0.2)
+
+    # 评估模型
+    loss, accuracy = model.evaluate(X_test_scaled, y_test)
+    print(f'Test accuracy: {accuracy}')
+
+    # 预测测试数据
+    y_pred_prob_test = model.predict(X_test_scaled)
+    y_pred_test = (y_pred_prob_test > 0.5).astype("int32")
+
+    # 预测训练数据
+    y_pred_prob_train = model.predict(X_train_scaled)
+    y_pred_train = (y_pred_prob_train > 0.5).astype("int32")
+
+    # 绘制测试集ROC曲线
+    fpr_test, tpr_test, thresholds_test = roc_curve(y_test, y_pred_prob_test)
+    roc_auc_test = auc(fpr_test, tpr_test)
+
+    plt.figure()
+    plt.plot(fpr_test, tpr_test, color='darkorange', lw=2, label='ROC curve (area = %0.2f)' % roc_auc_test)
+    plt.plot([0, 1], [0, 1], color='navy', lw=2, linestyle='--')
+    plt.xlim([0.0, 1.0])
+    plt.ylim([0.0, 1.05])
+    plt.xlabel('False Positive Rate')
+    plt.ylabel('True Positive Rate')
+    plt.title('Receiver Operating Characteristic (Test Set)')
+    plt.legend(loc="lower right")
+    plt.savefig(path + '/DNN_test_ROC.png')
+    plt.close()
+
+    # 绘制测试集混淆矩阵
+    cm_test = confusion_matrix(y_test, y_pred_test)
+    plt.figure(figsize=(8, 6))
+    sns.heatmap(cm_test, annot=True, fmt="d", cmap="Blues")
+    plt.title('Confusion Matrix (Test Set)')
+    plt.ylabel('Actual label')
+    plt.xlabel('Predicted label')
+    plt.savefig(path + '/DNN_test_CM.png')
+    plt.close()
+
+    # 绘制训练集ROC曲线
+    fpr_train, tpr_train, thresholds_train = roc_curve(y_train, y_pred_prob_train)
+    roc_auc_train = auc(fpr_train, tpr_train)
+
+    plt.figure()
+    plt.plot(fpr_train, tpr_train, color='darkorange', lw=2, label='ROC curve (area = %0.2f)' % roc_auc_train)
+    plt.plot([0, 1], [0, 1], color='navy', lw=2, linestyle='--')
+    plt.xlim([0.0, 1.0])
+    plt.ylim([0.0, 1.05])
+    plt.xlabel('False Positive Rate')
+    plt.ylabel('True Positive Rate')
+    plt.title('Receiver Operating Characteristic (Training Set)')
+    plt.legend(loc="lower right")
+    plt.savefig(path + '/DNN_train_ROC.png')
+    plt.close()
+
+    # 绘制训练集混淆矩阵
+    cm_train = confusion_matrix(y_train, y_pred_train)
+    plt.figure(figsize=(8, 6))
+    sns.heatmap(cm_train, annot=True, fmt="d", cmap="Blues")
+    plt.title('Confusion Matrix (Training Set)')
+    plt.ylabel('Actual label')
+    plt.xlabel('Predicted label')
+    plt.savefig(path + '/DNN_train_CM.png')
+    plt.close()
+
+    # 保存模型
+    model.save(path + '/dnn_model_tensorflow.h5')
+
+# --------------------------------------------------------------------------------------------------------
+
+
 
 
 
@@ -7378,7 +7523,17 @@ def CatBoost_classifier(a, b, c,path,csvName):
 
 # 用户导入虚拟数据集(只有输入的smiles和化学式，无target)，自动生成输出结果(实际有2in1特征)
 def virtual_two_in_one(path,csvpath):
+    # magpie (matminer) and rdkit, 2in1
     import pandas as pd
+    import csv
+    def is_csv_empty(file_path):
+        with open(file_path, 'r', encoding='utf-8') as csv_file:
+            csv_reader = csv.reader(csv_file)
+            for row in csv_reader:
+                if row:
+                    return False  # 只要有一行数据，就不为空
+        return True  # 如果没有任何数据行，则为空
+
     def select_columns_by_suffix(df, suffix):
         filtered_columns = df.filter(regex=f'{suffix}$')
         return filtered_columns
@@ -7389,17 +7544,23 @@ def virtual_two_in_one(path,csvpath):
 
         selected_columns = {}
         for suffix in suffixes:
-            selected_columns[suffix] = select_columns_by_suffix(df, suffix)
-            print('********************************************************************************')
-            print(f"Columns ending with '{suffix}':")
-            print('********************************************************************************')
-            print(selected_columns[suffix])
-            # 如果需要保存到新的DataFrame中，取消注释下一行
-            # global df_selected
-            df_selected = pd.concat(selected_columns, axis=1)
-            # df_combined = pd.concat(selected_columns.values(), axis=1)
-            # df_combined.to_csv('selected_columns.csv', index=False)
-            selected_columns[suffix].to_csv(path + '/' + f'{suffix}_selected_columns.csv', index=False)
+            if df.filter(regex=f'{suffix}$').empty:
+                filename = f'{suffix}_selected_columns.csv'
+                with open(path + '/' + filename, 'w') as file:
+                    pass
+                continue
+            else:
+                selected_columns[suffix] = select_columns_by_suffix(df, suffix)
+                print('********************************************************************************')
+                print(f"Columns ending with '{suffix}':")
+                print('********************************************************************************')
+                print(selected_columns[suffix])
+                # 如果需要保存到新的DataFrame中，取消注释下一行
+                # global df_selected
+                df_selected = pd.concat(selected_columns, axis=1)
+                # df_combined = pd.concat(selected_columns.values(), axis=1)
+                # df_combined.to_csv('selected_columns.csv', index=False)
+                selected_columns[suffix].to_csv(path + '/' + f'{suffix}_selected_columns.csv', index=False)
 
         # 获取未被选中的列
         unselected_columns = df.drop(columns=[col for cols in selected_columns.values() for col in cols.columns])
@@ -7414,384 +7575,424 @@ def virtual_two_in_one(path,csvpath):
     suffixes = ['Formula', 'Smiles']
     selected_columns = extract_and_store_columns(file_path, suffixes)
 
-    original_data = pd.DataFrame(pd.read_csv(path + '/Formula_selected_columns.csv'))
+    if is_csv_empty(path + '/Formula_selected_columns.csv'):
+        Formular_state = 0
+    else:
+        Formular_state = 1
 
-    import pandas as pd
+    if Formular_state == 1:
+        original_data = pd.DataFrame(pd.read_csv(path + '/Formula_selected_columns.csv'))
+        import pandas as pd
 
-    # 假设 original_data 是您的原始数据集
-    # 创建一个空字典，用于存储新的数据集
-    new_datasets = {}
+        # 假设 original_data 是您的原始数据集
+        # 创建一个空字典，用于存储新的数据集
+        new_datasets = {}
 
-    # 遍历原始数据集的每一列
-    for col_name in original_data.columns:
-        # 创建新的数据集，将当前列命名为 'Name'
-        new_dataset = pd.DataFrame({'Name': original_data[col_name]})
+        # 遍历原始数据集的每一列
+        for col_name in original_data.columns:
+            # 创建新的数据集，将当前列命名为 'Name'
+            new_dataset = pd.DataFrame({'Name': original_data[col_name]})
 
-        # 将新数据集存储在字典中，字典的键是 'data1'，'data2'，依此类推
-        new_datasets['data' + str(len(new_datasets) + 1)] = new_dataset
+            # 将新数据集存储在字典中，字典的键是 'data1'，'data2'，依此类推
+            new_datasets['data' + str(len(new_datasets) + 1)] = new_dataset
 
-    # 打印或使用新的数据集
-    for key, value in new_datasets.items():
-        print(f"{key}:\n{value}\n")
+        # 打印或使用新的数据集
+        for key, value in new_datasets.items():
+            print(f"{key}:\n{value}\n")
 
-    import pandas as pd
-    from matminer.featurizers.conversions import StrToComposition
-    from matminer.featurizers.composition.orbital import AtomicOrbitals
-    from matminer.featurizers.composition import ElementProperty
-    from matminer.featurizers.composition.element import ElementFraction
-    from pymatgen.core import Composition
+        import pandas as pd
+        from matminer.featurizers.conversions import StrToComposition
+        from matminer.featurizers.composition.orbital import AtomicOrbitals
+        from matminer.featurizers.composition import ElementProperty
+        from matminer.featurizers.composition.element import ElementFraction
+        from pymatgen.core import Composition
 
-    # 假设 new_datasets 是包含拆分数据集的字典，如 'data1', 'data2', ...
-    # 每个数据集中应该有 'Name' 列
+        ignore_errors = True
+        # 假设 new_datasets 是包含拆分数据集的字典，如 'data1', 'data2', ...
+        # 每个数据集中应该有 'Name' 列
 
-    # 初始化 StrToComposition
-    str_to_comp = StrToComposition(target_col_id='composition')
+        # 初始化 StrToComposition
+        str_to_comp = StrToComposition(target_col_id='composition')
 
-    # 初始化 AtomicOrbitals
-    comp_to_orbital = AtomicOrbitals()
+        # 初始化 AtomicOrbitals
+        comp_to_orbital = AtomicOrbitals()
 
-    # 初始化 ElementProperty
-    features_element_property = ['Number', 'MendeleevNumber', 'AtomicWeight', 'MeltingT',
-                                 'Column', 'Row', 'CovalentRadius', 'Electronegativity',
-                                 'NsValence', 'NpValence', 'NdValence', 'NfValence', 'NValence',
-                                 'NsUnfilled', 'NpUnfilled', 'NdUnfilled', 'NfUnfilled', 'NUnfilled',
-                                 'GSvolume_pa', 'GSbandgap', 'GSmagmom', 'SpaceGroupNumber']
-    stats_element_property = ['mean', 'minimum', 'maximum', 'range', 'avg_dev', 'mode']
-    element_property_featurizer = ElementProperty(data_source='magpie', features=features_element_property,
-                                                  stats=stats_element_property)
+        # 初始化 ElementProperty
+        features_element_property = ['Number', 'MendeleevNumber', 'AtomicWeight', 'MeltingT',
+                                     'Column', 'Row', 'CovalentRadius', 'Electronegativity',
+                                     'NsValence', 'NpValence', 'NdValence', 'NfValence', 'NValence',
+                                     'NsUnfilled', 'NpUnfilled', 'NdUnfilled', 'NfUnfilled', 'NUnfilled',
+                                     'GSvolume_pa', 'GSbandgap', 'GSmagmom', 'SpaceGroupNumber']
+        stats_element_property = ['mean', 'minimum', 'maximum', 'range', 'avg_dev', 'mode']
+        element_property_featurizer = ElementProperty(data_source='magpie', features=features_element_property,
+                                                      stats=stats_element_property)
 
-    # 初始化 ElementFraction
-    element_fraction = ElementFraction()
+        # 初始化 ElementFraction
+        element_fraction = ElementFraction()
 
-    # 用于存储特征转换后的数据集
-    result_datasets = {}
+        # 用于存储特征转换后的数据集
+        result_datasets = {}
 
-    # 遍历拆分的数据集
-    for i, (key, dataset) in enumerate(new_datasets.items(), start=1):
-        # 特征转换1: StrToComposition
-        df_comp = str_to_comp.featurize_dataframe(dataset, col_id='Name')
+        # 遍历拆分的数据集
+        for i, (key, dataset) in enumerate(new_datasets.items(), start=1):
+            # 特征转换1: StrToComposition
 
-        # 特征转换2: AtomicOrbitals
-        orbital_features = comp_to_orbital.featurize_dataframe(df_comp, col_id='composition')
-        orbital_features = orbital_features.iloc[:, [4, 7, 8]]  # 选择感兴趣的列
+            df_comp = str_to_comp.featurize_dataframe(dataset, col_id='Name')
 
-        # 特征转换3: ElementProperty
-        element_property_features = element_property_featurizer.featurize_dataframe(df_comp, col_id='composition')
-        element_property_features = element_property_features.iloc[:, 2:-1]  # 选择感兴趣的列
+            # 特征转换2: AtomicOrbitals
+            orbital_features = comp_to_orbital.featurize_dataframe(df_comp, col_id='composition')
+            orbital_features = orbital_features.iloc[:, [4, 7, 8]]  # 选择感兴趣的列
 
-        # 特征转换4: ElementFraction
-        element_fraction_features = element_fraction.featurize_dataframe(df_comp, col_id='composition')
-        element_fraction_features = element_fraction_features.iloc[:, 2:-1]  # 选择感兴趣的列
+            # 特征转换3: ElementProperty
+            element_property_features = element_property_featurizer.featurize_dataframe(df_comp, col_id='composition')
+            element_property_features = element_property_features.iloc[:, 2:-1]  # 选择感兴趣的列
 
-        # 添加前缀
-        prefix_orbital = f'_formula_{i}_orbital_'
-        orbital_features = orbital_features.add_prefix(prefix_orbital)
-
-        prefix_element_property = f'_formula_{i}_element_property_'
-        element_property_features = element_property_features.add_prefix(prefix_element_property)
-
-        prefix_element_fraction = f'_formula_{i}_element_fraction_'
-        element_fraction_features = element_fraction_features.add_prefix(prefix_element_fraction)
-
-        # 合并特征转换后的数据集
-        result_datasets[key] = pd.concat([orbital_features, element_property_features, element_fraction_features],
-                                         axis=1)
-
-    # 合并所有数据集
-    merged_result = pd.concat(result_datasets.values(), axis=1)
-
-    # 将合并后的结果保存为 CSV 文件
-    merged_result.to_csv(path + '/merged_result.csv', index=False)
-
-    # 打印或使用合并后的结果
-    print(merged_result)
-
-    # 有机部分
-    original_data2 = pd.DataFrame(pd.read_csv(path + '/Smiles_selected_columns.csv'))
-
-    new_datasets2 = {}
-
-    # 遍历原始数据集的每一列
-    for col_name in original_data2.columns:
-        # 创建新的数据集，将当前列命名为 'Name'
-        new_dataset2 = pd.DataFrame({'Name': original_data2[col_name]})
-
-        # 将新数据集存储在字典中，字典的键是 'organic_data1'，'organic_data2'，依此类推
-        new_datasets2['organic_data' + str(len(new_datasets2) + 1)] = new_dataset2
-
-    # 打印或使用新的数据集
-    for key, value in new_datasets2.items():
-        print(f"{key}:\n{value}\n")
-
-    import pandas as pd
-    import numpy as np
-    from rdkit import Chem
-    from rdkit.Chem import AllChem
-
-    # 假设 new_datasets2 是包含拆分数据集的字典，如 'organic_data1', 'organic_data2', ...
-    # 每个数据集中应该有 'Name' 列
-
-    # 用于存储 RDKit 特征化后的数据集
-    rdkit_datasets = {}
-
-    from rdkit import Chem
-    from rdkit.Chem import Descriptors
-    import pandas as pd
-    for key, dataset in new_datasets2.items():
-        # 特征化 RDKit
-        rdkit_features = dataset['Name'].apply(lambda x: Chem.MolFromSmiles(x))
-
-        # 检查分子是否有效
-        valid_mols = rdkit_features.dropna()
-
-        if not valid_mols.empty:
-            # 计算所有 RDKit 描述符
-            # rdkit_descriptors = valid_mols.apply(lambda x: [Descriptors.MolWt(x), Descriptors.NumRotatableBonds(x)])
-            rdkit_descriptors = valid_mols.apply(lambda x: [Descriptors.BalabanJ(x),
-                                                            Descriptors.BertzCT(x),
-                                                            Descriptors.Chi0(x),
-                                                            Descriptors.Chi0n(x),
-                                                            Descriptors.Chi0v(x),
-                                                            Descriptors.Chi1(x),
-                                                            Descriptors.Chi1n(x),
-                                                            Descriptors.Chi1v(x),
-                                                            Descriptors.Chi2n(x),
-                                                            Descriptors.Chi2v(x),
-                                                            Descriptors.Chi3n(x),
-                                                            Descriptors.Chi3v(x),
-                                                            Descriptors.Chi4n(x),
-                                                            Descriptors.Chi4v(x),
-                                                            Descriptors.EState_VSA1(x),
-                                                            Descriptors.EState_VSA10(x),
-                                                            Descriptors.EState_VSA11(x),
-                                                            Descriptors.EState_VSA2(x),
-                                                            Descriptors.EState_VSA3(x),
-                                                            Descriptors.EState_VSA4(x),
-                                                            Descriptors.EState_VSA5(x),
-                                                            Descriptors.EState_VSA6(x),
-                                                            Descriptors.EState_VSA7(x),
-                                                            Descriptors.EState_VSA8(x),
-                                                            Descriptors.EState_VSA9(x),
-                                                            Descriptors.ExactMolWt(x),
-                                                            Descriptors.FpDensityMorgan1(x),
-                                                            Descriptors.FpDensityMorgan2(x),
-                                                            Descriptors.FpDensityMorgan3(x),
-                                                            Descriptors.FractionCSP3(x),
-                                                            Descriptors.HallKierAlpha(x),
-                                                            Descriptors.HeavyAtomCount(x),
-                                                            Descriptors.HeavyAtomMolWt(x),
-                                                            Descriptors.Ipc(x),
-                                                            Descriptors.Kappa1(x),
-                                                            Descriptors.Kappa2(x),
-                                                            Descriptors.Kappa3(x),
-                                                            Descriptors.LabuteASA(x),
-                                                            Descriptors.MaxAbsEStateIndex(x),
-                                                            Descriptors.MaxAbsPartialCharge(x),
-                                                            Descriptors.MaxEStateIndex(x),
-                                                            Descriptors.MaxPartialCharge(x),
-                                                            Descriptors.MinAbsEStateIndex(x),
-                                                            Descriptors.MinAbsPartialCharge(x),
-                                                            Descriptors.MinEStateIndex(x),
-                                                            Descriptors.MinPartialCharge(x),
-                                                            Descriptors.MolLogP(x),
-                                                            Descriptors.MolMR(x),
-                                                            Descriptors.MolWt(x),
-                                                            Descriptors.NHOHCount(x),
-                                                            Descriptors.NOCount(x),
-                                                            Descriptors.NumAliphaticCarbocycles(x),
-                                                            Descriptors.NumAliphaticHeterocycles(x),
-                                                            Descriptors.NumAliphaticRings(x),
-                                                            Descriptors.NumAromaticCarbocycles(x),
-                                                            Descriptors.NumAromaticHeterocycles(x),
-                                                            Descriptors.NumAromaticRings(x),
-                                                            Descriptors.NumHAcceptors(x),
-                                                            Descriptors.NumHDonors(x),
-                                                            Descriptors.NumHeteroatoms(x),
-                                                            Descriptors.NumRadicalElectrons(x),
-                                                            Descriptors.NumRotatableBonds(x),
-                                                            Descriptors.NumSaturatedCarbocycles(x),
-                                                            Descriptors.NumSaturatedHeterocycles(x),
-                                                            Descriptors.NumSaturatedRings(x),
-                                                            Descriptors.NumValenceElectrons(x),
-                                                            Descriptors.PEOE_VSA1(x),
-                                                            Descriptors.PEOE_VSA10(x),
-                                                            Descriptors.PEOE_VSA11(x),
-                                                            Descriptors.PEOE_VSA12(x),
-                                                            Descriptors.PEOE_VSA13(x),
-                                                            Descriptors.PEOE_VSA14(x),
-                                                            Descriptors.PEOE_VSA2(x),
-                                                            Descriptors.PEOE_VSA3(x),
-                                                            Descriptors.PEOE_VSA4(x),
-                                                            Descriptors.PEOE_VSA5(x),
-                                                            Descriptors.PEOE_VSA6(x),
-                                                            Descriptors.PEOE_VSA7(x),
-                                                            Descriptors.PEOE_VSA8(x),
-                                                            Descriptors.PEOE_VSA9(x),
-                                                            Descriptors.RingCount(x),
-                                                            Descriptors.SMR_VSA1(x),
-                                                            Descriptors.SMR_VSA10(x),
-                                                            Descriptors.SMR_VSA2(x),
-                                                            Descriptors.SMR_VSA3(x),
-                                                            Descriptors.SMR_VSA4(x),
-                                                            Descriptors.SMR_VSA5(x),
-                                                            Descriptors.SMR_VSA6(x),
-                                                            Descriptors.SMR_VSA7(x),
-                                                            Descriptors.SMR_VSA8(x),
-                                                            Descriptors.SMR_VSA9(x),
-                                                            Descriptors.SlogP_VSA1(x),
-                                                            Descriptors.SlogP_VSA10(x),
-                                                            Descriptors.SlogP_VSA11(x),
-                                                            Descriptors.SlogP_VSA12(x),
-                                                            Descriptors.SlogP_VSA2(x),
-                                                            Descriptors.SlogP_VSA3(x),
-                                                            Descriptors.SlogP_VSA4(x),
-                                                            Descriptors.SlogP_VSA5(x),
-                                                            Descriptors.SlogP_VSA6(x),
-                                                            Descriptors.SlogP_VSA7(x),
-                                                            Descriptors.SlogP_VSA8(x),
-                                                            Descriptors.SlogP_VSA9(x),
-                                                            Descriptors.TPSA(x),
-                                                            Descriptors.VSA_EState1(x),
-                                                            Descriptors.VSA_EState10(x),
-                                                            Descriptors.VSA_EState2(x),
-                                                            Descriptors.VSA_EState3(x),
-                                                            Descriptors.VSA_EState4(x),
-                                                            Descriptors.VSA_EState5(x),
-                                                            Descriptors.VSA_EState6(x),
-                                                            Descriptors.VSA_EState7(x),
-                                                            Descriptors.VSA_EState8(x),
-                                                            Descriptors.VSA_EState9(x),
-                                                            Descriptors.fr_Al_COO(x),
-                                                            Descriptors.fr_Al_OH(x),
-                                                            Descriptors.fr_Al_OH_noTert(x),
-                                                            Descriptors.fr_ArN(x),
-                                                            Descriptors.fr_Ar_COO(x),
-                                                            Descriptors.fr_Ar_N(x),
-                                                            Descriptors.fr_Ar_NH(x),
-                                                            Descriptors.fr_Ar_OH(x),
-                                                            Descriptors.fr_COO(x),
-                                                            Descriptors.fr_COO2(x),
-                                                            Descriptors.fr_C_O(x),
-                                                            Descriptors.fr_C_O_noCOO(x),
-                                                            Descriptors.fr_C_S(x),
-                                                            Descriptors.fr_HOCCN(x),
-                                                            Descriptors.fr_Imine(x),
-                                                            Descriptors.fr_NH0(x),
-                                                            Descriptors.fr_NH1(x),
-                                                            Descriptors.fr_NH2(x),
-                                                            Descriptors.fr_N_O(x),
-                                                            Descriptors.fr_Ndealkylation1(x),
-                                                            Descriptors.fr_Ndealkylation2(x),
-                                                            Descriptors.fr_Nhpyrrole(x),
-                                                            Descriptors.fr_SH(x),
-                                                            Descriptors.fr_aldehyde(x),
-                                                            Descriptors.fr_alkyl_carbamate(x),
-                                                            Descriptors.fr_alkyl_halide(x),
-                                                            Descriptors.fr_allylic_oxid(x),
-                                                            Descriptors.fr_amide(x),
-                                                            Descriptors.fr_amidine(x),
-                                                            Descriptors.fr_aniline(x),
-                                                            Descriptors.fr_aryl_methyl(x),
-                                                            Descriptors.fr_azide(x),
-                                                            Descriptors.fr_azo(x),
-                                                            Descriptors.fr_barbitur(x),
-                                                            Descriptors.fr_benzene(x),
-                                                            Descriptors.fr_benzodiazepine(x),
-                                                            Descriptors.fr_bicyclic(x),
-                                                            Descriptors.fr_diazo(x),
-                                                            Descriptors.fr_dihydropyridine(x),
-                                                            Descriptors.fr_epoxide(x),
-                                                            Descriptors.fr_ester(x),
-                                                            Descriptors.fr_ether(x),
-                                                            Descriptors.fr_furan(x),
-                                                            Descriptors.fr_guanido(x),
-                                                            Descriptors.fr_halogen(x),
-                                                            Descriptors.fr_hdrzine(x),
-                                                            Descriptors.fr_hdrzone(x),
-                                                            Descriptors.fr_imidazole(x),
-                                                            Descriptors.fr_imide(x),
-                                                            Descriptors.fr_isocyan(x),
-                                                            Descriptors.fr_isothiocyan(x),
-                                                            Descriptors.fr_ketone(x),
-                                                            Descriptors.fr_ketone_Topliss(x),
-                                                            Descriptors.fr_lactam(x),
-                                                            Descriptors.fr_lactone(x),
-                                                            Descriptors.fr_methoxy(x),
-                                                            Descriptors.fr_morpholine(x),
-                                                            Descriptors.fr_nitrile(x),
-                                                            Descriptors.fr_nitro(x),
-                                                            Descriptors.fr_nitro_arom(x),
-                                                            Descriptors.fr_nitro_arom_nonortho(x),
-                                                            Descriptors.fr_nitroso(x),
-                                                            Descriptors.fr_oxazole(x),
-                                                            Descriptors.fr_oxime(x),
-                                                            Descriptors.fr_para_hydroxylation(x),
-                                                            Descriptors.fr_phenol(x),
-                                                            Descriptors.fr_phenol_noOrthoHbond(x),
-                                                            Descriptors.fr_phos_acid(x),
-                                                            Descriptors.fr_phos_ester(x),
-                                                            Descriptors.fr_piperdine(x),
-                                                            Descriptors.fr_piperzine(x),
-                                                            Descriptors.fr_priamide(x),
-                                                            Descriptors.fr_prisulfonamd(x),
-                                                            Descriptors.fr_pyridine(x),
-                                                            Descriptors.fr_quatN(x),
-                                                            Descriptors.fr_sulfide(x),
-                                                            Descriptors.fr_sulfonamd(x),
-                                                            Descriptors.fr_sulfone(x),
-                                                            Descriptors.fr_term_acetylene(x),
-                                                            Descriptors.fr_tetrazole(x),
-                                                            Descriptors.fr_thiazole(x),
-                                                            Descriptors.fr_thiocyan(x),
-                                                            Descriptors.fr_thiophene(x),
-                                                            Descriptors.fr_unbrch_alkane(x),
-                                                            Descriptors.fr_urea(x),
-                                                            Descriptors.qed(x)])
-            # 将 RDKit 描述符转换为 DataFrame
-            rdkit_descriptors_df = pd.DataFrame(list(rdkit_descriptors),
-                                                columns=['BalabanJ', 'BertzCT', 'Chi0', 'Chi0n', 'Chi0v', 'Chi1', 'Chi1n', 'Chi1v', 'Chi2n', 'Chi2v', 'Chi3n', 'Chi3v', 'Chi4n', 'Chi4v', 'EState_VSA1', 'EState_VSA10', 'EState_VSA11', 'EState_VSA2', 'EState_VSA3', 'EState_VSA4', 'EState_VSA5', 'EState_VSA6', 'EState_VSA7', 'EState_VSA8', 'EState_VSA9', 'ExactMolWt', 'FpDensityMorgan1',
-                                                         'FpDensityMorgan2', 'FpDensityMorgan3', 'FractionCSP3', 'HallKierAlpha', 'HeavyAtomCount', 'HeavyAtomMolWt', 'Ipc', 'Kappa1', 'Kappa2', 'Kappa3', 'LabuteASA', 'MaxAbsEStateIndex', 'MaxAbsPartialCharge', 'MaxEStateIndex', 'MaxPartialCharge', 'MinAbsEStateIndex', 'MinAbsPartialCharge', 'MinEStateIndex', 'MinPartialCharge', 'MolLogP', 'MolMR',
-                                                         'MolWt', 'NHOHCount', 'NOCount', 'NumAliphaticCarbocycles', 'NumAliphaticHeterocycles', 'NumAliphaticRings', 'NumAromaticCarbocycles', 'NumAromaticHeterocycles', 'NumAromaticRings', 'NumHAcceptors', 'NumHDonors', 'NumHeteroatoms', 'NumRadicalElectrons', 'NumRotatableBonds', 'NumSaturatedCarbocycles', 'NumSaturatedHeterocycles',
-                                                         'NumSaturatedRings', 'NumValenceElectrons', 'PEOE_VSA1', 'PEOE_VSA10', 'PEOE_VSA11', 'PEOE_VSA12', 'PEOE_VSA13', 'PEOE_VSA14', 'PEOE_VSA2', 'PEOE_VSA3', 'PEOE_VSA4', 'PEOE_VSA5', 'PEOE_VSA6', 'PEOE_VSA7', 'PEOE_VSA8', 'PEOE_VSA9', 'RingCount', 'SMR_VSA1', 'SMR_VSA10', 'SMR_VSA2', 'SMR_VSA3', 'SMR_VSA4', 'SMR_VSA5', 'SMR_VSA6', 'SMR_VSA7',
-                                                         'SMR_VSA8', 'SMR_VSA9', 'SlogP_VSA1', 'SlogP_VSA10', 'SlogP_VSA11', 'SlogP_VSA12', 'SlogP_VSA2', 'SlogP_VSA3', 'SlogP_VSA4', 'SlogP_VSA5', 'SlogP_VSA6', 'SlogP_VSA7', 'SlogP_VSA8', 'SlogP_VSA9', 'TPSA', 'VSA_EState1', 'VSA_EState10', 'VSA_EState2', 'VSA_EState3', 'VSA_EState4', 'VSA_EState5', 'VSA_EState6', 'VSA_EState7', 'VSA_EState8',
-                                                         'VSA_EState9', 'fr_Al_COO', 'fr_Al_OH', 'fr_Al_OH_noTert', 'fr_ArN', 'fr_Ar_COO', 'fr_Ar_N', 'fr_Ar_NH', 'fr_Ar_OH', 'fr_COO', 'fr_COO2', 'fr_C_O', 'fr_C_O_noCOO', 'fr_C_S', 'fr_HOCCN', 'fr_Imine', 'fr_NH0', 'fr_NH1', 'fr_NH2', 'fr_N_O', 'fr_Ndealkylation1', 'fr_Ndealkylation2', 'fr_Nhpyrrole', 'fr_SH', 'fr_aldehyde', 'fr_alkyl_carbamate',
-                                                         'fr_alkyl_halide', 'fr_allylic_oxid', 'fr_amide', 'fr_amidine', 'fr_aniline', 'fr_aryl_methyl', 'fr_azide', 'fr_azo', 'fr_barbitur', 'fr_benzene', 'fr_benzodiazepine', 'fr_bicyclic', 'fr_diazo', 'fr_dihydropyridine', 'fr_epoxide', 'fr_ester', 'fr_ether', 'fr_furan', 'fr_guanido', 'fr_halogen', 'fr_hdrzine', 'fr_hdrzone', 'fr_imidazole',
-                                                         'fr_imide', 'fr_isocyan', 'fr_isothiocyan', 'fr_ketone', 'fr_ketone_Topliss', 'fr_lactam', 'fr_lactone', 'fr_methoxy', 'fr_morpholine', 'fr_nitrile', 'fr_nitro', 'fr_nitro_arom', 'fr_nitro_arom_nonortho', 'fr_nitroso', 'fr_oxazole', 'fr_oxime', 'fr_para_hydroxylation', 'fr_phenol', 'fr_phenol_noOrthoHbond', 'fr_phos_acid', 'fr_phos_ester',
-                                                         'fr_piperdine', 'fr_piperzine', 'fr_priamide', 'fr_prisulfonamd', 'fr_pyridine', 'fr_quatN', 'fr_sulfide', 'fr_sulfonamd', 'fr_sulfone', 'fr_term_acetylene', 'fr_tetrazole', 'fr_thiazole', 'fr_thiocyan', 'fr_thiophene', 'fr_unbrch_alkane', 'fr_urea', 'qed'])
+            # 特征转换4: ElementFraction
+            element_fraction_features = element_fraction.featurize_dataframe(df_comp, col_id='composition')
+            element_fraction_features = element_fraction_features.iloc[:, 2:-1]  # 选择感兴趣的列
 
             # 添加前缀
-            prefix_rdkit = f'{key}_rdkit_'
-            rdkit_descriptors_df = rdkit_descriptors_df.add_prefix(prefix_rdkit)
+            prefix_orbital = f'_formula_{i}_orbital_'
+            orbital_features = orbital_features.add_prefix(prefix_orbital)
 
-            # 存储特征化后的数据集
-            rdkit_datasets[key] = rdkit_descriptors_df
+            prefix_element_property = f'_formula_{i}_element_property_'
+            element_property_features = element_property_features.add_prefix(prefix_element_property)
 
-    # 合并 RDKit 特征化后的数据集
-    merged_rdkit_result = pd.concat(rdkit_datasets.values(), axis=1)
-    merged_rdkit_result.fillna(0, inplace=True)
-    # 将合并后的结果保存为 CSV 文件
-    merged_rdkit_result.to_csv(path + '/merged_rdkit_result.csv', index=False)
+            prefix_element_fraction = f'_formula_{i}_element_fraction_'
+            element_fraction_features = element_fraction_features.add_prefix(prefix_element_fraction)
 
-    # 打印或使用合并后的 RDKit 特征化结果
-    print(merged_rdkit_result)
+            # 合并特征转换后的数据集
+            result_datasets[key] = pd.concat([orbital_features, element_property_features, element_fraction_features],
+                                             axis=1)
+
+        # 合并所有数据集
+        merged_result = pd.concat(result_datasets.values(), axis=1)
+
+        # 将合并后的结果保存为 CSV 文件
+        merged_result.to_csv(path + '/merged_result.csv', index=False)
+
+        # 打印或使用合并后的结果
+        print(merged_result)
+
+    ######## 有机部分
+    if is_csv_empty(path + '/Smiles_selected_columns.csv'):
+        Smiles_state = 0
+    else:
+        Smiles_state = 1
+
+    if Smiles_state == 1:
+        original_data2 = pd.DataFrame(pd.read_csv(path + '/Smiles_selected_columns.csv'))
+
+        new_datasets2 = {}
+
+        # 遍历原始数据集的每一列
+        for col_name in original_data2.columns:
+            # 创建新的数据集，将当前列命名为 'Name'
+            new_dataset2 = pd.DataFrame({'Name': original_data2[col_name]})
+
+            # 将新数据集存储在字典中，字典的键是 'organic_data1'，'organic_data2'，依此类推
+            new_datasets2['organic_data' + str(len(new_datasets2) + 1)] = new_dataset2
+
+        # 打印或使用新的数据集
+        for key, value in new_datasets2.items():
+            print(f"{key}:\n{value}\n")
+
+        import pandas as pd
+        import numpy as np
+        from rdkit import Chem
+        from rdkit.Chem import AllChem
+
+        # 假设 new_datasets2 是包含拆分数据集的字典，如 'organic_data1', 'organic_data2', ...
+        # 每个数据集中应该有 'Name' 列
+
+        # 用于存储 RDKit 特征化后的数据集
+        rdkit_datasets = {}
+
+        # # 遍历拆分的数据集
+        # for key, dataset in new_datasets2.items():
+        #     # 特征化 RDKit
+        #     rdkit_features = dataset['Name'].apply(
+        #         lambda x: AllChem.GetMorganFingerprintAsBitVect(Chem.MolFromSmiles(x), 2))
+        #
+        #     # 将 RDKit 指纹转换为 DataFrame
+        #     rdkit_features_df = pd.DataFrame(
+        #         list(rdkit_features.apply(lambda x: np.frombuffer(x.ToBinary(), dtype=np.uint8))))
+        #
+        #     # 添加前缀
+        #     prefix_rdkit = f'{key}_rdkit_'
+        #     rdkit_features_df = rdkit_features_df.add_prefix(prefix_rdkit)
+        #
+        #     # 存储特征化后的数据集
+        #     rdkit_datasets[key] = rdkit_features_df
+        from rdkit import Chem
+        from rdkit.Chem import Descriptors
+        import pandas as pd
+        for key, dataset in new_datasets2.items():
+            # 特征化 RDKit
+            rdkit_features = dataset['Name'].apply(lambda x: Chem.MolFromSmiles(x))
+
+            # 检查分子是否有效
+            valid_mols = rdkit_features.dropna()
+
+            if not valid_mols.empty:
+                # 计算所有 RDKit 描述符
+                # rdkit_descriptors = valid_mols.apply(lambda x: [Descriptors.MolWt(x), Descriptors.NumRotatableBonds(x)])
+                rdkit_descriptors = valid_mols.apply(lambda x: [Descriptors.BalabanJ(x),
+                                                                Descriptors.BertzCT(x),
+                                                                Descriptors.Chi0(x),
+                                                                Descriptors.Chi0n(x),
+                                                                Descriptors.Chi0v(x),
+                                                                Descriptors.Chi1(x),
+                                                                Descriptors.Chi1n(x),
+                                                                Descriptors.Chi1v(x),
+                                                                Descriptors.Chi2n(x),
+                                                                Descriptors.Chi2v(x),
+                                                                Descriptors.Chi3n(x),
+                                                                Descriptors.Chi3v(x),
+                                                                Descriptors.Chi4n(x),
+                                                                Descriptors.Chi4v(x),
+                                                                Descriptors.EState_VSA1(x),
+                                                                Descriptors.EState_VSA10(x),
+                                                                Descriptors.EState_VSA11(x),
+                                                                Descriptors.EState_VSA2(x),
+                                                                Descriptors.EState_VSA3(x),
+                                                                Descriptors.EState_VSA4(x),
+                                                                Descriptors.EState_VSA5(x),
+                                                                Descriptors.EState_VSA6(x),
+                                                                Descriptors.EState_VSA7(x),
+                                                                Descriptors.EState_VSA8(x),
+                                                                Descriptors.EState_VSA9(x),
+                                                                Descriptors.ExactMolWt(x),
+                                                                Descriptors.FpDensityMorgan1(x),
+                                                                Descriptors.FpDensityMorgan2(x),
+                                                                Descriptors.FpDensityMorgan3(x),
+                                                                Descriptors.FractionCSP3(x),
+                                                                Descriptors.HallKierAlpha(x),
+                                                                Descriptors.HeavyAtomCount(x),
+                                                                Descriptors.HeavyAtomMolWt(x),
+                                                                Descriptors.Ipc(x),
+                                                                Descriptors.Kappa1(x),
+                                                                Descriptors.Kappa2(x),
+                                                                Descriptors.Kappa3(x),
+                                                                Descriptors.LabuteASA(x),
+                                                                Descriptors.MaxAbsEStateIndex(x),
+                                                                Descriptors.MaxAbsPartialCharge(x),
+                                                                Descriptors.MaxEStateIndex(x),
+                                                                Descriptors.MaxPartialCharge(x),
+                                                                Descriptors.MinAbsEStateIndex(x),
+                                                                Descriptors.MinAbsPartialCharge(x),
+                                                                Descriptors.MinEStateIndex(x),
+                                                                Descriptors.MinPartialCharge(x),
+                                                                Descriptors.MolLogP(x),
+                                                                Descriptors.MolMR(x),
+                                                                Descriptors.MolWt(x),
+                                                                Descriptors.NHOHCount(x),
+                                                                Descriptors.NOCount(x),
+                                                                Descriptors.NumAliphaticCarbocycles(x),
+                                                                Descriptors.NumAliphaticHeterocycles(x),
+                                                                Descriptors.NumAliphaticRings(x),
+                                                                Descriptors.NumAromaticCarbocycles(x),
+                                                                Descriptors.NumAromaticHeterocycles(x),
+                                                                Descriptors.NumAromaticRings(x),
+                                                                Descriptors.NumHAcceptors(x),
+                                                                Descriptors.NumHDonors(x),
+                                                                Descriptors.NumHeteroatoms(x),
+                                                                Descriptors.NumRadicalElectrons(x),
+                                                                Descriptors.NumRotatableBonds(x),
+                                                                Descriptors.NumSaturatedCarbocycles(x),
+                                                                Descriptors.NumSaturatedHeterocycles(x),
+                                                                Descriptors.NumSaturatedRings(x),
+                                                                Descriptors.NumValenceElectrons(x),
+                                                                Descriptors.PEOE_VSA1(x),
+                                                                Descriptors.PEOE_VSA10(x),
+                                                                Descriptors.PEOE_VSA11(x),
+                                                                Descriptors.PEOE_VSA12(x),
+                                                                Descriptors.PEOE_VSA13(x),
+                                                                Descriptors.PEOE_VSA14(x),
+                                                                Descriptors.PEOE_VSA2(x),
+                                                                Descriptors.PEOE_VSA3(x),
+                                                                Descriptors.PEOE_VSA4(x),
+                                                                Descriptors.PEOE_VSA5(x),
+                                                                Descriptors.PEOE_VSA6(x),
+                                                                Descriptors.PEOE_VSA7(x),
+                                                                Descriptors.PEOE_VSA8(x),
+                                                                Descriptors.PEOE_VSA9(x),
+                                                                Descriptors.RingCount(x),
+                                                                Descriptors.SMR_VSA1(x),
+                                                                Descriptors.SMR_VSA10(x),
+                                                                Descriptors.SMR_VSA2(x),
+                                                                Descriptors.SMR_VSA3(x),
+                                                                Descriptors.SMR_VSA4(x),
+                                                                Descriptors.SMR_VSA5(x),
+                                                                Descriptors.SMR_VSA6(x),
+                                                                Descriptors.SMR_VSA7(x),
+                                                                Descriptors.SMR_VSA8(x),
+                                                                Descriptors.SMR_VSA9(x),
+                                                                Descriptors.SlogP_VSA1(x),
+                                                                Descriptors.SlogP_VSA10(x),
+                                                                Descriptors.SlogP_VSA11(x),
+                                                                Descriptors.SlogP_VSA12(x),
+                                                                Descriptors.SlogP_VSA2(x),
+                                                                Descriptors.SlogP_VSA3(x),
+                                                                Descriptors.SlogP_VSA4(x),
+                                                                Descriptors.SlogP_VSA5(x),
+                                                                Descriptors.SlogP_VSA6(x),
+                                                                Descriptors.SlogP_VSA7(x),
+                                                                Descriptors.SlogP_VSA8(x),
+                                                                Descriptors.SlogP_VSA9(x),
+                                                                Descriptors.TPSA(x),
+                                                                Descriptors.VSA_EState1(x),
+                                                                Descriptors.VSA_EState10(x),
+                                                                Descriptors.VSA_EState2(x),
+                                                                Descriptors.VSA_EState3(x),
+                                                                Descriptors.VSA_EState4(x),
+                                                                Descriptors.VSA_EState5(x),
+                                                                Descriptors.VSA_EState6(x),
+                                                                Descriptors.VSA_EState7(x),
+                                                                Descriptors.VSA_EState8(x),
+                                                                Descriptors.VSA_EState9(x),
+                                                                Descriptors.fr_Al_COO(x),
+                                                                Descriptors.fr_Al_OH(x),
+                                                                Descriptors.fr_Al_OH_noTert(x),
+                                                                Descriptors.fr_ArN(x),
+                                                                Descriptors.fr_Ar_COO(x),
+                                                                Descriptors.fr_Ar_N(x),
+                                                                Descriptors.fr_Ar_NH(x),
+                                                                Descriptors.fr_Ar_OH(x),
+                                                                Descriptors.fr_COO(x),
+                                                                Descriptors.fr_COO2(x),
+                                                                Descriptors.fr_C_O(x),
+                                                                Descriptors.fr_C_O_noCOO(x),
+                                                                Descriptors.fr_C_S(x),
+                                                                Descriptors.fr_HOCCN(x),
+                                                                Descriptors.fr_Imine(x),
+                                                                Descriptors.fr_NH0(x),
+                                                                Descriptors.fr_NH1(x),
+                                                                Descriptors.fr_NH2(x),
+                                                                Descriptors.fr_N_O(x),
+                                                                Descriptors.fr_Ndealkylation1(x),
+                                                                Descriptors.fr_Ndealkylation2(x),
+                                                                Descriptors.fr_Nhpyrrole(x),
+                                                                Descriptors.fr_SH(x),
+                                                                Descriptors.fr_aldehyde(x),
+                                                                Descriptors.fr_alkyl_carbamate(x),
+                                                                Descriptors.fr_alkyl_halide(x),
+                                                                Descriptors.fr_allylic_oxid(x),
+                                                                Descriptors.fr_amide(x),
+                                                                Descriptors.fr_amidine(x),
+                                                                Descriptors.fr_aniline(x),
+                                                                Descriptors.fr_aryl_methyl(x),
+                                                                Descriptors.fr_azide(x),
+                                                                Descriptors.fr_azo(x),
+                                                                Descriptors.fr_barbitur(x),
+                                                                Descriptors.fr_benzene(x),
+                                                                Descriptors.fr_benzodiazepine(x),
+                                                                Descriptors.fr_bicyclic(x),
+                                                                Descriptors.fr_diazo(x),
+                                                                Descriptors.fr_dihydropyridine(x),
+                                                                Descriptors.fr_epoxide(x),
+                                                                Descriptors.fr_ester(x),
+                                                                Descriptors.fr_ether(x),
+                                                                Descriptors.fr_furan(x),
+                                                                Descriptors.fr_guanido(x),
+                                                                Descriptors.fr_halogen(x),
+                                                                Descriptors.fr_hdrzine(x),
+                                                                Descriptors.fr_hdrzone(x),
+                                                                Descriptors.fr_imidazole(x),
+                                                                Descriptors.fr_imide(x),
+                                                                Descriptors.fr_isocyan(x),
+                                                                Descriptors.fr_isothiocyan(x),
+                                                                Descriptors.fr_ketone(x),
+                                                                Descriptors.fr_ketone_Topliss(x),
+                                                                Descriptors.fr_lactam(x),
+                                                                Descriptors.fr_lactone(x),
+                                                                Descriptors.fr_methoxy(x),
+                                                                Descriptors.fr_morpholine(x),
+                                                                Descriptors.fr_nitrile(x),
+                                                                Descriptors.fr_nitro(x),
+                                                                Descriptors.fr_nitro_arom(x),
+                                                                Descriptors.fr_nitro_arom_nonortho(x),
+                                                                Descriptors.fr_nitroso(x),
+                                                                Descriptors.fr_oxazole(x),
+                                                                Descriptors.fr_oxime(x),
+                                                                Descriptors.fr_para_hydroxylation(x),
+                                                                Descriptors.fr_phenol(x),
+                                                                Descriptors.fr_phenol_noOrthoHbond(x),
+                                                                Descriptors.fr_phos_acid(x),
+                                                                Descriptors.fr_phos_ester(x),
+                                                                Descriptors.fr_piperdine(x),
+                                                                Descriptors.fr_piperzine(x),
+                                                                Descriptors.fr_priamide(x),
+                                                                Descriptors.fr_prisulfonamd(x),
+                                                                Descriptors.fr_pyridine(x),
+                                                                Descriptors.fr_quatN(x),
+                                                                Descriptors.fr_sulfide(x),
+                                                                Descriptors.fr_sulfonamd(x),
+                                                                Descriptors.fr_sulfone(x),
+                                                                Descriptors.fr_term_acetylene(x),
+                                                                Descriptors.fr_tetrazole(x),
+                                                                Descriptors.fr_thiazole(x),
+                                                                Descriptors.fr_thiocyan(x),
+                                                                Descriptors.fr_thiophene(x),
+                                                                Descriptors.fr_unbrch_alkane(x),
+                                                                Descriptors.fr_urea(x),
+                                                                Descriptors.qed(x)])
+                # 将 RDKit 描述符转换为 DataFrame
+                rdkit_descriptors_df = pd.DataFrame(list(rdkit_descriptors),
+                                                    columns=['BalabanJ', 'BertzCT', 'Chi0', 'Chi0n', 'Chi0v', 'Chi1', 'Chi1n', 'Chi1v', 'Chi2n', 'Chi2v', 'Chi3n', 'Chi3v', 'Chi4n', 'Chi4v', 'EState_VSA1', 'EState_VSA10', 'EState_VSA11', 'EState_VSA2', 'EState_VSA3', 'EState_VSA4', 'EState_VSA5', 'EState_VSA6', 'EState_VSA7', 'EState_VSA8', 'EState_VSA9', 'ExactMolWt', 'FpDensityMorgan1',
+                                                             'FpDensityMorgan2', 'FpDensityMorgan3', 'FractionCSP3', 'HallKierAlpha', 'HeavyAtomCount', 'HeavyAtomMolWt', 'Ipc', 'Kappa1', 'Kappa2', 'Kappa3', 'LabuteASA', 'MaxAbsEStateIndex', 'MaxAbsPartialCharge', 'MaxEStateIndex', 'MaxPartialCharge', 'MinAbsEStateIndex', 'MinAbsPartialCharge', 'MinEStateIndex', 'MinPartialCharge', 'MolLogP',
+                                                             'MolMR',
+                                                             'MolWt', 'NHOHCount', 'NOCount', 'NumAliphaticCarbocycles', 'NumAliphaticHeterocycles', 'NumAliphaticRings', 'NumAromaticCarbocycles', 'NumAromaticHeterocycles', 'NumAromaticRings', 'NumHAcceptors', 'NumHDonors', 'NumHeteroatoms', 'NumRadicalElectrons', 'NumRotatableBonds', 'NumSaturatedCarbocycles', 'NumSaturatedHeterocycles',
+                                                             'NumSaturatedRings', 'NumValenceElectrons', 'PEOE_VSA1', 'PEOE_VSA10', 'PEOE_VSA11', 'PEOE_VSA12', 'PEOE_VSA13', 'PEOE_VSA14', 'PEOE_VSA2', 'PEOE_VSA3', 'PEOE_VSA4', 'PEOE_VSA5', 'PEOE_VSA6', 'PEOE_VSA7', 'PEOE_VSA8', 'PEOE_VSA9', 'RingCount', 'SMR_VSA1', 'SMR_VSA10', 'SMR_VSA2', 'SMR_VSA3', 'SMR_VSA4', 'SMR_VSA5', 'SMR_VSA6',
+                                                             'SMR_VSA7',
+                                                             'SMR_VSA8', 'SMR_VSA9', 'SlogP_VSA1', 'SlogP_VSA10', 'SlogP_VSA11', 'SlogP_VSA12', 'SlogP_VSA2', 'SlogP_VSA3', 'SlogP_VSA4', 'SlogP_VSA5', 'SlogP_VSA6', 'SlogP_VSA7', 'SlogP_VSA8', 'SlogP_VSA9', 'TPSA', 'VSA_EState1', 'VSA_EState10', 'VSA_EState2', 'VSA_EState3', 'VSA_EState4', 'VSA_EState5', 'VSA_EState6', 'VSA_EState7', 'VSA_EState8',
+                                                             'VSA_EState9', 'fr_Al_COO', 'fr_Al_OH', 'fr_Al_OH_noTert', 'fr_ArN', 'fr_Ar_COO', 'fr_Ar_N', 'fr_Ar_NH', 'fr_Ar_OH', 'fr_COO', 'fr_COO2', 'fr_C_O', 'fr_C_O_noCOO', 'fr_C_S', 'fr_HOCCN', 'fr_Imine', 'fr_NH0', 'fr_NH1', 'fr_NH2', 'fr_N_O', 'fr_Ndealkylation1', 'fr_Ndealkylation2', 'fr_Nhpyrrole', 'fr_SH', 'fr_aldehyde',
+                                                             'fr_alkyl_carbamate',
+                                                             'fr_alkyl_halide', 'fr_allylic_oxid', 'fr_amide', 'fr_amidine', 'fr_aniline', 'fr_aryl_methyl', 'fr_azide', 'fr_azo', 'fr_barbitur', 'fr_benzene', 'fr_benzodiazepine', 'fr_bicyclic', 'fr_diazo', 'fr_dihydropyridine', 'fr_epoxide', 'fr_ester', 'fr_ether', 'fr_furan', 'fr_guanido', 'fr_halogen', 'fr_hdrzine', 'fr_hdrzone', 'fr_imidazole',
+                                                             'fr_imide', 'fr_isocyan', 'fr_isothiocyan', 'fr_ketone', 'fr_ketone_Topliss', 'fr_lactam', 'fr_lactone', 'fr_methoxy', 'fr_morpholine', 'fr_nitrile', 'fr_nitro', 'fr_nitro_arom', 'fr_nitro_arom_nonortho', 'fr_nitroso', 'fr_oxazole', 'fr_oxime', 'fr_para_hydroxylation', 'fr_phenol', 'fr_phenol_noOrthoHbond', 'fr_phos_acid',
+                                                             'fr_phos_ester',
+                                                             'fr_piperdine', 'fr_piperzine', 'fr_priamide', 'fr_prisulfonamd', 'fr_pyridine', 'fr_quatN', 'fr_sulfide', 'fr_sulfonamd', 'fr_sulfone', 'fr_term_acetylene', 'fr_tetrazole', 'fr_thiazole', 'fr_thiocyan', 'fr_thiophene', 'fr_unbrch_alkane', 'fr_urea', 'qed'])
+
+                # 添加前缀
+                prefix_rdkit = f'{key}_rdkit_'
+                rdkit_descriptors_df = rdkit_descriptors_df.add_prefix(prefix_rdkit)
+
+                # 存储特征化后的数据集
+                rdkit_datasets[key] = rdkit_descriptors_df
+
+        # rdkit_datasets 包含了每个数据集的 RDKit 描述符
+        # 合并 RDKit 特征化后的数据集
+        merged_rdkit_result = pd.concat(rdkit_datasets.values(), axis=1)
+        merged_rdkit_result.fillna(0, inplace=True)
+        # 将合并后的结果保存为 CSV 文件
+        merged_rdkit_result.to_csv(path + '/merged_rdkit_result.csv', index=False)
+
+        # 打印或使用合并后的 RDKit 特征化结果
+        print(merged_rdkit_result)
 
     unselected_columns = pd.DataFrame(pd.read_csv(path + '/unselected_columns.csv'))
     # 合并前重置索引
-    merged_result.reset_index(drop=True, inplace=True)
-    merged_rdkit_result.reset_index(drop=True, inplace=True)
     unselected_columns.reset_index(drop=True, inplace=True)
+    if Formular_state == 1 and Smiles_state == 1:
+        merged_result.reset_index(drop=True, inplace=True)
+        merged_rdkit_result.reset_index(drop=True, inplace=True)
 
-    # 合并三个数据集
-    all_merged_data = pd.concat([merged_result, merged_rdkit_result, unselected_columns], axis=1)
+        # 合并三个数据集
+        all_merged_data = pd.concat([merged_result, merged_rdkit_result, unselected_columns], axis=1)
+    elif Formular_state == 1 and Smiles_state == 0:
+        merged_result.reset_index(drop=True, inplace=True)
+        all_merged_data = pd.concat([merged_result, unselected_columns], axis=1)
+
+    elif Formular_state == 0 and Smiles_state == 1:
+        merged_rdkit_result.reset_index(drop=True, inplace=True)
+        all_merged_data = pd.concat([merged_rdkit_result, unselected_columns], axis=1)
 
     # 将合并后的结果保存为 CSV 文件
     all_merged_data.to_csv(path + '/train_test_dataset.csv', index=False)
+    # 原来的文件保存-------------------------------------------------------------------------------↑----------------
 
     selected_columns = all_merged_data.loc[:, s_rfe.columns]
     selected_columns.to_csv(path+'/virtual_generate_final.csv', index=False)
-
-
-
 
 def virtual_Multicolumn_Smiles_RDKit(path,csvpath):
     import pandas as pd

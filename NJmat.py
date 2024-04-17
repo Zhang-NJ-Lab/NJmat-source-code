@@ -171,6 +171,14 @@ class mywindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.actionRandom_Forest_Grid_Search.triggered.connect(self.Continuousdata_RandomForest_GridSearch)
 
 
+
+
+        #deep learning dnn classfication
+        self.actionDNN_clf.triggered.connect(self.Classifieddata_Two_dnn_tensorflow)
+
+
+
+
         # 符号回归
         self.actionSymbolic_regression.triggered.connect(self.GP_Symbolicregression)
         self.actionsymbolic_classification.triggered.connect(self.GP_Symbolicclassification)
@@ -220,6 +228,12 @@ class mywindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
         #CSP
         self.actionCrystal_structure_generate_magus.triggered.connect(self.CSP)
+
+        #help open websites
+        # self.ui.action2_csv_templates_github_website.clicked.connect(self.open_github)
+        self.actioncsv_templates_github_website.triggered.connect(self.open_github_csv_template)
+        self.actionResources_figshare_website.triggered.connect(self.open_figshare_resources)
+
 
 
         self.enter_organic_smiles_state =self.opt.if_control
@@ -3095,12 +3109,62 @@ class mywindow(QtWidgets.QMainWindow, Ui_MainWindow):
         except Exception as e:
             print(e)
 
+    # 深度学习
+    def Classifieddata_Two_dnn_tensorflow(self):
+        try:
+
+            path = self.opt.save_path + "/Machine Learning Modeling/Algorithms/Classified data(two)/DNN"
+            csvname = self.opt.save_path + "/Preprocessing/Rfe feature selection" + "/data_rfe.csv"
+
+            if os.path.exists(path):
+                shutil.rmtree(path)
+            os.makedirs(path)
+
+            dataML.dnn_classifier_tensorflow(csvname, path)
+
+            """self.textBrowser.append(str1)
+            self.textBrowser.append(str2)
+            self.textBrowser.append(str3)
+            self.textBrowser.append("*" * 150)"""
+
+            QMessageBox.information(self, 'Hint', 'Completed!', QMessageBox.Ok | QMessageBox.Close,
+                                    QMessageBox.Close)
+            if self.opt.if_open == True:
+                str1 = (path + '/DNN_test_ROC.png').replace("/", "\\")
+                os.startfile(str1)
+                str2 = (path + '/DNN_test_CM.png').replace("/", "\\")
+                os.startfile(str2)
+                str3 = (path + '/DNN_train_ROC.png').replace("/", "\\")
+                os.startfile(str3)
+                str4 = (path + '/DNN_train_CM.png').replace("/", "\\")
+                os.startfile(str4)
+
+        except Exception as e:
+            print(e)
 
 
 
 
 
 
+
+
+
+
+
+
+
+    def open_github_csv_template(self):
+        from PyQt5.QtCore import QUrl
+        from PyQt5.QtGui import QDesktopServices
+        url = QUrl("https://github.com/huangyiru123/NJmat_dataset")
+        QDesktopServices.openUrl(url)
+
+    def open_figshare_resources(self):
+        from PyQt5.QtCore import QUrl
+        from PyQt5.QtGui import QDesktopServices
+        url = QUrl("https://figshare.com/articles/software/NJmatML/24607893")
+        QDesktopServices.openUrl(url)
 
 
 
