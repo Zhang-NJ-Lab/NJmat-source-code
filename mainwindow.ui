@@ -333,12 +333,14 @@
     </widget>
     <addaction name="menuword2vec"/>
     <addaction name="menuMatBERT"/>
+    <addaction name="actionFormula_Similarity_Extract"/>
    </widget>
    <widget class="QMenu" name="menuVisualizer">
     <property name="title">
      <string>Visualizer</string>
     </property>
     <addaction name="actionASE_Visualizer"/>
+    <addaction name="actionHeterostructure_Generate"/>
    </widget>
    <widget class="QMenu" name="menuMaterials_Project">
     <property name="title">
@@ -1293,6 +1295,16 @@
   <action name="actionRNN_clf">
    <property name="text">
     <string>RNN</string>
+   </property>
+  </action>
+  <action name="actionFormula_Similarity_Extract">
+   <property name="text">
+    <string>ChemDataExctractor</string>
+   </property>
+  </action>
+  <action name="actionHeterostructure_Generate">
+   <property name="text">
+    <string>Heterostructure Generate</string>
    </property>
   </action>
  </widget>
