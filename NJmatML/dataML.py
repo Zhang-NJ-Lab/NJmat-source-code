@@ -7410,7 +7410,7 @@ def CatBoost_classifier(a, b, c,path,csvName):
 
 #deep learning classification
 
-def dnn_classifier_tensorflow(csvName, path):
+def dnn_classifier_tensorflow(a,b,c,csvName, path):
     import pandas as pd
     from sklearn.model_selection import train_test_split
     from sklearn.preprocessing import StandardScaler
@@ -7444,7 +7444,7 @@ def dnn_classifier_tensorflow(csvName, path):
                   metrics=['accuracy'])
 
     # 训练模型
-    model.fit(X_train_scaled, y_train, epochs=10, batch_size=32, validation_split=0.2)
+    model.fit(X_train_scaled, y_train, epochs=a, batch_size=b, validation_split=c)
 
     # 评估模型
     loss, accuracy = model.evaluate(X_test_scaled, y_test)
@@ -7512,6 +7512,228 @@ def dnn_classifier_tensorflow(csvName, path):
 
     # 保存模型
     model.save(path + '/dnn_model_tensorflow.h5')
+
+def cnn_classifier_tensorflow(a,b,c,csvName, path):
+    import pandas as pd
+    import numpy as np
+    from sklearn.model_selection import train_test_split
+    from sklearn.preprocessing import StandardScaler
+    from sklearn.metrics import roc_curve, auc, confusion_matrix
+    import matplotlib.pyplot as plt
+    import seaborn as sns
+    import tensorflow as tf
+
+    # 加载数据
+    data = pd.read_csv(csvName)
+    X = data.iloc[:, :-1].values
+    y = data.iloc[:, -1].values
+
+    # 数据划分
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
+
+    # 数据标准化
+    scaler = StandardScaler().fit(X_train)
+    X_train_scaled = scaler.transform(X_train)
+    X_test_scaled = scaler.transform(X_test)
+
+    # Reshape input data for CNN (assuming 1D input features)
+    X_train_reshaped = np.expand_dims(X_train_scaled, axis=-1)
+    X_test_reshaped = np.expand_dims(X_test_scaled, axis=-1)
+
+    # 构建模型
+    model = tf.keras.models.Sequential([
+        tf.keras.layers.Conv1D(filters=32, kernel_size=3, activation='relu', input_shape=(X_train_reshaped.shape[1], 1)),
+        tf.keras.layers.MaxPooling1D(pool_size=2),
+        tf.keras.layers.Flatten(),
+        tf.keras.layers.Dense(128, activation='relu'),
+        tf.keras.layers.Dropout(0.5),
+        tf.keras.layers.Dense(1, activation='sigmoid')
+    ])
+
+    model.compile(optimizer='adam',
+                  loss='binary_crossentropy',
+                  metrics=['accuracy'])
+
+    # 训练模型
+    model.fit(X_train_reshaped, y_train, epochs=10, batch_size=32, validation_split=0.2)
+
+    # 评估模型
+    loss, accuracy = model.evaluate(X_test_reshaped, y_test)
+    print(f'Test accuracy: {accuracy}')
+
+    # 预测测试数据
+    y_pred_prob_test = model.predict(X_test_reshaped)
+    y_pred_test = (y_pred_prob_test > 0.5).astype("int32")
+
+    # 预测训练数据
+    y_pred_prob_train = model.predict(X_train_reshaped)
+    y_pred_train = (y_pred_prob_train > 0.5).astype("int32")
+
+    # 绘制测试集ROC曲线
+    fpr_test, tpr_test, thresholds_test = roc_curve(y_test, y_pred_prob_test)
+    roc_auc_test = auc(fpr_test, tpr_test)
+
+    plt.figure()
+    plt.plot(fpr_test, tpr_test, color='darkorange', lw=2, label='ROC curve (area = %0.2f)' % roc_auc_test)
+    plt.plot([0, 1], [0, 1], color='navy', lw=2, linestyle='--')
+    plt.xlim([0.0, 1.0])
+    plt.ylim([0.0, 1.05])
+    plt.xlabel('False Positive Rate')
+    plt.ylabel('True Positive Rate')
+    plt.title('Receiver Operating Characteristic (Test Set)')
+    plt.legend(loc="lower right")
+    plt.savefig(path + '/CNN_test_ROC.png')
+    plt.close()
+
+    # 绘制测试集混淆矩阵
+    cm_test = confusion_matrix(y_test, y_pred_test)
+    plt.figure(figsize=(8, 6))
+    sns.heatmap(cm_test, annot=True, fmt="d", cmap="Blues")
+    plt.title('Confusion Matrix (Test Set)')
+    plt.ylabel('Actual label')
+    plt.xlabel('Predicted label')
+    plt.savefig(path + '/CNN_test_CM.png')
+    plt.close()
+
+    # 绘制训练集ROC曲线
+    fpr_train, tpr_train, thresholds_train = roc_curve(y_train, y_pred_prob_train)
+    roc_auc_train = auc(fpr_train, tpr_train)
+
+    plt.figure()
+    plt.plot(fpr_train, tpr_train, color='darkorange', lw=2, label='ROC curve (area = %0.2f)' % roc_auc_train)
+    plt.plot([0, 1], [0, 1], color='navy', lw=2, linestyle='--')
+    plt.xlim([0.0, 1.0])
+    plt.ylim([0.0, 1.05])
+    plt.xlabel('False Positive Rate')
+    plt.ylabel('True Positive Rate')
+    plt.title('Receiver Operating Characteristic (Training Set)')
+    plt.legend(loc="lower right")
+    plt.savefig(path + '/CNN_train_ROC.png')
+    plt.close()
+
+    # 绘制训练集混淆矩阵
+    cm_train = confusion_matrix(y_train, y_pred_train)
+    plt.figure(figsize=(8, 6))
+    sns.heatmap(cm_train, annot=True, fmt="d", cmap="Blues")
+    plt.title('Confusion Matrix (Training Set)')
+    plt.ylabel('Actual label')
+    plt.xlabel('Predicted label')
+    plt.savefig(path + '/CNN_train_CM.png')
+    plt.close()
+
+    # 保存模型
+    model.save(path + '/cnn_model_tensorflow.h5')
+
+def rnn_classifier_tensorflow(a,b,c,csvName, path):
+    import pandas as pd
+    import numpy as np
+    from sklearn.model_selection import train_test_split
+    from sklearn.preprocessing import StandardScaler
+    from sklearn.metrics import roc_curve, auc, confusion_matrix
+    import matplotlib.pyplot as plt
+    import seaborn as sns
+    import tensorflow as tf
+
+    # 加载数据
+    data = pd.read_csv(csvName)
+    X = data.iloc[:, :-1].values
+    y = data.iloc[:, -1].values
+
+    # 数据划分
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
+
+    # 数据标准化
+    scaler = StandardScaler().fit(X_train)
+    X_train_scaled = scaler.transform(X_train)
+    X_test_scaled = scaler.transform(X_test)
+
+    # Reshape input data for RNN (assuming 1D input features)
+    X_train_reshaped = np.expand_dims(X_train_scaled, axis=2)  # 添加一个维度作为时间步
+    X_test_reshaped = np.expand_dims(X_test_scaled, axis=2)
+
+    # 构建模型
+    model = tf.keras.models.Sequential([
+        tf.keras.layers.SimpleRNN(units=32, activation='relu',
+                                  input_shape=(X_train_reshaped.shape[1], X_train_reshaped.shape[2])),
+        tf.keras.layers.Dense(128, activation='relu'),
+        tf.keras.layers.Dropout(0.5),
+        tf.keras.layers.Dense(1, activation='sigmoid')
+    ])
+
+    model.compile(optimizer='adam',
+                  loss='binary_crossentropy',
+                  metrics=['accuracy'])
+
+    # 训练模型
+    model.fit(X_train_reshaped, y_train, epochs=a, batch_size=b, validation_split=c)
+
+    # 评估模型
+    loss, accuracy = model.evaluate(X_test_reshaped, y_test)
+    print(f'Test accuracy: {accuracy}')
+
+    # 预测测试数据
+    y_pred_prob_test = model.predict(X_test_reshaped)
+    y_pred_test = (y_pred_prob_test > 0.5).astype("int32")
+
+    # 预测训练数据
+    y_pred_prob_train = model.predict(X_train_reshaped)
+    y_pred_train = (y_pred_prob_train > 0.5).astype("int32")
+
+    # 绘制测试集ROC曲线
+    fpr_test, tpr_test, thresholds_test = roc_curve(y_test, y_pred_prob_test)
+    roc_auc_test = auc(fpr_test, tpr_test)
+
+    plt.figure()
+    plt.plot(fpr_test, tpr_test, color='darkorange', lw=2, label='ROC curve (area = %0.2f)' % roc_auc_test)
+    plt.plot([0, 1], [0, 1], color='navy', lw=2, linestyle='--')
+    plt.xlim([0.0, 1.0])
+    plt.ylim([0.0, 1.05])
+    plt.xlabel('False Positive Rate')
+    plt.ylabel('True Positive Rate')
+    plt.title('Receiver Operating Characteristic (Test Set)')
+    plt.legend(loc="lower right")
+    plt.savefig(path + '/RNN_test_ROC.png')
+    plt.close()
+
+    # 绘制测试集混淆矩阵
+    cm_test = confusion_matrix(y_test, y_pred_test)
+    plt.figure(figsize=(8, 6))
+    sns.heatmap(cm_test, annot=True, fmt="d", cmap="Blues")
+    plt.title('Confusion Matrix (Test Set)')
+    plt.ylabel('Actual label')
+    plt.xlabel('Predicted label')
+    plt.savefig(path + '/RNN_test_CM.png')
+    plt.close()
+
+    # 绘制训练集ROC曲线
+    fpr_train, tpr_train, thresholds_train = roc_curve(y_train, y_pred_prob_train)
+    roc_auc_train = auc(fpr_train, tpr_train)
+
+    plt.figure()
+    plt.plot(fpr_train, tpr_train, color='darkorange', lw=2, label='ROC curve (area = %0.2f)' % roc_auc_train)
+    plt.plot([0, 1], [0, 1], color='navy', lw=2, linestyle='--')
+    plt.xlim([0.0, 1.0])
+    plt.ylim([0.0, 1.05])
+    plt.xlabel('False Positive Rate')
+    plt.ylabel('True Positive Rate')
+    plt.title('Receiver Operating Characteristic (Training Set)')
+    plt.legend(loc="lower right")
+    plt.savefig(path + '/RNN_train_ROC.png')
+    plt.close()
+
+    # 绘制训练集混淆矩阵
+    cm_train = confusion_matrix(y_train, y_pred_train)
+    plt.figure(figsize=(8, 6))
+    sns.heatmap(cm_train, annot=True, fmt="d", cmap="Blues")
+    plt.title('Confusion Matrix (Training Set)')
+    plt.ylabel('Actual label')
+    plt.xlabel('Predicted label')
+    plt.savefig(path + '/RNN_train_CM.png')
+    plt.close()
+
+    # 保存模型
+    model.save(path + '/rnn_model_tensorflow.h5')
+
 
 # --------------------------------------------------------------------------------------------------------
 

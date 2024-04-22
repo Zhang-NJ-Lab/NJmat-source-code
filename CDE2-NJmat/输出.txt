@@ -1,0 +1,25 @@
+[<class '__main__.PowerConversionEfficiency'>, <class '__main__.PowerConversionEfficiency1'>, <class '__main__.PowerConversionEfficiency2'>]
+u{'PowerConversionEfficiency': {'raw_value': '20.03', 'raw_units': '%', 'value': [20.03], 'units': 'Percent^(1.0)', 'specifier': 'PCE', 'compound': {'Compound': {'names': ['EACl', 'ethylammonium chloride']}}}}
+{'PowerConversionEfficiency': {'raw_value': '8.64', 'raw_units': '%', 'value': [8.64], 'units': 'Percent^(1.0)', 'specifier': 'PCE', 'compound': {'Compound': {'names': ['Perovskite']}}}}
+{'PowerConversionEfficiency': {'raw_value': '5.65', 'raw_units': '%', 'value': [5.65], 'units': 'Percent^(1.0)', 'specifier': 'PCE', 'compound': {'Compound': {'names': ['chlorobenzene']}}}}
+{'PowerConversionEfficiency': {'raw_value': '10.55', 'raw_units': '%', 'value': [10.55], 'units': 'Percent^(1.0)', 'specifier': 'power conversion efficiency', 'compound': {'Compound': {'names': ['CsTFA', 'cesium trifluoroacetate']}}}}
+{'PowerConversionEfficiency': {'raw_value': '12.19', 'raw_units': '%', 'value': [12.19], 'units': 'Percent^(1.0)', 'specifier': 'PCE', 'compound': {'Compound': {'names': ['ethylammonium chlorine']}}}}
+{'PowerConversionEfficiency': {'raw_value': '10.12', 'raw_units': '%(', 'value': [10.12], 'units': 'Percent^(1.0)', 'specifier': 'PCE', 'compound': {'Compound': {'names': ['Perovskite']}}}}
+{'PowerConversionEfficiency': {'raw_value': '9.44', 'raw_units': '%', 'value': [9.44], 'units': 'Percent^(1.0)', 'specifier': 'power conversion efficiency', 'compound': {'Compound': {'names': ['Perovskite', 'perovskite']}}}}
+{'PowerConversionEfficiency': {'raw_value': '8.87', 'raw_units': '%', 'value': [8.87], 'units': 'Percent^(1.0)', 'specifier': 'power conversion efficiency', 'compound': {'Compound': {'names': ['Perovskite', 'perovskite']}}}}
+{'PowerConversionEfficiency': {'raw_value': '3.01', 'raw_units': '%', 'value': [3.01], 'units': 'Percent^(1.0)', 'specifier': 'PCE', 'compound': {'Compound': {'names': ['Perovskite', 'perovskite'], 'roles': ['product']}}}}
+{'PowerConversionEfficiency': {'raw_value': '4', 'raw_units': '%', 'value': [4.0], 'units': 'Percent^(1.0)', 'specifier': 'power conversion efficiency', 'compound': {'Compound': {'names': ['Organometallic halide-perovskite']}}}}
+{'PowerConversionEfficiency': {'raw_value': '0.44', 'raw_units': '%', 'value': [0.44], 'units': 'Percent^(1.0)', 'specifier': 'PCE', 'compound': {'Compound': {'names': ['silver']}}}}
+{'PowerConversionEfficiency': {'raw_value': '1.61', 'raw_units': '%', 'value': [1.61], 'units': 'Percent^(1.0)', 'specifier': 'PCE PCE', 'compound': {'Compound': {'names': ['SBI', 'silver bismuth iodide']}}}}
+{'PowerConversionEfficiency': {'raw_value': '16.89', 'raw_units': '%', 'value': [16.89], 'units': 'Percent^(1.0)', 'specifier': 'PCE', 'compound': {'Compound': {'names': ['Perovskite', 'perovskite'], 'roles': ['product']}}}}
+{'PowerConversionEfficiency': {'raw_value': '11.59', 'raw_units': '%', 'value': [11.59], 'units': 'Percent^(1.0)', 'specifier': 'PCE', 'compound': {'Compound': {'names': ['Perovskite', 'perovskite'], 'roles': ['product']}}}}
+{'PowerConversionEfficiency': {'raw_value': '7', 'raw_units': '%', 'value': [7.0], 'units': 'Percent^(1.0)', 'specifier': 'PCE', 'compound': {'Compound': {'names': ['BiFe_1− x Ni_ x O_3'], 'labels': ['x = 0.7 , 0.8 and 0.9']}}}}
+{'PowerConversionEfficiency': {'raw_value': '73', 'raw_units': '%', 'value': [73.0], 'units': 'Percent^(1.0)', 'specifier': 'power conversion efficiency', 'compound': {'Compound': {'labels': ['V']}}}}
+{'PowerConversionEfficiency': {'raw_value': '15.14', 'raw_units': '%', 'value': [15.14], 'units': 'Percent^(1.0)', 'specifier': 'PCE', 'compound': {'Compound': {'names': ['Cl']}}}}
+{'PowerConversionEfficiency': {'raw_value': '18', 'raw_units': '%', 'value': [18.0], 'units': 'Percent^(1.0)', 'specifier': 'PCE', 'compound': {'Compound': {'names': ['Cl']}}}}
+{'PowerConversionEfficiency': {'raw_value': '12.81', 'raw_units': '%', 'value': [12.81], 'units': 'Percent^(1.0)', 'specifier': 'PCE', 'compound': {'Compound': {'names': ['Cl']}}}}
+{'PowerConversionEfficiency': {'raw_value': '18.18', 'raw_units': '%', 'value': [18.18], 'units': 'Percent^(1.0)', 'specifier': 'power conversion efficiency', 'compound': {'Compound': {'labels': ['x = 0.00 , 0.25 , 0.50 , and 0.75']}}}}
+{'PowerConversionEfficiency1': {'raw_value': '12.19', 'raw_units': '%', 'value': [12.19], 'units': 'Percent^(1.0)', 'specifier': 'power conversion efficiency (PCE) is', 'compound': {'Compound': {'names': ['ethylammonium chlorine']}}}}
+{'PowerConversionEfficiency1': {'raw_value': '3.01', 'raw_units': '%', 'value': [3.01], 'units': 'Percent^(1.0)', 'specifier': 'power conversion efficiency (PCE) of', 'compound': {'Compound': {'names': ['Perovskite', 'perovskite'], 'roles': ['product']}}}}
+
+Process finished with exit code 0

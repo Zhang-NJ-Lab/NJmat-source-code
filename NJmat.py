@@ -16,6 +16,7 @@ import dialog_wordlist_tsne
 import dialog_classified_data_two_Adaboost
 import dialog_classified_data_two_xgboost,dialog_classified_data_two_Catboost
 import dialog_wordlist_tsne_highlight
+import dialog_classified_data_two_deep_dnn,dialog_classified_data_two_deep_cnn,dialog_classified_data_two_deep_rnn
 from NJmatML import dataML
 from CSP import CSP_magus
 import argparse
@@ -174,7 +175,9 @@ class mywindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
 
         #deep learning dnn classfication
-        self.actionDNN_clf.triggered.connect(self.Classifieddata_Two_dnn_tensorflow)
+        self.actionDNN_clf.triggered.connect(self.show_dialog_classified_data_two_deep_dnn)
+        self.actionCNN_clf.triggered.connect(self.show_dialog_classified_data_two_deep_cnn)
+        self.actionRNN_clf.triggered.connect(self.show_dialog_classified_data_two_deep_rnn)
 
 
 
@@ -220,7 +223,7 @@ class mywindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.actiont_tSNE.triggered.connect(self.show_dialog_NLP_model_tsne)
         self.actionCosine_similarity_2.triggered.connect(self.NLP_Cosine_similarity)
         self.actiont_SNE_Highlight.triggered.connect(self.show_dialog_NLP_model_tsne_highlight)
-
+        # self.actionFormula_Similarity_Extract.triggered.connect(self.csv_clean)
 
         #Visul
         self.actionASE_Visualizer.triggered.connect(self.run_ase)
@@ -228,6 +231,8 @@ class mywindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
         #CSP
         self.actionCrystal_structure_generate_magus.triggered.connect(self.CSP)
+
+
 
         #help open websites
         # self.ui.action2_csv_templates_github_website.clicked.connect(self.open_github)
@@ -2226,8 +2231,190 @@ class mywindow(QtWidgets.QMainWindow, Ui_MainWindow):
             QMessageBox.information(self, 'Hint', 'Do "Train/Test -> Import"!', QMessageBox.Ok | QMessageBox.Close,
                                     QMessageBox.Close)
 
+        # Machine learning--Algorithms--Classification--Deep Learning
+        # Machine learning--Algorithms--Classification--Deep Learning--DNN
 
+    def Classifieddata_Two_dnn_tensorflow(self, epochs_enter, batch_sizer_enter, validation_split_enter):
+        try:
 
+            path = self.opt.save_path + "/Machine Learning Modeling/Algorithms/Classified data(two)/Deep Learning/DNN"
+            csvname = self.opt.save_path + "/Preprocessing/Rfe feature selection" + "/data_rfe.csv"
+
+            if os.path.exists(path):
+                shutil.rmtree(path)
+            os.makedirs(path)
+            self.di.close()
+
+            dataML.dnn_classifier_tensorflow((int)(epochs_enter), (int)(batch_sizer_enter), (float)(validation_split_enter), csvname, path)
+
+            """self.textBrowser.append(str1)
+            self.textBrowser.append(str2)
+            self.textBrowser.append(str3)
+            self.textBrowser.append("*" * 150)"""
+
+            QMessageBox.information(self, 'Hint', 'Completed!', QMessageBox.Ok | QMessageBox.Close,
+                                    QMessageBox.Close)
+            if self.opt.if_open == True:
+                str1 = (path + '/DNN_test_ROC.png').replace("/", "\\")
+                os.startfile(str1)
+                str2 = (path + '/DNN_test_CM.png').replace("/", "\\")
+                os.startfile(str2)
+                str3 = (path + '/DNN_train_ROC.png').replace("/", "\\")
+                os.startfile(str3)
+                str4 = (path + '/DNN_train_CM.png').replace("/", "\\")
+                os.startfile(str4)
+
+        except Exception as e:
+            print(e)
+
+    def show_dialog_classified_data_two_deep_dnn(self):
+        def give(a, b, c):
+            epochs_enter = a
+            batch_sizer_enter = b
+            validation_split_enter = c
+            # epochs = 10, batch_size = 32, validation_split = 0.2
+            self.Classifieddata_Two_dnn_tensorflow(epochs_enter, batch_sizer_enter, validation_split_enter)
+
+        try:
+            if self.enter_training_test_set_path_state == True:
+                if self.rfe_feature_selection_state == True:
+                    self.di = QtWidgets.QDialog()
+                    d = dialog_classified_data_two_deep_dnn.Ui_Dialog()
+                    d.setupUi(self.di)
+                    self.di.show()
+
+                    d.buttonBox.accepted.connect(lambda: give(d.lineEdit.text(), d.lineEdit_2.text(), d.lineEdit_3.text()))
+                    d.buttonBox.rejected.connect(self.di.close)
+                else:
+                    QMessageBox.information(self, 'Hint', 'Do "RFE feature selection"!', QMessageBox.Ok | QMessageBox.Close,
+                                            QMessageBox.Close)
+
+            else:
+                QMessageBox.information(self, 'Hint', 'Do "Train/Test -> Import"!', QMessageBox.Ok | QMessageBox.Close,
+                                        QMessageBox.Close)
+
+        except Exception as e:
+            print(e)
+
+        # Machine learning--Algorithms--Classification--Deep Learning--CNN
+
+    def Classifieddata_Two_cnn_tensorflow(self, epochs_enter, batch_sizer_enter, validation_split_enter):
+        try:
+
+            path = self.opt.save_path + "/Machine Learning Modeling/Algorithms/Classified data(two)/Deep Learning/CNN"
+            csvname = self.opt.save_path + "/Preprocessing/Rfe feature selection" + "/data_rfe.csv"
+
+            if os.path.exists(path):
+                shutil.rmtree(path)
+            os.makedirs(path)
+            self.di.close()
+
+            dataML.cnn_classifier_tensorflow((int)(epochs_enter), (int)(batch_sizer_enter), (float)(validation_split_enter), csvname, path)
+
+            """self.textBrowser.append(str1)
+            self.textBrowser.append(str2)
+            self.textBrowser.append(str3)
+            self.textBrowser.append("*" * 150)"""
+
+            QMessageBox.information(self, 'Hint', 'Completed!', QMessageBox.Ok | QMessageBox.Close,
+                                    QMessageBox.Close)
+            if self.opt.if_open == True:
+                str1 = (path + '/CNN_test_ROC.png').replace("/", "\\")
+                os.startfile(str1)
+                str2 = (path + '/CNN_test_CM.png').replace("/", "\\")
+                os.startfile(str2)
+                str3 = (path + '/CNN_train_ROC.png').replace("/", "\\")
+                os.startfile(str3)
+                str4 = (path + '/CNN_train_CM.png').replace("/", "\\")
+                os.startfile(str4)
+
+        except Exception as e:
+            print(e)
+
+    def show_dialog_classified_data_two_deep_cnn(self):
+        def give(a, b, c):
+            epochs_enter = a
+            batch_sizer_enter = b
+            validation_split_enter = c
+            # epochs = 10, batch_size = 32, validation_split = 0.2
+            self.Classifieddata_Two_cnn_tensorflow(epochs_enter, batch_sizer_enter, validation_split_enter)
+
+        if self.enter_training_test_set_path_state == True:
+            if self.rfe_feature_selection_state == True:
+                self.di = QtWidgets.QDialog()
+                d = dialog_classified_data_two_deep_cnn.Ui_Dialog()
+                d.setupUi(self.di)
+                self.di.show()
+
+                d.buttonBox.accepted.connect(lambda: give(d.lineEdit.text(), d.lineEdit_2.text(), d.lineEdit_3.text()))
+                d.buttonBox.rejected.connect(self.di.close)
+            else:
+                QMessageBox.information(self, 'Hint', 'Do "RFE feature selection"!', QMessageBox.Ok | QMessageBox.Close,
+                                        QMessageBox.Close)
+
+        else:
+            QMessageBox.information(self, 'Hint', 'Do "Train/Test -> Import"!', QMessageBox.Ok | QMessageBox.Close,
+                                    QMessageBox.Close)
+
+        # Machine learning--Algorithms--Classification--Deep Learning--RNN
+
+    def Classifieddata_Two_rnn_tensorflow(self, epochs_enter, batch_sizer_enter, validation_split_enter):
+        try:
+
+            path = self.opt.save_path + "/Machine Learning Modeling/Algorithms/Classified data(two)/Deep Learning/RNN"
+            csvname = self.opt.save_path + "/Preprocessing/Rfe feature selection" + "/data_rfe.csv"
+
+            if os.path.exists(path):
+                shutil.rmtree(path)
+            os.makedirs(path)
+            self.di.close()
+
+            dataML.rnn_classifier_tensorflow((int)(epochs_enter), (int)(batch_sizer_enter), (float)(validation_split_enter), csvname, path)
+
+            """self.textBrowser.append(str1)
+            self.textBrowser.append(str2)
+            self.textBrowser.append(str3)
+            self.textBrowser.append("*" * 150)"""
+
+            QMessageBox.information(self, 'Hint', 'Completed!', QMessageBox.Ok | QMessageBox.Close,
+                                    QMessageBox.Close)
+            if self.opt.if_open == True:
+                str1 = (path + '/RNN_test_ROC.png').replace("/", "\\")
+                os.startfile(str1)
+                str2 = (path + '/RNN_test_CM.png').replace("/", "\\")
+                os.startfile(str2)
+                str3 = (path + '/RNN_train_ROC.png').replace("/", "\\")
+                os.startfile(str3)
+                str4 = (path + '/RNN_train_CM.png').replace("/", "\\")
+                os.startfile(str4)
+
+        except Exception as e:
+            print(e)
+
+    def show_dialog_classified_data_two_deep_rnn(self):
+        def give(a, b, c):
+            epochs_enter = a
+            batch_sizer_enter = b
+            validation_split_enter = c
+            # epochs = 10, batch_size = 32, validation_split = 0.2
+            self.Classifieddata_Two_rnn_tensorflow(epochs_enter, batch_sizer_enter, validation_split_enter)
+
+        if self.enter_training_test_set_path_state == True:
+            if self.rfe_feature_selection_state == True:
+                self.di = QtWidgets.QDialog()
+                d = dialog_classified_data_two_deep_rnn.Ui_Dialog()
+                d.setupUi(self.di)
+                self.di.show()
+
+                d.buttonBox.accepted.connect(lambda: give(d.lineEdit.text(), d.lineEdit_2.text(), d.lineEdit_3.text()))
+                d.buttonBox.rejected.connect(self.di.close)
+            else:
+                QMessageBox.information(self, 'Hint', 'Do "RFE feature selection"!', QMessageBox.Ok | QMessageBox.Close,
+                                        QMessageBox.Close)
+
+        else:
+            QMessageBox.information(self, 'Hint', 'Do "Train/Test -> Import"!', QMessageBox.Ok | QMessageBox.Close,
+                                    QMessageBox.Close)
 
     def Continuousdata_RandomForest_GridSearch(self):
             path = self.opt.save_path + "/Machine Learning Modeling/Algorithms/Continuous data/Grid Search/Random Forest Grid Search"
@@ -3074,7 +3261,7 @@ class mywindow(QtWidgets.QMainWindow, Ui_MainWindow):
         subprocess.call(["python", ".\\Visualizer\\ASE_Gui.py"])
 
     def run_download_cif(self):
-        subprocess.call(["python", ".\\Visualizer\\CIF_mp_connect.py"])
+        subprocess.call(["python", ".\\MP\\CIF download.py"])
 # -------------------------------------
 
 
@@ -3109,39 +3296,6 @@ class mywindow(QtWidgets.QMainWindow, Ui_MainWindow):
         except Exception as e:
             print(e)
 
-    # 深度学习
-    def Classifieddata_Two_dnn_tensorflow(self):
-        try:
-
-            path = self.opt.save_path + "/Machine Learning Modeling/Algorithms/Classified data(two)/DNN"
-            csvname = self.opt.save_path + "/Preprocessing/Rfe feature selection" + "/data_rfe.csv"
-
-            if os.path.exists(path):
-                shutil.rmtree(path)
-            os.makedirs(path)
-
-            dataML.dnn_classifier_tensorflow(csvname, path)
-
-            """self.textBrowser.append(str1)
-            self.textBrowser.append(str2)
-            self.textBrowser.append(str3)
-            self.textBrowser.append("*" * 150)"""
-
-            QMessageBox.information(self, 'Hint', 'Completed!', QMessageBox.Ok | QMessageBox.Close,
-                                    QMessageBox.Close)
-            if self.opt.if_open == True:
-                str1 = (path + '/DNN_test_ROC.png').replace("/", "\\")
-                os.startfile(str1)
-                str2 = (path + '/DNN_test_CM.png').replace("/", "\\")
-                os.startfile(str2)
-                str3 = (path + '/DNN_train_ROC.png').replace("/", "\\")
-                os.startfile(str3)
-                str4 = (path + '/DNN_train_CM.png').replace("/", "\\")
-                os.startfile(str4)
-
-        except Exception as e:
-            print(e)
-
 
 
 
@@ -3167,6 +3321,50 @@ class mywindow(QtWidgets.QMainWindow, Ui_MainWindow):
         QDesktopServices.openUrl(url)
 
 
+
+    ####    TODO  : 代码问题：'int' object has no attribute 'document'
+    # def csv_clean(self):
+    #
+    #     import shutil
+    #     mat_path = self.opt.save_path + "/matbert"
+    #     if os.path.exists(mat_path):
+    #         shutil.rmtree(mat_path)
+    #     os.makedirs(mat_path)
+    #
+    #     try:
+    #         file_path, _ = QFileDialog.getOpenFileName(self, '选择 CSV 文件', '', 'CSV files (*.csv)')
+    #
+    #         import pandas as pd
+    #         from chemdataextractor import Document
+    #
+    #         # 读取 CSV 文件
+    #         df = pd.read_csv(file_path)
+    #
+    #         # 提取第一列数据
+    #         column_data = df.iloc[:, 0]
+    #
+    #         # 定义函数来识别化学物质
+    #         def is_chemical(entity):
+    #             doc = Document(entity)
+    #             chem_entities = doc.cems
+    #             return len(chem_entities) > 0
+    #
+    #         # 创建新列来表示化学物质
+    #         df['Chemical'] = column_data.apply(lambda x: 1 if is_chemical(x) else 0)
+    #
+    #         # 删除最后一列是 0 的整行
+    #         df = df[df.iloc[:, -1] != 0]
+    #
+    #         # 删除最后一列
+    #         df = df.drop(df.columns[-1], axis=1)
+    #
+    #         # 保存结果到新的CSV文件，命名为 clean.csv
+    #         df.to_csv(mat_path + "/clean.csv", index=False)
+    #
+    #         str1 = (mat_path + '/clean.csv').replace("/", "\\")
+    #         os.startfile(str1)
+    #     except Exception as e:
+    #         print(e)
 
 """    def NLP_model_tsne(self):
         try:
@@ -3269,7 +3467,6 @@ class mywindow(QtWidgets.QMainWindow, Ui_MainWindow):
     #         print(e)
     #
     #"""
-    #
     #
     #
     #

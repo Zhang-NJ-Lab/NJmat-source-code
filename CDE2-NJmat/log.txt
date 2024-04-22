@@ -6,3 +6,5 @@ INFO       in registrable.py      --> instantiating registered subclass relu of 
 INFO       in registrable.py      --> instantiating registered subclass relu of <class 'allennlp.nn.activations.Activation'>
 INFO       in registrable.py      --> instantiating registered subclass relu of <class 'allennlp.nn.activations.Activation'>
 INFO       in tokenization.py     --> loading vocabulary file C:\Users\DELL\AppData\Local\ChemDataExtractor\ChemDataExtractor\models/scibert_cased_vocab-1.0.txt
+INFO       in data.py             --> Downloading https://cdemodelsstorage.blob.core.windows.net/cdemodels/bert_pretrained_crf_model-1.0a.tar.gz to C:\Users\DELL\AppData\Local\ChemDataExtractor\ChemDataExtractor\models/bert_finetuned_crf_model-1.0a
+INFO       in data.py             --> Downloading https://cdemodelsstorage.blob.core.windows.net/cdemodels/scibert_uncased_vocab-1.0.txt to C:\Users\DELL\AppData\Local\ChemDataExtractor\ChemDataExtractor\models/scibert_uncased_vocab-1.0.txt
