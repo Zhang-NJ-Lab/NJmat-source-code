@@ -8722,7 +8722,32 @@ def model_modify_predict(csvName,path,model_path):
     prediction.to_csv(path +"/"+ file_name,index=None)
     return path +"/"+ file_name
 
+def model_modify_predict_deep(csvName, path, model_path):
+    import os
+    import pandas as pd
+    from tensorflow.keras.models import load_model
+    from sklearn import preprocessing
 
+    # 加载模型
+    loaded_model = load_model(model_path)
+    data = pd.read_csv(csvName)
+    X = data.values[:, :]
+
+    # 数据归一化（这里假设模型训练时使用了归一化）
+    for i in range(X.shape[1]):
+        X[:, [i]] = preprocessing.MinMaxScaler().fit_transform(X[:, [i]])
+
+    # 预测
+    target = loaded_model.predict(X)
+    print(target)
+    target_classes = (target >= 0.5).astype(int)
+    file_name = "prediction_output(" + os.path.basename(model_path)[:-3] + ").csv"
+    tg = pd.DataFrame(target_classes, columns=["Output"])
+
+    # 将预测结果附加到原始数据
+    prediction = pd.concat([data, tg], axis=1)
+    prediction.to_csv(path +"/"+ file_name,index=None)
+    return path +"/"+ file_name
 
 
 

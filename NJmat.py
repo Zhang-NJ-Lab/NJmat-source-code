@@ -265,7 +265,8 @@ class mywindow(QtWidgets.QMainWindow, Ui_MainWindow):
         # 控制按钮触发前后顺序
         self.heatmap_state = self.opt.if_control
         self.rfe_feature_selection_state = self.opt.if_control
-        self.import_model_dat_state=self.opt.if_control
+        if self.opt.if_control == False:
+            self.import_model_dat_state = 0
         self.import_prediction_dataset_state=self.opt.if_control
         self.import_prediction_dataset_state = self.opt.if_control
         self.NLP_model_tsne_state = self.opt.if_control
@@ -280,9 +281,10 @@ class mywindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
 
     def clear_state_Prediction(self):
-        self.import_model_dat_state =False
+        self.import_model_dat_state = 0
         self.import_prediction_dataset_state =False
         self.prediction_generation=False
+
 
     def textBrowser_print_Pandas_DataFrame_table(self,data,if_columns,if_index):  # if_index,if_columns是否导入横竖坐标名称
         list2 = list(data.values)  # 坐标值
@@ -2604,14 +2606,21 @@ class mywindow(QtWidgets.QMainWindow, Ui_MainWindow):
             if len(directory_temp) > 0:
                 str_root = str(directory_temp)
                 f_dat = str_root.rfind('.dat')
-                if f_dat != -1:  # 判断是不是.dat
+                f_h5=str_root.rfind('.h5')
+                if f_dat != -1 and f_h5 == -1:                                        # 判断是不是.dat或者.h5
                     self.opt.origin_path_6 = str((str_root.replace("\\", '/'))[2:-2])
 
-                    self.import_model_dat_state = True
+                    self.import_model_dat_state = 1
                     QMessageBox.information(self, 'Hint', 'Completed!', QMessageBox.Ok | QMessageBox.Close,
                                             QMessageBox.Close)
+                elif f_dat == -1 and f_h5 != -1:
+                    self.opt.origin_path_6 = str((str_root.replace("\\", '/'))[2:-2])
+                    self.import_model_dat_state = 2
+                    QMessageBox.information(self, 'Hint', 'Completed!', QMessageBox.Ok | QMessageBox.Close,
+                                            QMessageBox.Close)
+
                 else:
-                    QMessageBox.information(self, 'Hint', 'Not .dat file, please re-enter!', QMessageBox.Ok | QMessageBox.Close,
+                    QMessageBox.information(self, 'Hint', 'Wrong Model File, please re-enter!', QMessageBox.Ok | QMessageBox.Close,
                                             QMessageBox.Close)
             else:
                 QMessageBox.information(self, 'Hint', 'Please choose a model!', QMessageBox.Ok | QMessageBox.Close,
@@ -2620,18 +2629,18 @@ class mywindow(QtWidgets.QMainWindow, Ui_MainWindow):
             QMessageBox.information(self, 'Hint', 'Do "Import virtual data (without label)"!', QMessageBox.Ok | QMessageBox.Close,
                                     QMessageBox.Close)
 
+
     # 预测集建立——基于模型预测                         Prediction_Prediction generation (with label)
     def Prediction_Predictiongeneration(self):
         try:
+            path = self.opt.save_path + "/Prediction/Prediction generation (with label)"
+            # if os.path.exists(path) == False:
+            #     os.makedirs(path)
+            if os.path.exists(path):
+                shutil.rmtree(path)
+            os.makedirs(path)
             if self.import_prediction_dataset_state == True:
-                if self. import_model_dat_state== True:
-                    path = self.opt.save_path + "/Prediction/Prediction generation (with label)"
-                    # if os.path.exists(path) == False:
-                    #     os.makedirs(path)
-                    if os.path.exists(path):
-                        shutil.rmtree(path)
-                    os.makedirs(path)
-
+                if self. import_model_dat_state== 1:
                     generate_file=dataML.model_modify_predict(self.opt.origin_path_2, path,self.opt.origin_path_6)
 
 
@@ -2642,6 +2651,16 @@ class mywindow(QtWidgets.QMainWindow, Ui_MainWindow):
                                             QMessageBox.Close)
                     if self.opt.if_open == True:
                         os.startfile(generate_file)
+                elif self. import_model_dat_state== 2:
+                    generate_file=dataML.model_modify_predict_deep(self.opt.origin_path_2, path,self.opt.origin_path_6)
+                    self.opt.prediction_visualization_path = generate_file
+                    self.prediction_generation = True
+
+                    QMessageBox.information(self, 'Hint', 'Completed!', QMessageBox.Ok | QMessageBox.Close,
+                                            QMessageBox.Close)
+                    if self.opt.if_open == True:
+                        os.startfile(generate_file)
+
                 else:
                     QMessageBox.information(self, 'Hint', 'Do "Select machine learning model"!', QMessageBox.Ok | QMessageBox.Close,
                                             QMessageBox.Close)
