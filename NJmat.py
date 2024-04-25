@@ -3,6 +3,8 @@ from PyQt5.QtWidgets import QFileDialog, QMessageBox
 from PyQt5.QtGui import QImage, QPixmap
 from PyQt5.QtCore import QTimer
 
+# import ase,catboost, chardet
+
 from NJmatML.dataML import Symbolicregression_Modelconstruction, Symbolicclassification
 from mainwindow import Ui_MainWindow
 import dialog_Machinelearningmodeling_Algorithms
@@ -31,7 +33,7 @@ import shutil
 import numpy as np
 import pandas
 import gensim
-
+import paramiko
 # untitled1.py 加 self.textBrowser.setLineWrapMode(0) 水平滑轮                   #Todo
 
 class mywindow(QtWidgets.QMainWindow, Ui_MainWindow):
@@ -3278,6 +3280,8 @@ class mywindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
     def run_ase(self):
         subprocess.call(["python", ".\\Visualizer\\ASE_Gui.py"])
+
+
 
     def run_download_cif(self):
         subprocess.call(["python", ".\\MP\\CIF download.py"])
