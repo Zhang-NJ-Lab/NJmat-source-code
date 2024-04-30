@@ -8,7 +8,7 @@ a = Analysis(
     ['NJmat.py'],
     pathex=[],
     binaries=[],
-    datas=[],
+    datas=[('.\\Visualizer\\ASE_Gui.py', '.\\Visualizer'), ('.\\MP\\CIF download.py', '.\\MP'), ('.\\MP\\Descriptor design.py', '.\\MP')],
     hiddenimports=[],
     hookspath=[],
     hooksconfig={},

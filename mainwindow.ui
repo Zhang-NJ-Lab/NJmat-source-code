@@ -248,6 +248,7 @@
     <addaction name="menu_15"/>
     <addaction name="menu_16"/>
     <addaction name="menuInorganic_descriptor_matminer"/>
+    <addaction name="actionPymatgen"/>
    </widget>
    <widget class="QMenu" name="menu_11">
     <property name="title">
@@ -337,7 +338,7 @@
    </widget>
    <widget class="QMenu" name="menuVisualizer">
     <property name="title">
-     <string>Visualizer</string>
+     <string>Visulizer and VASP</string>
     </property>
     <addaction name="actionASE_Visualizer"/>
     <addaction name="actionHeterostructure_Generate"/>
@@ -1305,6 +1306,16 @@
   <action name="actionHeterostructure_Generate">
    <property name="text">
     <string>Heterostructure Generate</string>
+   </property>
+  </action>
+  <action name="actionVASP_Visualizer">
+   <property name="text">
+    <string>VASP Visualizer</string>
+   </property>
+  </action>
+  <action name="actionPymatgen">
+   <property name="text">
+    <string>Pymatgen</string>
    </property>
   </action>
  </widget>

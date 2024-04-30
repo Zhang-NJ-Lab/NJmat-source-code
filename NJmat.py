@@ -30,6 +30,11 @@ warnings.filterwarnings("ignore")
 
 import os
 import shutil
+
+import ase,catboost,catboost_info,chardet,docutils,dotenv,gensim,gplearn,graphviz,joblib,matminer,monty,numpy, paramiko, pymatgen,rdkit,requests,shap,seaborn,tensorflow,tensorflow_estimator,xgboost,yaml
+
+
+
 import numpy as np
 import pandas
 import gensim
@@ -240,6 +245,8 @@ class mywindow(QtWidgets.QMainWindow, Ui_MainWindow):
         # self.ui.action2_csv_templates_github_website.clicked.connect(self.open_github)
         self.actioncsv_templates_github_website.triggered.connect(self.open_github_csv_template)
         self.actionResources_figshare_website.triggered.connect(self.open_figshare_resources)
+
+        self.actionPymatgen.triggered.connect(self.run_Pymatgen_descriptor)
 
 
 
@@ -2672,115 +2679,7 @@ class mywindow(QtWidgets.QMainWindow, Ui_MainWindow):
         except Exception as e:
             print(e)
 
-    # 预测集建立——预测集可视化                         Prediction_Prediction visualization
-    # def Prediction_Prediction_visualization(self):
-    #     try:
-    #         if self. import_prediction_dataset_state== True:
-    #             if self. import_model_dat_state== True:
-    #                 if self.prediction_generation == True:
-    #                     path = self.opt.save_path + "/Prediction/Prediction visualization"
-    #                     csvname = self.opt.prediction_visualization_path
-    #                     if os.path.exists(path):
-    #                         shutil.rmtree(path)
-    #                     os.makedirs(path)
-    #
-    #                     value, ok = QtWidgets.QInputDialog.getText(self, "Prediction", "type column name for conversion:",
-    #                                                                QtWidgets.QLineEdit.Normal, "")
-    #                     result=dataML.Visualization_for_classification(csvname, path, value)
-    #                     if result==False:
-    #                         QMessageBox.information(self, 'Hint', 'Column name not found!', QMessageBox.Ok | QMessageBox.Close,
-    #                                                 QMessageBox.Close)
-    #                     else:
-    #                         QMessageBox.information(self, 'Hint', 'Completed!', QMessageBox.Ok | QMessageBox.Close,
-    #                                                 QMessageBox.Close)
-    #                         if self.opt.if_open == True:
-    #                             os.startfile(path)
-    #                 else:
-    #                     QMessageBox.information(self, 'Hint', 'Do "Prediction generation (with label)"!', QMessageBox.Ok | QMessageBox.Close,
-    #                                             QMessageBox.Close)
-    #             else:
-    #                 QMessageBox.information(self, 'Hint', 'Do "Select machine learning model"!', QMessageBox.Ok | QMessageBox.Close,
-    #                                         QMessageBox.Close)
-    #         else:
-    #             QMessageBox.information(self, 'Hint', 'Do "Import virtual data (without label)"!', QMessageBox.Ok | QMessageBox.Close,
-    #                                     QMessageBox.Close)
-    #     except Exception as e:
-    #         print(e)
 
-
-
-
-    # shapley----------------------------------------------------------------------------------------------------
-    # # shapley_Model import
-    # def shapley_Modelimport(self):
-    #     directory_temp, filetype = QFileDialog.getOpenFileNames(self, "Select file")
-    #     if len(directory_temp) > 0:
-    #         str_root = str(directory_temp)
-    #         f_dat = str_root.rfind('.dat')
-    #         if f_dat != -1:  # 判断是不是.dat
-    #             self.opt.origin_path_7 = str((str_root.replace("\\", '/'))[2:-2])
-    #
-    #             #self.import_model_dat_state = True
-    #             QMessageBox.information(self, 'Hint', 'Completed!', QMessageBox.Ok | QMessageBox.Close,
-    #                                     QMessageBox.Close)
-    #         else:
-    #             QMessageBox.information(self, 'Hint', 'Not .dat file, please re-enter!',
-    #                                     QMessageBox.Ok | QMessageBox.Close,
-    #                                     QMessageBox.Close)
-    #     else:
-    #         QMessageBox.information(self, 'Hint', 'Please choose a model!', QMessageBox.Ok | QMessageBox.Close,
-    #                                 QMessageBox.Close)
-    #
-    #
-    # # shapley_Data import
-    # def shapley_Dataimport(self):
-    #     directory_temp, filetype = QFileDialog.getOpenFileNames(self, "Select file")
-    #     if len(directory_temp) > 0:
-    #         str_root = str(directory_temp)
-    #         f_csv = str_root.rfind('.csv')
-    #         if f_csv != -1:  # 判断是不是.csv
-    #             self.opt.origin_path_2 = str((str_root.replace("\\", '/'))[2:-2])
-    #             #self.clear_state_Prediction()
-    #             #self.import_prediction_dataset_state = True
-    #             QMessageBox.information(self, 'Hint', 'Completed!', QMessageBox.Ok | QMessageBox.Close,
-    #                                     QMessageBox.Close)
-    #         else:
-    #             QMessageBox.information(self, 'Hint', 'Not .csv file, please re-enter!',
-    #                                     QMessageBox.Ok | QMessageBox.Close,
-    #                                     QMessageBox.Close)
-    #     else:
-    #         QMessageBox.information(self, 'Hint', 'Please enter a file!', QMessageBox.Ok | QMessageBox.Close,
-    #                                 QMessageBox.Close)
-    #
-    # # shapley_Result
-    # def shapley_Result(self):
-    #     try:
-    #         path = self.opt.save_path + "/Shapley/Result"
-    #         if os.path.exists(path):
-    #             shutil.rmtree(path)
-    #         os.makedirs(path)
-    #
-    #         dataML.Result(self.opt.origin_path_2, path, self.opt.origin_path_7)
-    #
-    #         if self.opt.if_open == True:
-    #             str1 = (path + '/summary_plot.png').replace("/", "\\")
-    #             os.startfile(str1)
-    #             str2 = (path + '/Forceplot.png').replace("/", "\\")
-    #             os.startfile(str2)
-    #             str3 = (path + '/Feature_ranking_bar.png').replace("/", "\\")
-    #             os.startfile(str3)
-    #             # str4 = (path + '/Waterfall.png').replace("/", "\\")
-    #             # os.startfile(str4)
-    #             # str5 = (path + '/decision_tree.png').replace("/", "\\")
-    #             # os.startfile(str5)
-    #
-    #         QMessageBox.information(self, 'Hint', 'Completed!', QMessageBox.Ok | QMessageBox.Close,
-    #                                 QMessageBox.Close)
-    #     except Exception as e:
-    #         print(e)
-    #
-    #
-    #
 
 
 #Shapley 回归
@@ -2924,92 +2823,6 @@ class mywindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
 
 
-    """
-    # 9                                                               # 1 9  and 1 3 9.3
-    def nine_one(self):
-        if self.training_test_set_path_state==True:
-            self.nine_state=True
-            path = self.opt.save_path + "/nine/one"
-            if os.path.exists(path):
-                shutil.rmtree(path)
-            os.makedirs(path)
-            value, ok = QtWidgets.QInputDialog.getDouble(self, "提示", "输入皮尔森阈值:", 0.55, -10000, 10000, 2)
-
-
-            str1,data=dataML.gp_default(value)
-            self.textBrowser.append(str1)
-            self.textBrowser.append('\n***************************')
-            list1 = list(data.columns)                                            # 把纵坐标名称竖着列
-            str2 = ""
-            for i in range(len(list1)):
-                str_temp = "{str:^{len}}".format(str=str(list1[i]), len=24)
-                str2 = str2 + "{str:^{len}}".format(str=str(i), len=24)+str_temp+"\n"
-            self.textBrowser.append(str2)
-            self.textBrowser.append("*" * 150)
-
-            QMessageBox.information(self, '提示', '完成', QMessageBox.Ok | QMessageBox.Close,
-                                    QMessageBox.Close)
-        else:
-            QMessageBox.information(self, '提示', '第一步未运行', QMessageBox.Ok | QMessageBox.Close,
-                                    QMessageBox.Close)
-
-    def nine_two(self):
-        if self.training_test_set_path_state==True:
-            self.nine_state=True
-            path = self.opt.save_path + "/nine/two"
-            if os.path.exists(path):
-                shutil.rmtree(path)
-            os.makedirs(path)
-            value, ok = QtWidgets.QInputDialog.getDouble(self, "提示", "输入皮尔森阈值:", 0.55, -10000, 10000, 2)
-
-            str1,data=dataML.gp_tan(value)
-            self.textBrowser.append(str1)
-            self.textBrowser.append('\n***************************')
-            list1 = list(data.columns)  # 把纵坐标名称竖着列
-            str2 = ""
-            for i in range(len(list1)):
-                str_temp = "{str:^{len}}".format(str=str(list1[i]), len=24)
-                str2 = str2 + "{str:^{len}}".format(str=str(i), len=24) + str_temp + "\n"
-            self.textBrowser.append(str2)
-            self.textBrowser.append("*" * 150)
-
-            QMessageBox.information(self, '提示', '完成', QMessageBox.Ok | QMessageBox.Close,
-                                    QMessageBox.Close)
-        else:
-            QMessageBox.information(self, '提示', '第一步未运行', QMessageBox.Ok | QMessageBox.Close,
-                                    QMessageBox.Close)
-
-    def nine_three(self):
-        try:
-            if self.training_test_set_path_state==True:
-                if self.rfe_feature_selection_state == True:
-                    self.nine_state=True
-                    path = self.opt.save_path + "/nine/three"
-                    if os.path.exists(path):
-                        shutil.rmtree(path)
-                    os.makedirs(path)
-                    value, ok = QtWidgets.QInputDialog.getDouble(self, "提示", "输入皮尔森阈值:", 0.6, -10000, 10000, 2)
-                    dataML.tSR_default(value,path)
-                    with open(path + "/data.txt", "r") as f:  # 从txt写入textBrowser
-                        while True:
-                            line = f.readline()  # 包括换行符
-                            line = line[:-1]  # 去掉换行符
-                            if line:
-                                self.textBrowser.append(str(line))
-                            else:
-                                break
-                    self.textBrowser.append("*" * 150)
-                    QMessageBox.information(self, '提示', '完成', QMessageBox.Ok | QMessageBox.Close,
-                                            QMessageBox.Close)
-                else:
-                    QMessageBox.information(self, '提示', '第三步未运行', QMessageBox.Ok | QMessageBox.Close,
-                                            QMessageBox.Close)
-            else:
-                QMessageBox.information(self, '提示', '第一步未运行', QMessageBox.Ok | QMessageBox.Close,
-                                        QMessageBox.Close)
-        except Exception as e:
-            print(e)
-    """
 
 
 
@@ -3285,6 +3098,9 @@ class mywindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
     def run_download_cif(self):
         subprocess.call(["python", ".\\MP\\CIF download.py"])
+
+    def run_Pymatgen_descriptor(self):
+        subprocess.call(["python" , ".\\MP\\Descriptor design.py"])
 # -------------------------------------
 
 
@@ -3388,119 +3204,6 @@ class mywindow(QtWidgets.QMainWindow, Ui_MainWindow):
     #         os.startfile(str1)
     #     except Exception as e:
     #         print(e)
-
-"""    def NLP_model_tsne(self):
-        try:
-            # 加载导入的 NLP 模型
-            from gensim.models import word2vec, KeyedVectors
-            model = KeyedVectors.load_word2vec_format(self.opt.origin_path_30)
-            self.dialog_wordlist_tsne()
-
-            path = self.opt.save_path + "/NLPne"
-            if os.path.exists(path):
-                shutil.rmtree(path)
-            os.makedirs(path)
-
-            # # 将模型传递给 plot_word_vectors_highlighted 函数
-            # plot_word_vectors_highlighted(model, highlight_words_blue, highlight_words_red, highlight_words_yellow,
-            #                               highlight_words_green, highlight_words_orange)
-
-            if self.opt.if_open == True:
-                str1 = (path + 'ne_with_words.png').replace("/", "\\")
-                os.startfile(str1)
-                str2 = (path + 'ne_without_words.png').replace("/", "\\")
-                os.startfile(str2)
-
-            QMessageBox.information(self, 'Hint', 'Completed!', QMessageBox.Ok | QMessageBox.Close, QMessageBox.Close)
-
-        except Exception as e:
-            print(e)
-
-    # def show_dialog(self):
-    #     # 弹出对话框，提示用户输入蓝色高亮显示的单词
-    #     input_text, ok_pressed = QtWidgets.QInputDialog.getText(self, "Enter blue-highlighted words",
-    #                                                             "Enter words (separated by comma):")
-    #     if ok_pressed:
-    #         # 将用户输入的单词以逗号分隔，转换为列表
-    #         highlight_words_blue = input_text.split(',')
-    #         highlight_words_red = input_text.split(',')
-    #         highlight_words_yellow = input_text.split(',')
-    #         highlight_words_green = input_text.split(',')
-    #         highlight_words_orange = input_text.split(',')
-    #         # 调用绘制函数，并传递用户输入的单词列表
-    #         plot_word_vectors_highlighted(model, highlight_words_blue, highlight_words_red, highlight_words_yellow,highlight_words_green, highlight_words_orange)
-    # #
-
-    # def show_dialog(self):
-    # def dialog_wordlist_tsne(self):
-    def dialog_wordlist_tsne(self):
-    # 获取蓝色高亮显示的单词
-        blue_text = self.blueLineEdit.text()
-        highlight_words_blue = blue_text.split(',')
-        # 获取红色高亮显示的单词
-        red_text = self.redLineEdit.text()
-        highlight_words_red = red_text.split(',')
-
-        # 获取黄色高亮显示的单词
-        yellow_text = self.yellowLineEdit.text()
-        highlight_words_yellow = yellow_text.split(',')
-
-        # 获取绿色高亮显示的单词
-        green_text = self.greenLineEdit.text()
-        highlight_words_green = green_text.split(',')
-
-        # 获取橙色高亮显示的单词
-        orange_text = self.orangeLineEdit.text()
-        highlight_words_orange = orange_text.split(',')
-
-        # 调用绘制函数，并传递用户输入的单词列表
-        from gensim.models import word2vec, KeyedVectors
-        model = KeyedVectors.load_word2vec_format(self.opt.origin_path_30)
-        plot_word_vectors_highlighted(model, highlight_words_blue, highlight_words_red, highlight_words_yellow, highlight_words_green, highlight_words_orange)
-
-        #
-    # def Prediction_Predictiongeneration(self):
-    #     try:
-    #         if self.import_prediction_dataset_state == True:
-    #             if self. import_model_dat_state== True:
-    #                 path = self.opt.save_path + "/Prediction/Prediction generation (with label)"
-    #                 # if os.path.exists(path) == False:
-    #                 #     os.makedirs(path)
-    #                 if os.path.exists(path):
-    #                     shutil.rmtree(path)
-    #                 os.makedirs(path)
-    #
-    #                 generate_file=dataML.tSNE(self.opt.origin_path_2, path,self.opt.origin_path_6)
-    #
-    #
-    #                 self.opt.prediction_visualization_path=generate_file
-    #                 self.prediction_generation = True
-    #
-    #                 QMessageBox.information(self, 'Hint', 'Completed!', QMessageBox.Ok | QMessageBox.Close,
-    #                                         QMessageBox.Close)
-    #                 if self.opt.if_open == True:
-    #                     os.startfile(generate_file)
-    #             else:
-    #                 QMessageBox.information(self, 'Hint', 'Do "Select machine learning model"!', QMessageBox.Ok | QMessageBox.Close,
-    #                                         QMessageBox.Close)
-    #         else:
-    #             QMessageBox.information(self, 'Hint', 'Do "Import virtual data (without label)"!', QMessageBox.Ok | QMessageBox.Close,
-    #                                     QMessageBox.Close)
-    #     except Exception as e:
-    #         print(e)
-    #
-    #"""
-    #
-    #
-    #
-    #
-    #
-    #
-    #
-
-
-
-
 
 
 
