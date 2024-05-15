@@ -5881,6 +5881,99 @@ def MLP_modify(l,a,m,ha,hb,path,csvname):
     return str1, scores, str2
 
 
+def dnn_regressor_modify(a, b, c, path, csvname):
+    from sklearn.model_selection import train_test_split
+    from sklearn.preprocessing import MinMaxScaler
+    from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
+    import matplotlib.pyplot as plt
+    import tensorflow as tf
+    import pandas as pd
+
+    # 加载数据
+    data = pd.read_csv(csvname)
+    X = data.iloc[:, :-1].values
+    y = data.iloc[:, -1].values
+    # 数据划分
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
+
+    # 数据标准化
+    scaler = MinMaxScaler()
+    X_train_scaled = scaler.fit_transform(X_train)
+    X_test_scaled = scaler.transform(X_test)
+
+    # 构建模型
+    model = tf.keras.models.Sequential([
+        tf.keras.layers.Dense(128, activation='relu', input_shape=(X_train_scaled.shape[1],)),
+        tf.keras.layers.Dropout(0.2),
+        tf.keras.layers.Dense(64, activation='relu'),
+        tf.keras.layers.Dense(1)
+    ])
+
+    model.compile(optimizer='adam',
+                  loss='mean_squared_error',
+                  metrics=['mean_squared_error'])
+
+    # 训练模型
+    history = model.fit(X_train_scaled, y_train, epochs=a, batch_size=b, validation_split=c)
+
+    # 评估模型
+    loss, mse = model.evaluate(X_test_scaled, y_test)
+    print("Test MSE:", mse)
+
+    # 预测测试数据
+    y_pred_test = model.predict(X_test_scaled)
+
+    # 预测训练数据
+    y_pred_train = model.predict(X_train_scaled)
+
+    # 计算指标
+    rmse_test = mean_squared_error(y_test, y_pred_test, squared=False)
+    mae_test = mean_absolute_error(y_test, y_pred_test)
+    r2_test = r2_score(y_test, y_pred_test)
+
+    rmse_train = mean_squared_error(y_train, y_pred_train, squared=False)
+    mae_train = mean_absolute_error(y_train, y_pred_train)
+    r2_train = r2_score(y_train, y_pred_train)
+
+    # 打印指标
+    print("Test RMSE:", rmse_test)
+    print("Test MAE:", mae_test)
+    print("Test R2:", r2_test)
+
+    print("Train RMSE:", rmse_train)
+    print("Train MAE:", mae_train)
+    print("Train R2:", r2_train)
+
+    # 绘制训练和验证损失曲线
+    plt.plot(history.history['loss'], label='Train Loss')
+    plt.plot(history.history['val_loss'], label='Validation Loss')
+    plt.xlabel('Epochs')
+    plt.ylabel('Loss')
+    plt.title('Training and Validation Loss')
+    plt.legend()
+    plt.savefig(path + '/DNN_loss_curve.png')
+    plt.close()
+
+    # 绘制预测值与真实值散点图
+    plt.scatter(y_test, y_pred_test)
+    plt.xlabel('True Values')
+    plt.ylabel('Predictions')
+    plt.title('Predictions vs True Values (Test Set)')
+    plt.savefig(path + '/DNN_predictions_vs_true_test.png')
+    plt.close()
+
+    plt.scatter(y_train, y_pred_train)
+    plt.xlabel('True Values')
+    plt.ylabel('Predictions')
+    plt.title('Predictions vs True Values (Train Set)')
+    plt.savefig(path + '/DNN_predictions_vs_true_train.png')
+    plt.close()
+
+    # 保存模型
+    model.save(path + '/dnn_model.h5')
+
+    # 返回指标字符串
+    return f"Test RMSE: {rmse_test}\nTest MAE: {mae_test}\nTest R2: {r2_test}\nTrain RMSE: {rmse_train}\nTrain MAE: {mae_train}\nTrain R2: {r2_train}"
 
 
 # 10.1
@@ -9104,6 +9197,26 @@ def Symbolicregression_Modelconstruction(csvname,path):
     y_pred = reg.predict(X_test)
     mae = mean_absolute_error(y_test, y_pred)
     print("MAE:", mae)
+
+    from sklearn.metrics import mean_squared_error, r2_score
+    import numpy as np
+
+    # 计算 MSE
+    mse = mean_squared_error(y_test, y_pred)
+    print("MSE:", mse)
+
+    # 计算 R2
+    r2 = r2_score(y_test, y_pred)
+    print("R2:", r2)
+
+    # 计算 RMSE
+    rmse = np.sqrt(mse)
+    print("RMSE:", rmse)
+
+    # 计算 r（皮尔森系数）
+    corrcoef = np.corrcoef(y_test, y_pred)[0, 1]
+    print("r (Pearson correlation):", corrcoef)
+
 
     import matplotlib.pyplot as plt
 

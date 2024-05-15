@@ -618,7 +618,7 @@ class Ui_MainWindow(object):
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
-        self.label.setText(_translate("MainWindow", "citation doi:10.1021/acsami.2c00564"))
+        self.label.setText(_translate("MainWindow", "citation doi:10.1063/5.0064875"))
         self.menu.setTitle(_translate("MainWindow", "Preprocessing"))
         self.menu_rfe_pairplot.setTitle(_translate("MainWindow", "RFE visualization"))
         self.menu_3.setTitle(_translate("MainWindow", "Importance ranking (Pearson)"))

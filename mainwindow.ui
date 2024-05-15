@@ -24,7 +24,7 @@
      </rect>
     </property>
     <property name="text">
-     <string>citation doi:10.1021/acsami.2c00564</string>
+     <string>citation doi:10.1063/5.0064875</string>
     </property>
    </widget>
    <widget class="QTextBrowser" name="textBrowser">

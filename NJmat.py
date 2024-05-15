@@ -19,6 +19,7 @@ import dialog_classified_data_two_Adaboost
 import dialog_classified_data_two_xgboost,dialog_classified_data_two_Catboost
 import dialog_wordlist_tsne_highlight
 import dialog_classified_data_two_deep_dnn,dialog_classified_data_two_deep_cnn,dialog_classified_data_two_deep_rnn
+import dialog_continuous_data_deep_dnn
 from NJmatML import dataML
 from CSP import CSP_magus
 import argparse
@@ -178,7 +179,8 @@ class mywindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
         self.actionRandom_Forest_Grid_Search.triggered.connect(self.Continuousdata_RandomForest_GridSearch)
 
-
+        # deep learning dnn continuous
+        self.actionDNN.triggered.connect(self.show_dialog_continuous_data_deep_dnn)
 
 
         #deep learning dnn classfication
@@ -1679,7 +1681,66 @@ class mywindow(QtWidgets.QMainWindow, Ui_MainWindow):
             QMessageBox.information(self, 'Hint', 'Do "Train/Test -> Import"!', QMessageBox.Ok | QMessageBox.Close,
                                     QMessageBox.Close)
 
+    def Continuousdata_dnn_tensorflow(self, epochs_enter, batch_sizer_enter, validation_split_enter):
+        try:
 
+            path = self.opt.save_path + "/Machine Learning Modeling/Algorithms/Continuous data/Deep Learning/DNN"
+            csvname = self.opt.save_path + "/Preprocessing/Rfe feature selection" + "/data_rfe.csv"
+
+            if os.path.exists(path):
+                shutil.rmtree(path)
+            os.makedirs(path)
+            self.di.close()
+
+            dataML.dnn_regressor_modify((int)(epochs_enter), (int)(batch_sizer_enter), (float)(validation_split_enter), csvname, path)
+
+            """self.textBrowser.append(str1)
+            self.textBrowser.append(str2)
+            self.textBrowser.append(str3)
+            self.textBrowser.append("*" * 150)"""
+
+            QMessageBox.information(self, 'Hint', 'Completed!', QMessageBox.Ok | QMessageBox.Close,
+                                    QMessageBox.Close)
+            if self.opt.if_open == True:
+                str1 = (path + '/DNN_loss_curve.png').replace("/", "\\")
+                os.startfile(str1)
+                str2 = (path + '/DNN_predictions_vs_true_test.png').replace("/", "\\")
+                os.startfile(str2)
+                str3 = (path + '/DNN_predictions_vs_true_train').replace("/", "\\")
+                os.startfile(str3)
+
+
+        except Exception as e:
+            print(e)
+
+    def show_dialog_continuous_data_deep_dnn(self):
+        def give(a, b, c):
+            epochs_enter = a
+            batch_sizer_enter = b
+            validation_split_enter = c
+            # epochs = 10, batch_size = 32, validation_split = 0.2
+            self.Continuousdata_dnn_tensorflow(epochs_enter, batch_sizer_enter, validation_split_enter)
+
+        try:
+            if self.enter_training_test_set_path_state == True:
+                if self.rfe_feature_selection_state == True:
+                    self.di = QtWidgets.QDialog()
+                    d = dialog_continuous_data_deep_dnn.Ui_Dialog()
+                    d.setupUi(self.di)
+                    self.di.show()
+
+                    d.buttonBox.accepted.connect(lambda: give(d.lineEdit.text(), d.lineEdit_2.text(), d.lineEdit_3.text()))
+                    d.buttonBox.rejected.connect(self.di.close)
+                else:
+                    QMessageBox.information(self, 'Hint', 'Do "RFE feature selection"!', QMessageBox.Ok | QMessageBox.Close,
+                                            QMessageBox.Close)
+
+            else:
+                QMessageBox.information(self, 'Hint', 'Do "Train/Test -> Import"!', QMessageBox.Ok | QMessageBox.Close,
+                                        QMessageBox.Close)
+
+        except Exception as e:
+            print(e)
 
     # 机器学习建模-模型选择-二分类-Random Forest                         Classified data_Two_Random Forest
     def Classifieddata_Two_RandomForest(self):

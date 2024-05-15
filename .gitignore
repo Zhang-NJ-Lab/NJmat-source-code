@@ -23,3 +23,5 @@ NJmatML-UIUI.rar
 /build
 /build
 /build
+*.exe
+/build
