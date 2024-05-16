@@ -63,6 +63,9 @@
   ('pyi_rth_mplconfig',
    'C:\\Users\\DELL\\anaconda3\\envs\\pyqt5-test\\lib\\site-packages\\PyInstaller\\hooks\\rthooks\\pyi_rth_mplconfig.py',
    'PYSOURCE'),
+  ('pyi_rth_tensorflow',
+   'C:\\Users\\DELL\\anaconda3\\envs\\pyqt5-test\\lib\\site-packages\\_pyinstaller_hooks_contrib\\hooks\\rthooks\\pyi_rth_tensorflow.py',
+   'PYSOURCE'),
   ('pyi_rth__tkinter',
    'C:\\Users\\DELL\\anaconda3\\envs\\pyqt5-test\\lib\\site-packages\\PyInstaller\\hooks\\rthooks\\pyi_rth__tkinter.py',
    'PYSOURCE'),
@@ -73,7 +76,7 @@
  [],
  False,
  False,
- 1713159021,
+ 1714476016,
  [('run.exe',
    'C:\\Users\\DELL\\anaconda3\\envs\\pyqt5-test\\lib\\site-packages\\PyInstaller\\bootloader\\Windows-64bit-intel\\run.exe',
    'EXECUTABLE')])
