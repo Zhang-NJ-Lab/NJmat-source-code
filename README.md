@@ -1,2 +1,2 @@
-# NJmatML_project_zl
- UI
+# NJmat
+This branch stores updated source codes for NJmat
