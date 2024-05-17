@@ -95,6 +95,18 @@ class mywindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.parser.add_argument("--origin_path_19", type=str,
                                  default="",
                                  help="virtual_Multicolumn_Smiles")
+
+
+        self.parser.add_argument("--origin_path_29", type=str,
+                                 default="",
+                                 help="Multicolumn_Smiles")
+        self.parser.add_argument("--origin_path_31", type=str,
+                                 default="",
+                                 help="Multicolumn_Smiles")
+
+
+
+
         self.parser.add_argument("--prediction_visualization_path", type=str, default="",
                                  help="Prediction visualization默认文件路径")
         #D:\project_zl\new_generate\Machine Learning Modeling\Algorithms\Continuous data\Xgboost
@@ -152,6 +164,12 @@ class mywindow(QtWidgets.QMainWindow, Ui_MainWindow):
         self.action_rfe_pairplot.triggered.connect(self.Preprocessing_Datavisualizationafterfeatureselection_Pairplot)
         self.action_3.triggered.connect(self.show_dialog_Preprocessing_Featureranking_Featureimportancebeforefeatureselection)
         self.action_4.triggered.connect(self.show_dialog_Preprocessing_Featureranking_Featureimportanceafterfeatureselection)
+        self.actionimport.triggered.connect(self.Import_pandas_csv)
+        self.actionprocessing.triggered.connect(self.pandas_csv_processing)
+        self.actionimport_2.triggered.connect(self.Import_pandas_csv2)
+        self.actiontransform.triggered.connect(self.pandas_csv_transform)
+
+
 
         # 机器学习建模
         #self.action_13.triggered.connect(self.show_dialog_Machinelearningmodeling_Algorithms)
@@ -647,6 +665,149 @@ class mywindow(QtWidgets.QMainWindow, Ui_MainWindow):
                                         QMessageBox.Close)
         except Exception as e:
             print(e)
+
+
+    # ---------------------------------------------
+
+    # 数据导入----------------------------------------------------------------------------------------
+    # 数据测试集路径
+    # pandas 删除重复值，填空值为，hyr，5-16
+    def Import_pandas_csv(self):
+        directory_temp, filetype = QFileDialog.getOpenFileNames(self, "Select file")
+        if len(directory_temp) > 0:
+            str_root = str(directory_temp)
+            f_csv = str_root.rfind('.csv')
+            if f_csv != -1:  # 判断是不是.csv
+                self.opt.origin_path_29= str((str_root.replace("\\", '/'))[2:-2])
+                self.Import_Multicolumn_Smiles_Morgan_state = True
+                QMessageBox.information(self, 'Hint', 'Completed!', QMessageBox.Ok | QMessageBox.Close,
+                                        QMessageBox.Close)
+            else:
+                QMessageBox.information(self, 'Hint', 'Not .csv file, please re-enter!',
+                                        QMessageBox.Ok | QMessageBox.Close,
+                                        QMessageBox.Close)
+        else:
+            QMessageBox.information(self, 'Hint', 'Please enter a file!', QMessageBox.Ok | QMessageBox.Close,
+                                    QMessageBox.Close)
+
+    def pandas_csv_processing(self):
+        try:
+            if self.Import_Multicolumn_Smiles_Morgan_state == True:
+                # 获取用户输入的文件路径
+                input_path = self.opt.origin_path_29
+                # 读取 CSV 文件
+                import pandas as pd
+                data = pd.read_csv(input_path)
+
+                # 填充空值
+                data.fillna(value='0', inplace=True)
+                # 删除重复值
+                data.drop_duplicates(inplace=True)
+
+                # 保存处理后的数据为 CSV 文件
+                output_path = self.opt.save_path + "/Processed_Data.csv"
+                data.to_csv(output_path, index=False)
+
+                QMessageBox.information(self, 'Hint', 'Completed!', QMessageBox.Ok | QMessageBox.Close,
+                                        QMessageBox.Close)
+                if self.opt.if_open == True:
+                    os.startfile(output_path)
+            else:
+                QMessageBox.information(self, 'Hint', 'Do "Import"!', QMessageBox.Ok | QMessageBox.Close,
+                                        QMessageBox.Close)
+        except Exception as e:
+            print(e)
+
+
+    # ---------------------------------------------------hyr  5-16
+    # pandas 转换excel为csv，转换json，转换txt
+    def Import_pandas_csv2(self):
+        directory_temp, filetype = QFileDialog.getOpenFileNames(self, "Select file")
+        if len(directory_temp) > 0:
+            str_root = str(directory_temp)
+            self.opt.origin_path_31 = str((str_root.replace("\\", '/'))[2:-2])
+            self.Import_Multicolumn_Smiles_Morgan_state = True
+            QMessageBox.information(self, 'Hint', 'Completed!', QMessageBox.Ok | QMessageBox.Close,
+                                    QMessageBox.Close)
+        else:
+            QMessageBox.information(self, 'Hint', 'Please enter a file!', QMessageBox.Ok | QMessageBox.Close,
+                                    QMessageBox.Close)
+
+    import os
+    import pandas as pd
+
+    def pandas_csv_transform(self):
+        try:
+            if self.Import_Multicolumn_Smiles_Morgan_state:
+                # 获取用户输入的文件路径
+                input_path = self.opt.origin_path_31
+                # 确保文件存在
+                if os.path.exists(input_path):
+                    import pandas as pd
+                    # 根据文件类型读取数据
+                    if input_path.endswith('.csv'):
+                        data = pd.read_csv(input_path)
+                    elif input_path.endswith('.json'):
+                        data = pd.read_json(input_path)
+                    elif input_path.endswith('.txt'):
+                        data = pd.read_csv(input_path, delimiter='\t')  # 假设是以制表符分隔的文本文件
+                    elif input_path.endswith('.xls') or input_path.endswith('.xlsx'):
+                        data = pd.read_excel(input_path)
+                    else:
+                        QMessageBox.information(self, 'Hint', 'Unsupported file format!',
+                                                QMessageBox.Ok | QMessageBox.Close,
+                                                QMessageBox.Close)
+                        return
+
+                    # 填充空值
+                    data.fillna(value='', inplace=True)
+                    # 删除重复值
+                    data.drop_duplicates(inplace=True)
+
+                    # 保存处理后的数据为 CSV 文件
+                    output_path = os.path.join(self.opt.save_path, "Processed_Data.csv")
+                    data.to_csv(output_path, index=False)
+
+                    QMessageBox.information(self, 'Hint', 'Completed!', QMessageBox.Ok | QMessageBox.Close,
+                                            QMessageBox.Close)
+                    if self.opt.if_open:
+                        os.startfile(output_path)
+                else:
+                    QMessageBox.information(self, 'Hint', 'File not found!', QMessageBox.Ok | QMessageBox.Close,
+                                            QMessageBox.Close)
+            else:
+                QMessageBox.information(self, 'Hint', 'Do "Import"!', QMessageBox.Ok | QMessageBox.Close,
+                                        QMessageBox.Close)
+        except Exception as e:
+            print(e)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     # 数据导入----------------------------------------------------------------------------------------
     # 数据测试集路径

@@ -57,7 +57,7 @@
      <x>0</x>
      <y>0</y>
      <width>1848</width>
-     <height>26</height>
+     <height>23</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu">
@@ -261,30 +261,8 @@
      <addaction name="action_21"/>
      <addaction name="action_22"/>
     </widget>
-    <widget class="QMenu" name="menuDataset_preprocessing">
-     <property name="title">
-      <string>Dataset preprocessing</string>
-     </property>
-     <widget class="QMenu" name="menuDataset_processing">
-      <property name="title">
-       <string>Dataset processing</string>
-      </property>
-      <addaction name="actionimport"/>
-      <addaction name="actionprocessing"/>
-     </widget>
-     <widget class="QMenu" name="menuDataset_transform">
-      <property name="title">
-       <string>Dataset transform</string>
-      </property>
-      <addaction name="actionimport_2"/>
-      <addaction name="actiontransform"/>
-     </widget>
-     <addaction name="menuDataset_processing"/>
-     <addaction name="menuDataset_transform"/>
-    </widget>
     <addaction name="menu_17"/>
     <addaction name="action_20"/>
-    <addaction name="menuDataset_preprocessing"/>
    </widget>
    <widget class="QMenu" name="menuShapley">
     <property name="title">
@@ -1338,26 +1316,6 @@
   <action name="actionPymatgen">
    <property name="text">
     <string>Pymatgen</string>
-   </property>
-  </action>
-  <action name="actionimport">
-   <property name="text">
-    <string>import</string>
-   </property>
-  </action>
-  <action name="actionprocessing">
-   <property name="text">
-    <string>processing</string>
-   </property>
-  </action>
-  <action name="actionimport_2">
-   <property name="text">
-    <string>import</string>
-   </property>
-  </action>
-  <action name="actiontransform">
-   <property name="text">
-    <string>transform</string>
    </property>
   </action>
  </widget>
