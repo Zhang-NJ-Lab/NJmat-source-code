@@ -1,46 +1,47 @@
-from PyQt5 import QtCore, QtGui, QtWidgets, Qt
-from PyQt5.QtWidgets import QFileDialog, QMessageBox
-from PyQt5.QtGui import QImage, QPixmap
-from PyQt5.QtCore import QTimer
 
-# import ase,catboost, chardet
-
-from NJmatML.dataML import Symbolicregression_Modelconstruction, Symbolicclassification
-from mainwindow import Ui_MainWindow
-import dialog_Machinelearningmodeling_Algorithms
-import dialog_Preprocessing_Featureranking,dialog_continuous_data_Xgboost,dialog_continuous_data_Random_Forest\
-    ,dialog_continuous_data_Bagging,dialog_continuous_data_AdaBoost,dialog_continuous_data_GradientBoosting,\
-    dialog_continuous_data_ExtraTree,dialog_continuous_data_Svm,dialog_continuous_data_DecisionTree,\
-    dialog_continuous_data_LinearRegression,dialog_continuous_data_Ridge,dialog_continuous_data_MLP
-import dialog_classified_data_two_RandomForest,dialog_classified_data_two_ExtraTree,dialog_classified_data_two_GaussianProcess,\
-    dialog_classified_data_two_DecisionTree,dialog_classified_data_two_SVM,dialog_wordlist_tsne
-import dialog_wordlist_tsne
-import dialog_classified_data_two_Adaboost
-import dialog_classified_data_two_xgboost,dialog_classified_data_two_Catboost
-import dialog_wordlist_tsne_highlight
-import dialog_classified_data_two_deep_dnn,dialog_classified_data_two_deep_cnn,dialog_classified_data_two_deep_rnn
-import dialog_continuous_data_deep_dnn
-from NJmatML import dataML
-from CSP import CSP_magus
+### 标准库---------------------------------------------------------------------------------------
 import argparse
 import warnings
-from Visualizer import  ASE_Gui
 import subprocess
-#import rdkit
 warnings.filterwarnings("ignore")
-
 import os
 import shutil
+from PyQt5 import  QtGui, QtWidgets
+from PyQt5.QtWidgets import QFileDialog, QMessageBox
 
-import ase,catboost,catboost_info,chardet,docutils,dotenv,gensim,gplearn,graphviz,joblib,matminer,monty,numpy, paramiko, pymatgen,rdkit,requests,shap,seaborn,tensorflow,tensorflow_estimator,xgboost,yaml
 
 
+### 自定义库---------------------------------------------------------------------------------------
+from NJmatML.dataML import Symbolicregression_Modelconstruction, Symbolicclassification
+from UI.mainwindow import Ui_MainWindow
+from UI import dialog_Machinelearningmodeling_Algorithms,\
+        dialog_Preprocessing_Featureranking,\
+        dialog_continuous_data_Xgboost,\
+        dialog_continuous_data_Random_Forest\
+        ,dialog_continuous_data_Bagging,dialog_continuous_data_AdaBoost,\
+        dialog_continuous_data_GradientBoosting,\
+        dialog_continuous_data_ExtraTree,\
+        dialog_continuous_data_Svm,\
+        dialog_continuous_data_DecisionTree,\
+        dialog_continuous_data_LinearRegression,\
+        dialog_continuous_data_Ridge,\
+        dialog_continuous_data_MLP,\
+        dialog_classified_data_two_RandomForest,\
+        dialog_classified_data_two_ExtraTree,\
+        dialog_classified_data_two_GaussianProcess,\
+        dialog_classified_data_two_DecisionTree,\
+        dialog_classified_data_two_SVM, \
+    dialog_wordlist_tsne,\
+        dialog_classified_data_two_Adaboost,\
+        dialog_classified_data_two_xgboost,\
+        dialog_classified_data_two_Catboost,dialog_wordlist_tsne_highlight,\
+        dialog_classified_data_two_deep_dnn,\
+        dialog_classified_data_two_deep_cnn,\
+        dialog_classified_data_two_deep_rnn,\
+        dialog_continuous_data_deep_dnn
+from NJmatML import dataML
+from CSP import CSP_magus
 
-import numpy as np
-import pandas
-import gensim
-import paramiko
-# untitled1.py 加 self.textBrowser.setLineWrapMode(0) 水平滑轮                   #Todo
 
 class mywindow(QtWidgets.QMainWindow, Ui_MainWindow):
     def __init__(self):
@@ -352,16 +353,19 @@ class mywindow(QtWidgets.QMainWindow, Ui_MainWindow):
                     str2 = str2 + str_temp
                 self.textBrowser.append(str2)
 
-    def textBrowser_print_six(self,str1,scores,str2):
+    def textBrowser_print_six(self, str1, scores, str2):
         self.textBrowser.append(str1)
-        str3 = "scores: "
-        str4 = ""
-        for i in range(len(scores)):
-            str3 = str3 + str(scores[i]) + "  "
-            scores_mean = scores[:i + 1].mean()
-            str4 = str4 + str(i + 1) + " " + "scores_mean: " + str(scores_mean) + "\n"
-        self.textBrowser.append(str3)
-        self.textBrowser.append(str4)
+        if len(scores) == 0:
+            pass
+        else:
+            str3 = "scores: "
+            str4 = ""
+            for i in range(len(scores)):
+                str3 = str3 + str(scores[i]) + "  "
+                scores_mean = scores[:i + 1].mean()
+                str4 = str4 + str(i + 1) + " " + "scores_mean: " + str(scores_mean) + "\n"
+            self.textBrowser.append(str3)
+            self.textBrowser.append(str4)
         self.textBrowser.append(str2)
 
 
@@ -732,9 +736,6 @@ class mywindow(QtWidgets.QMainWindow, Ui_MainWindow):
         else:
             QMessageBox.information(self, 'Hint', 'Please enter a file!', QMessageBox.Ok | QMessageBox.Close,
                                     QMessageBox.Close)
-
-    import os
-    import pandas as pd
 
     def pandas_csv_transform(self):
         try:
@@ -1163,7 +1164,15 @@ class mywindow(QtWidgets.QMainWindow, Ui_MainWindow):
             QMessageBox.information(self, 'Hint', 'Do "Train/Test -> Import"!', QMessageBox.Ok | QMessageBox.Close,
                                     QMessageBox.Close)
 
-    # 机器学习建模-模型选择-连续型-Xgboost                         Continuous data_Xgboost
+    # --------------------------------------------------
+    # 输入交叉验证个数
+    def enter_cross_validation_number(self):
+        value, ok = QtWidgets.QInputDialog.getInt(self, "Regression",
+                                                  "Enter the number of cross validation you want:", 5,
+                                                  -10000, 10000, 2)
+        return value, ok
+
+    # 交叉验证
     def Continuousdata_Xgboost(self):
         if self.enter_training_test_set_path_state == True:
             if self.rfe_feature_selection_state == True:
@@ -1173,23 +1182,35 @@ class mywindow(QtWidgets.QMainWindow, Ui_MainWindow):
                     shutil.rmtree(path)
                 os.makedirs(path)
                 self.di.close()
+                try:
+                    cross, ok = self.enter_cross_validation_number()
 
-                str1, scores, str2 =dataML.xgboost_modify(int(self.num_1),int(self.num_2),self.num_3,self.num_4
-                                      ,self.num_5,self.num_6,self.num_7,path,csvname)  # 三个图，第一个图测试集拟合，第二个图交叉验证，第三个图训练集的拟合（没什么用）
+                    # ok为true，则表示用户单击了OK（确定）按钮，若ok为false，则表示用户单击了Cancel（取消）按钮
+                    if ok:
+                        str1, scores, str2 = dataML.xgboost_modify(int(self.num_1), int(self.num_2), self.num_3, self.num_4
+                                                                   , self.num_5, self.num_6, self.num_7, path, csvname, cross)  # 三个图，第一个图测试集拟合，第二个图交叉验证，第三个图训练集的拟合（没什么用）
+                        # (n_estimators=1000, max_depth=200, eta=0.2, gamma=0, subsample=0.9, colsample_bytree=0.8, learning_rate=0.2)
+                        if scores[0] != -1:
+                            self.textBrowser_print_six(str1, scores, str2)
+                        else:
+                            self.textBrowser_print_six(str1, [], str2)
+                        self.textBrowser.append("*" * 150)
 
-                # (n_estimators=1000, max_depth=200, eta=0.2, gamma=0, subsample=0.9, colsample_bytree=0.8, learning_rate=0.2)
-                self.textBrowser_print_six(str1, scores, str2)
-                self.textBrowser.append("*" * 150)
+                        QMessageBox.information(self, 'Hint', 'Completed!', QMessageBox.Ok | QMessageBox.Close,
+                                                QMessageBox.Close)
 
-                QMessageBox.information(self, 'Hint', 'Completed!', QMessageBox.Ok | QMessageBox.Close,
-                                        QMessageBox.Close)
-                if self.opt.if_open == True:
-                    str1 = (path+'/xgboost-modify-test.png').replace("/", "\\")
-                    os.startfile(str1)
-                    str2 = (path+'/xgboost_modify-10-fold-crossvalidation.png').replace("/", "\\")
-                    os.startfile(str2)
-                    str3 = (path+'/xgboost-modify-train-default.png').replace("/", "\\")
-                    os.startfile(str3)
+                        if self.opt.if_open == True:
+                            str1 = (path + '/xgboost-modify-test.png').replace("/", "\\")
+                            os.startfile(str1)
+                            print(scores)
+                            if scores[0] != -1:
+                                file_set_name = 'xgboost_modify-' + str(cross) + '-fold-crossvalidation.png'
+                                str2 = (path + '/' + file_set_name).replace("/", "\\")
+                                os.startfile(str2)
+                            str3 = (path + '/xgboost-modify-train-default.png').replace("/", "\\")
+                            os.startfile(str3)
+                except Exception as e:
+                    print(e)
             else:
                 QMessageBox.information(self, 'Hint', 'Do "RFE feature selection"!', QMessageBox.Ok | QMessageBox.Close,
                                         QMessageBox.Close)
@@ -1197,9 +1218,10 @@ class mywindow(QtWidgets.QMainWindow, Ui_MainWindow):
         else:
             QMessageBox.information(self, 'Hint', 'Do "Train/Test -> Import"!', QMessageBox.Ok | QMessageBox.Close,
                                     QMessageBox.Close)
+
     def show_dialog_continuous_data_Xgboost(self):
-        def give(a,b,c,d,e,f,g):
-            self.num_1=a
+        def give(a, b, c, d, e, f, g):
+            self.num_1 = a
             self.num_2 = b
             self.num_3 = c
             self.num_4 = d
@@ -1208,54 +1230,67 @@ class mywindow(QtWidgets.QMainWindow, Ui_MainWindow):
             self.num_7 = g
             self.Continuousdata_Xgboost()
 
-        if self.enter_training_test_set_path_state == True:
-            if self.rfe_feature_selection_state == True:
+        try:
+            if self.enter_training_test_set_path_state == True:
+                if self.rfe_feature_selection_state == True:
 
-                self.di = QtWidgets.QDialog()
-                d = dialog_continuous_data_Xgboost.Ui_Dialog()
-                d.setupUi(self.di)
-                self.di.show()
+                    self.di = QtWidgets.QDialog()
+                    d = dialog_continuous_data_Xgboost.Ui_Dialog()
+                    d.setupUi(self.di)
+                    self.di.show()
 
-                d.buttonBox.accepted.connect(lambda :give(d.lineEdit.text(),d.lineEdit_2.text(),d.lineEdit_3.text(),d.lineEdit_4.text()
-                                                          ,d.lineEdit_5.text(),d.lineEdit_6.text(),d.lineEdit_7.text()))
-                d.buttonBox.rejected.connect(self.di.close)
+                    d.buttonBox.accepted.connect(lambda: give(d.lineEdit.text(), d.lineEdit_2.text(), d.lineEdit_3.text(), d.lineEdit_4.text()
+                                                              , d.lineEdit_5.text(), d.lineEdit_6.text(), d.lineEdit_7.text()))
+                    d.buttonBox.rejected.connect(self.di.close)
+                else:
+                    QMessageBox.information(self, 'Hint', 'Do "RFE feature selection"!', QMessageBox.Ok | QMessageBox.Close,
+                                            QMessageBox.Close)
+
             else:
-                QMessageBox.information(self, 'Hint', 'Do "RFE feature selection"!', QMessageBox.Ok | QMessageBox.Close,
+                QMessageBox.information(self, 'Hint', 'Do "Train/Test -> Import"!', QMessageBox.Ok | QMessageBox.Close,
                                         QMessageBox.Close)
-
-        else:
-            QMessageBox.information(self, 'Hint', 'Do "Train/Test -> Import"!', QMessageBox.Ok | QMessageBox.Close,
-                                    QMessageBox.Close)
+        except Exception as e:
+            print(e)
 
     # 机器学习建模-模型选择-连续型-Random Forest                         Continuous data_Random Forest
     def Continuousdata_RandomForest(self):
+        try:
             path = self.opt.save_path + "/Machine Learning Modeling/Algorithms/Continuous data/Random Forest"
             csvname = self.opt.save_path + "/Preprocessing/Rfe feature selection" + "/data_rfe.csv"
             if os.path.exists(path):
                 shutil.rmtree(path)
             os.makedirs(path)
             self.di.close()
-            try:
-                str1, scores, str2 = dataML.RandomForest_modify(int(self.num_1),float(self.num_2),int(self.num_3),int(self.num_4)
-                                  ,int(self.num_5),path,csvname)
-                self.textBrowser_print_six(str1, scores, str2)
+
+            cross, ok = self.enter_cross_validation_number()
+
+            # ok为true，则表示用户单击了OK（确定）按钮，若ok为false，则表示用户单击了Cancel（取消）按钮
+            if ok:
+                str1, scores, str2 = dataML.RandomForest_modify(int(self.num_1), float(self.num_2), int(self.num_3), int(self.num_4)
+                                                                , int(self.num_5), path, csvname, cross)
+                if scores[0] != -1:
+                    self.textBrowser_print_six(str1, scores, str2)
+                else:
+                    self.textBrowser_print_six(str1, [], str2)
                 self.textBrowser.append("*" * 150)
 
-            except Exception as e:
-                print(e)
+                QMessageBox.information(self, 'Hint', 'Completed!', QMessageBox.Ok | QMessageBox.Close,
+                                        QMessageBox.Close)
+                if self.opt.if_open == True:
+                    str1 = (path + '/RandomForest-modify-test.png').replace("/", "\\")
+                    os.startfile(str1)
+                    if scores[0] != -1:
+                        file_set_name = 'RandomForest_modify-' + str(cross) + '-fold-crossvalidation.png'
+                        str2 = (path + '/' + file_set_name).replace("/", "\\")
+                        os.startfile(str2)
+                    str3 = (path + '/RandomForest-modify-train.png').replace("/", "\\")
+                    os.startfile(str3)
+        except Exception as e:
+            print(e)
 
-            QMessageBox.information(self, 'Hint', 'Completed!', QMessageBox.Ok | QMessageBox.Close,
-                                    QMessageBox.Close)
-            if self.opt.if_open == True:
-                str1 = (path+'/RandomForest-modify-test.png').replace("/", "\\")
-                os.startfile(str1)
-                str2 = (path+'/RandomForest_modify-10-fold-crossvalidation.png').replace("/", "\\")
-                os.startfile(str2)
-                str3 = (path+'/RandomForest-modify-train.png').replace("/", "\\")
-                os.startfile(str3)
     def show_dialog_continuous_data_Random_Forest(self):
-        def give(a,b,c,d,e):
-            self.num_1=a
+        def give(a, b, c, d, e):
+            self.num_1 = a
             self.num_2 = b
             self.num_3 = c
             self.num_4 = d
@@ -1270,8 +1305,8 @@ class mywindow(QtWidgets.QMainWindow, Ui_MainWindow):
                 d.setupUi(self.di)
                 self.di.show()
 
-                d.buttonBox.accepted.connect(lambda :give(d.lineEdit_2.text(),d.lineEdit.text(),d.lineEdit_3.text(),d.lineEdit_4.text()
-                                                          ,d.lineEdit_5.text()))
+                d.buttonBox.accepted.connect(lambda: give(d.lineEdit_2.text(), d.lineEdit.text(), d.lineEdit_3.text(), d.lineEdit_4.text()
+                                                          , d.lineEdit_5.text()))
                 d.buttonBox.rejected.connect(self.di.close)
             else:
                 QMessageBox.information(self, 'Hint', 'Do "RFE feature selection"!', QMessageBox.Ok | QMessageBox.Close,
@@ -1283,29 +1318,42 @@ class mywindow(QtWidgets.QMainWindow, Ui_MainWindow):
 
     # 机器学习建模-模型选择-连续型-Bagging                         Continuous data_Bagging
     def Continuousdata_Bagging(self):
-        path = self.opt.save_path + "/Machine Learning Modeling/Algorithms/Continuous data/Bagging"
-        csvname = self.opt.save_path + "/Preprocessing/Rfe feature selection" + "/data_rfe.csv"
-        if os.path.exists(path):
-            shutil.rmtree(path)
-        os.makedirs(path)
-        self.di.close()
 
-        str1, scores, str2 = dataML.Bagging_modify(int(self.num_1), float(self.num_2), float(self.num_3), path,
-                                                    csvname)  # 三个图，第一个图测试集拟合，第二个图交叉验证，第三个图训练集的拟合（没什么用）
+        try:
+            path = self.opt.save_path + "/Machine Learning Modeling/Algorithms/Continuous data/Bagging"
+            csvname = self.opt.save_path + "/Preprocessing/Rfe feature selection" + "/data_rfe.csv"
+            if os.path.exists(path):
+                shutil.rmtree(path)
+            os.makedirs(path)
+            self.di.close()
+            cross, ok = self.enter_cross_validation_number()
 
-        # (n_estimators=10, max_samples=1,max_features=1)
-        self.textBrowser_print_six(str1, scores, str2)
-        self.textBrowser.append("*" * 150)
+            # ok为true，则表示用户单击了OK（确定）按钮，若ok为false，则表示用户单击了Cancel（取消）按钮
+            if ok:
+                str1, scores, str2 = dataML.Bagging_modify(int(self.num_1), float(self.num_2), float(self.num_3), path,
+                                                           csvname, cross)  # 三个图，第一个图测试集拟合，第二个图交叉验证，第三个图训练集的拟合（没什么用）
 
-        QMessageBox.information(self, 'Hint', 'Completed!', QMessageBox.Ok | QMessageBox.Close,
-                                QMessageBox.Close)
-        if self.opt.if_open == True:
-            str1 = (path + '/Bagging-modify-test.png').replace("/", "\\")
-            os.startfile(str1)
-            str2 = (path + '/Bagging-modify-10-fold-crossvalidation.png').replace("/", "\\")
-            os.startfile(str2)
-            str3 = (path + '/Bagging-modify-train.png').replace("/", "\\")
-            os.startfile(str3)
+                # (n_estimators=10, max_samples=1,max_features=1)
+                if scores[0] != -1:
+                    self.textBrowser_print_six(str1, scores, str2)
+                else:
+                    self.textBrowser_print_six(str1, [], str2)
+                self.textBrowser.append("*" * 150)
+
+                QMessageBox.information(self, 'Hint', 'Completed!', QMessageBox.Ok | QMessageBox.Close,
+                                        QMessageBox.Close)
+                if self.opt.if_open == True:
+                    str1 = (path + '/Bagging-modify-test.png').replace("/", "\\")
+                    os.startfile(str1)
+                    if scores[0] != -1:
+                        file_set_name = 'Bagging-modify-' + str(cross) + '-fold-crossvalidation.png'
+                        str2 = (path + '/' + file_set_name).replace("/", "\\")
+                        os.startfile(str2)
+                    str3 = (path + '/Bagging-modify-train.png').replace("/", "\\")
+                    os.startfile(str3)
+        except Exception as e:
+            print(e)
+
     def show_dialog_continuous_data_Bagging(self):
         def give(a, b, c):
             self.num_1 = a
@@ -1335,7 +1383,6 @@ class mywindow(QtWidgets.QMainWindow, Ui_MainWindow):
             QMessageBox.information(self, 'Hint', 'Do "Train/Test -> Import"!', QMessageBox.Ok | QMessageBox.Close,
                                     QMessageBox.Close)
 
-
     # 机器学习建模-模型选择-连续型-AdaBoost                         Continuous data_AdaBoost
     def Continuousdata_AdaBoost(self):
         try:
@@ -1346,23 +1393,32 @@ class mywindow(QtWidgets.QMainWindow, Ui_MainWindow):
             os.makedirs(path)
             self.di.close()
 
-            str1, scores, str2 = dataML.AdaBoost_modify(int(self.num_1), float(self.num_2), float(self.num_3),path,csvname)
+            cross, ok = self.enter_cross_validation_number()
 
-            # (n_estimators=50, learning_rate=1, loss='linear')
-            self.textBrowser_print_six(str1, scores, str2)
-            self.textBrowser.append("*" * 150)
+            # ok为true，则表示用户单击了OK（确定）按钮，若ok为false，则表示用户单击了Cancel（取消）按钮
+            if ok:
+                str1, scores, str2 = dataML.AdaBoost_modify(int(self.num_1), float(self.num_2), float(self.num_3), path, csvname, cross)
 
-            QMessageBox.information(self, 'Hint', 'Completed!', QMessageBox.Ok | QMessageBox.Close,
-                                    QMessageBox.Close)
-            if self.opt.if_open == True:
-                str1 = (path + '/AdaBoost-modify.png').replace("/", "\\")
-                os.startfile(str1)
-                str2 = (path + '/AdaBoost-modify-10-fold-crossvalidation.png').replace("/", "\\")
-                os.startfile(str2)
-                str3 = (path + '/AdaBoost-modify-train.png').replace("/", "\\")
-                os.startfile(str3)
+                # (n_estimators=50, learning_rate=1, loss='linear')
+                if scores[0] != -1:
+                    self.textBrowser_print_six(str1, scores, str2)
+                else:
+                    self.textBrowser_print_six(str1, [], str2)
+                self.textBrowser.append("*" * 150)
+                QMessageBox.information(self, 'Hint', 'Completed!', QMessageBox.Ok | QMessageBox.Close,
+                                        QMessageBox.Close)
+                if self.opt.if_open == True:
+                    str1 = (path + '/AdaBoost-modify-test.png').replace("/", "\\")
+                    os.startfile(str1)
+                    if scores[0] != -1:
+                        file_set_name = 'AdaBoost-modify-' + str(cross) + '-fold-crossvalidation.png'
+                        str2 = (path + '/' + file_set_name).replace("/", "\\")
+                        os.startfile(str2)
+                    str3 = (path + '/AdaBoost-modify-train.png').replace("/", "\\")
+                    os.startfile(str3)
         except Exception as e:
             print(e)
+
     def show_dialog_continuous_data_AdaBoost(self):
         def give(a, b, c):
             self.num_1 = a
@@ -1407,25 +1463,34 @@ class mywindow(QtWidgets.QMainWindow, Ui_MainWindow):
             os.makedirs(path)
             self.di.close()
 
-            str1, scores, str2 = dataML.GradientBoosting_modify(int(self.num_1), int(self.num_2), float(self.num_3),
-                                                                int(self.num_4), float(self.num_5), path,
-                                                                csvname)  # 三个图，第一个图测试集拟合，第二个图交叉验证，第三个图训练集的拟合（没什么用）
+            cross, ok = self.enter_cross_validation_number()
+            # ok为true，则表示用户单击了OK（确定）按钮，若ok为false，则表示用户单击了Cancel（取消）按钮
+            if ok:
+                str1, scores, str2 = dataML.GradientBoosting_modify(int(self.num_1), int(self.num_2), float(self.num_3),
+                                                                    int(self.num_4), float(self.num_5), path,
+                                                                    csvname, cross)  # 三个图，第一个图测试集拟合，第二个图交叉验证，第三个图训练集的拟合（没什么用）
 
-            # (n_estimators': 100, 'max_depth': 3, 'min_samples_split': 1,'min_samples_leaf': 1,'learning_rate': 0.1)
-            self.textBrowser_print_six(str1, scores, str2)
-            self.textBrowser.append("*" * 150)
+                # (n_estimators': 100, 'max_depth': 3, 'min_samples_split': 1,'min_samples_leaf': 1,'learning_rate': 0.1)
+                if scores[0] != -1:
+                    self.textBrowser_print_six(str1, scores, str2)
+                else:
+                    self.textBrowser_print_six(str1, [], str2)
+                self.textBrowser.append("*" * 150)
 
-            QMessageBox.information(self, 'Hint', 'Completed!', QMessageBox.Ok | QMessageBox.Close,
-                                    QMessageBox.Close)
-            if self.opt.if_open == True:
-                str1 = (path + '/GradientBoosting-modify.png').replace("/", "\\")
-                os.startfile(str1)
-                str2 = (path + '/GradientBoosting-modify-10-fold-crossvalidation.png').replace("/", "\\")
-                os.startfile(str2)
-                str3 = (path + '/GradientBoosting-modify-train.png').replace("/", "\\")
-                os.startfile(str3)
+                QMessageBox.information(self, 'Hint', 'Completed!', QMessageBox.Ok | QMessageBox.Close,
+                                        QMessageBox.Close)
+                if self.opt.if_open == True:
+                    str1 = (path + '/GradientBoosting-modify-test.png').replace("/", "\\")
+                    os.startfile(str1)
+                    if scores[0] != -1:
+                        file_set_name = 'GradientBoosting-modify-' + str(cross) + '-fold-crossvalidation.png'
+                        str2 = (path + '/' + file_set_name).replace("/", "\\")
+                        os.startfile(str2)
+                    str3 = (path + '/GradientBoosting-modify-train.png').replace("/", "\\")
+                    os.startfile(str3)
         except Exception as e:
             print(e)
+
     def show_dialog_continuous_data_GradientBoosting(self):
         def give(a, b, c, d, e):
             self.num_1 = a
@@ -1464,29 +1529,38 @@ class mywindow(QtWidgets.QMainWindow, Ui_MainWindow):
                 shutil.rmtree(path)
             os.makedirs(path)
             self.di.close()
-            # max_depth=None,max_features['sqrt', 'log2', None,'auto']='auto',min_samples_split=2,n_estimators=100,random_state=None
-            str1, scores, str2 = dataML.ExtraTree_modify(int(self.num_1), float(self.num_2), int(self.num_3),
-                                                                float(self.num_5), path,
-                                                                csvname)  # 三个图，第一个图测试集拟合，第二个图交叉验证，第三个图训练集的拟合（没什么用）
 
-            # (n_estimators': 100, 'max_depth': 3, 'min_samples_split': 2,'min_samples_leaf': 1,'learning_rate': 0.1)
-            self.textBrowser_print_six(str1, scores, str2)
-            self.textBrowser.append("*" * 150)
+            cross, ok = self.enter_cross_validation_number()
+            # ok为true，则表示用户单击了OK（确定）按钮，若ok为false，则表示用户单击了Cancel（取消）按钮
+            if ok:
+                str1, scores, str2 = dataML.ExtraTree_modify(int(self.num_1), float(self.num_2), int(self.num_3),
+                                                             float(self.num_5), path,
+                                                             csvname, cross)  # 三个图，第一个图测试集拟合，第二个图交叉验证，第三个图训练集的拟合（没什么用）
 
-            QMessageBox.information(self, 'Hint', 'Completed!', QMessageBox.Ok | QMessageBox.Close,
-                                    QMessageBox.Close)
-            if self.opt.if_open == True:
-                str1 = (path + '/ExtraTree-modify.png').replace("/", "\\")
-                os.startfile(str1)
-                str2 = (path + '/ExtraTree-modify-10-fold-crossvalidation.png').replace("/", "\\")
-                os.startfile(str2)
-                str3 = (path + '/ExtraTree-modify-train.png').replace("/", "\\")
-                os.startfile(str3)
+                # (n_estimators': 100, 'max_depth': 3, 'min_samples_split': 2,'min_samples_leaf': 1,'learning_rate': 0.1)
+                if scores[0] != -1:
+                    self.textBrowser_print_six(str1, scores, str2)
+                else:
+                    self.textBrowser_print_six(str1, [], str2)
+                self.textBrowser.append("*" * 150)
+
+                QMessageBox.information(self, 'Hint', 'Completed!', QMessageBox.Ok | QMessageBox.Close,
+                                        QMessageBox.Close)
+                if self.opt.if_open == True:
+                    str1 = (path + '/ExtraTree-modify-test.png').replace("/", "\\")
+                    os.startfile(str1)
+                    if scores[0] != -1:
+                        file_set_name = 'ExtraTree-modify-' + str(cross) + '-fold-crossvalidation.png'
+                        str2 = (path + '/' + file_set_name).replace("/", "\\")
+                        os.startfile(str2)
+                    str3 = (path + '/ExtraTree-modify-train.png').replace("/", "\\")
+                    os.startfile(str3)
         except Exception as e:
             print(e)
+
     def show_dialog_continuous_data_ExtraTree(self):
         # max_depth=None,max_features['sqrt', 'log2', None,'auto']='auto',min_samples_split=2,random_state=None
-        def give(a, b, c,e):
+        def give(a, b, c, e):
             if a == 'None':
                 self.num_1 = 0
             else:
@@ -1537,22 +1611,32 @@ class mywindow(QtWidgets.QMainWindow, Ui_MainWindow):
             os.makedirs(path)
             self.di.close()
             # C=1.0, epsilon=0.1
-            str1, scores, str2 = dataML.Svm_modify(float(self.num_1), float(self.num_2), path, csvname)
+            cross, ok = self.enter_cross_validation_number()
 
-            self.textBrowser_print_six(str1, scores, str2)
-            self.textBrowser.append("*" * 150)
+            # ok为true，则表示用户单击了OK（确定）按钮，若ok为false，则表示用户单击了Cancel（取消）按钮
+            if ok:
+                str1, scores, str2 = dataML.Svm_modify(float(self.num_1), float(self.num_2), path, csvname, cross)
 
-            QMessageBox.information(self, 'Hint', 'Completed!', QMessageBox.Ok | QMessageBox.Close,
-                                    QMessageBox.Close)
-            if self.opt.if_open == True:
-                str1 = (path + '/Svm-modify.png').replace("/", "\\")
-                os.startfile(str1)
-                str2 = (path + '/Svm-modify-10-fold-crossvalidation.png').replace("/", "\\")
-                os.startfile(str2)
-                str3 = (path + '/Svm-modify-train.png').replace("/", "\\")
-                os.startfile(str3)
+                if scores[0] != -1:
+                    self.textBrowser_print_six(str1, scores, str2)
+                else:
+                    self.textBrowser_print_six(str1, [], str2)
+                self.textBrowser.append("*" * 150)
+
+                QMessageBox.information(self, 'Hint', 'Completed!', QMessageBox.Ok | QMessageBox.Close,
+                                        QMessageBox.Close)
+                if self.opt.if_open == True:
+                    str1 = (path + '/Svm-modify-test.png').replace("/", "\\")
+                    os.startfile(str1)
+                    if scores[0] != -1:
+                        file_set_name = 'Svm-modify-' + str(cross) + '-fold-crossvalidation.png'
+                        str2 = (path + '/' + file_set_name).replace("/", "\\")
+                        os.startfile(str2)
+                    str3 = (path + '/Svm-modify-train.png').replace("/", "\\")
+                    os.startfile(str3)
         except Exception as e:
             print(e)
+
     def show_dialog_continuous_data_Svm(self):
         def give(a, b):
             self.num_1 = a
@@ -1587,24 +1671,34 @@ class mywindow(QtWidgets.QMainWindow, Ui_MainWindow):
             os.makedirs(path)
             self.di.close()
 
-            str1, scores, str2 = dataML.DecisionTree_modify(int(self.num_1), float(self.num_2), int(self.num_3),
-                                                            int(self.num_4), int(self.num_5), int(self.num_6), path,
-                                                            csvname)
-            # max_depth=None,max_features=None,min_samples_split=2,min_samples_leaf=1,random_state=None,max_leaf_nodes=None
-            self.textBrowser_print_six(str1, scores, str2)
-            self.textBrowser.append("*" * 150)
+            cross, ok = self.enter_cross_validation_number()
 
-            QMessageBox.information(self, 'Hint', 'Completed!', QMessageBox.Ok | QMessageBox.Close,
-                                    QMessageBox.Close)
-            if self.opt.if_open == True:
-                str1 = (path + '/DecisionTree-modify.png').replace("/", "\\")
-                os.startfile(str1)
-                str2 = (path + '/DecisionTree-modify-10-fold-crossvalidation.png').replace("/", "\\")
-                os.startfile(str2)
-                str3 = (path + '/DecisionTree-modify-train.png').replace("/", "\\")
-                os.startfile(str3)
+            # ok为true，则表示用户单击了OK（确定）按钮，若ok为false，则表示用户单击了Cancel（取消）按钮
+            if ok:
+                str1, scores, str2 = dataML.DecisionTree_modify(int(self.num_1), float(self.num_2), int(self.num_3),
+                                                                int(self.num_4), int(self.num_5), int(self.num_6), path,
+                                                                csvname, cross)
+                # max_depth=None,max_features=None,min_samples_split=2,min_samples_leaf=1,random_state=None,max_leaf_nodes=None
+                if scores[0] != -1:
+                    self.textBrowser_print_six(str1, scores, str2)
+                else:
+                    self.textBrowser_print_six(str1, [], str2)
+                self.textBrowser.append("*" * 150)
+
+                QMessageBox.information(self, 'Hint', 'Completed!', QMessageBox.Ok | QMessageBox.Close,
+                                        QMessageBox.Close)
+                if self.opt.if_open == True:
+                    str1 = (path + '/DecisionTree-modify-test.png').replace("/", "\\")
+                    os.startfile(str1)
+                    if scores[0] != -1:
+                        file_set_name = 'DecisionTree-modify-' + str(cross) + '-fold-crossvalidation.png'
+                        str2 = (path + '/' + file_set_name).replace("/", "\\")
+                        os.startfile(str2)
+                    str3 = (path + '/DecisionTree-modify-train.png').replace("/", "\\")
+                    os.startfile(str3)
         except Exception as e:
             print(e)
+
     def show_dialog_continuous_data_DecisionTree(self):
         # max_depth=None,max_features=None,min_samples_split=2,min_samples_leaf=1,random_state=None,max_leaf_nodes=None
         def give(a, b, c, d, e, f):
@@ -1663,23 +1757,33 @@ class mywindow(QtWidgets.QMainWindow, Ui_MainWindow):
             os.makedirs(path)
             self.di.close()
 
-            str1, scores, str2 = dataML.LinearRegression_modify(int(self.num_1), int(self.num_2), int(self.num_3),
-                                                                int(self.num_4), path, csvname)
-            # fit_intercept=True, normalize=False, copy_X=True, n_jobs=None
-            self.textBrowser_print_six(str1, scores, str2)
-            self.textBrowser.append("*" * 150)
+            cross, ok = self.enter_cross_validation_number()
 
-            QMessageBox.information(self, 'Hint', 'Completed!', QMessageBox.Ok | QMessageBox.Close,
-                                    QMessageBox.Close)
-            if self.opt.if_open == True:
-                str1 = (path + '/LinearRegression-modify.png').replace("/", "\\")
-                os.startfile(str1)
-                str2 = (path + '/LinearRegression-modify-10-fold-crossvalidation.png').replace("/", "\\")
-                os.startfile(str2)
-                str3 = (path + '/LinearRegression-modify-train.png').replace("/", "\\")
-                os.startfile(str3)
+            # ok为true，则表示用户单击了OK（确定）按钮，若ok为false，则表示用户单击了Cancel（取消）按钮
+            if ok:
+                str1, scores, str2 = dataML.LinearRegression_modify(int(self.num_1), int(self.num_2), int(self.num_3),
+                                                                    int(self.num_4), path, csvname, cross)
+                # fit_intercept=True, normalize=False, copy_X=True, n_jobs=None
+                if scores[0] != -1:
+                    self.textBrowser_print_six(str1, scores, str2)
+                else:
+                    self.textBrowser_print_six(str1, [], str2)
+                self.textBrowser.append("*" * 150)
+
+                QMessageBox.information(self, 'Hint', 'Completed!', QMessageBox.Ok | QMessageBox.Close,
+                                        QMessageBox.Close)
+                if self.opt.if_open == True:
+                    str1 = (path + '/LinearRegression-modify-test.png').replace("/", "\\")
+                    os.startfile(str1)
+                    if scores[0] != -1:
+                        file_set_name = 'LinearRegression-modify-' + str(cross) + '-fold-crossvalidation.png'
+                        str2 = (path + '/' + file_set_name).replace("/", "\\")
+                        os.startfile(str2)
+                    str3 = (path + '/LinearRegression-modify-train.png').replace("/", "\\")
+                    os.startfile(str3)
         except Exception as e:
             print(e)
+
     def show_dialog_continuous_data_LinearRegression(self):
         # fit_intercept=True, normalize=False, copy_X=True, n_jobs=None
         def give(a, b, c, d):
@@ -1730,23 +1834,33 @@ class mywindow(QtWidgets.QMainWindow, Ui_MainWindow):
             os.makedirs(path)
             self.di.close()
 
-            str1, scores, str2 = dataML.Ridge_modify(float(self.num_1), int(self.num_2), int(self.num_3),
-                                                     int(self.num_4), int(self.num_5), path, csvname)
-            # alpha=1.0, fit_intercept=True, normalize=False, copy_X=True, random_state=None
-            self.textBrowser_print_six(str1, scores, str2)
-            self.textBrowser.append("*" * 150)
+            cross, ok = self.enter_cross_validation_number()
 
-            QMessageBox.information(self, 'Hint', 'Completed!', QMessageBox.Ok | QMessageBox.Close,
-                                    QMessageBox.Close)
-            if self.opt.if_open == True:
-                str1 = (path + '/Ridge-modify.png').replace("/", "\\")
-                os.startfile(str1)
-                str2 = (path + '/Ridge-modify-10-fold-crossvalidation.png').replace("/", "\\")
-                os.startfile(str2)
-                str3 = (path + '/Ridge-modify-train.png').replace("/", "\\")
-                os.startfile(str3)
+            # ok为true，则表示用户单击了OK（确定）按钮，若ok为false，则表示用户单击了Cancel（取消）按钮
+            if ok:
+                str1, scores, str2 = dataML.Ridge_modify(float(self.num_1), int(self.num_2), int(self.num_3),
+                                                         int(self.num_4), int(self.num_5), path, csvname, cross)
+                # alpha=1.0, fit_intercept=True, normalize=False, copy_X=True, random_state=None
+                if scores[0] != -1:
+                    self.textBrowser_print_six(str1, scores, str2)
+                else:
+                    self.textBrowser_print_six(str1, [], str2)
+                self.textBrowser.append("*" * 150)
+
+                QMessageBox.information(self, 'Hint', 'Completed!', QMessageBox.Ok | QMessageBox.Close,
+                                        QMessageBox.Close)
+                if self.opt.if_open == True:
+                    str1 = (path + '/Ridge-modify-test.png').replace("/", "\\")
+                    os.startfile(str1)
+                    if scores[0] != -1:
+                        file_set_name = 'Ridge-modify-' + str(cross) + '-fold-crossvalidation.png'
+                        str2 = (path + '/' + file_set_name).replace("/", "\\")
+                        os.startfile(str2)
+                    str3 = (path + '/Ridge-modify-train.png').replace("/", "\\")
+                    os.startfile(str3)
         except Exception as e:
             print(e)
+
     def show_dialog_continuous_data_Ridge(self):
         # alpha=1.0, fit_intercept=True, normalize=False, copy_X=True, random_state=None
         def give(a, b, c, d, e):
@@ -1798,26 +1912,35 @@ class mywindow(QtWidgets.QMainWindow, Ui_MainWindow):
             os.makedirs(path)
             self.di.close()
 
+            cross, ok = self.enter_cross_validation_number()
 
-            str1, scores, str2 = dataML.MLP_modify(float(self.num_1),float(self.num_2),int(self.num_3),int(self.num_4)
-                                ,int(self.num_5),path,csvname)
-            self.textBrowser_print_six(str1, scores, str2)
-            self.textBrowser.append("*" * 150)
+            # ok为true，则表示用户单击了OK（确定）按钮，若ok为false，则表示用户单击了Cancel（取消）按钮
+            if ok:
+                str1, scores, str2 = dataML.MLP_modify(float(self.num_1), float(self.num_2), int(self.num_3), int(self.num_4)
+                                                       , int(self.num_5), path, csvname, cross)
+                if scores[0] != -1:
+                    self.textBrowser_print_six(str1, scores, str2)
+                else:
+                    self.textBrowser_print_six(str1, [], str2)
+                self.textBrowser.append("*" * 150)
 
-            QMessageBox.information(self, 'Hint', 'Completed!', QMessageBox.Ok | QMessageBox.Close,
-                                    QMessageBox.Close)
-            if self.opt.if_open == True:
-                str1 = (path+'/MLP_modify.png').replace("/", "\\")
-                os.startfile(str1)
-                str2 = (path+'/MLP_modify-10-fold-crossvalidation.png').replace("/", "\\")
-                os.startfile(str2)
-                str3 = (path+'/MLP_modify-train.png').replace("/", "\\")
-                os.startfile(str3)
+                QMessageBox.information(self, 'Hint', 'Completed!', QMessageBox.Ok | QMessageBox.Close,
+                                        QMessageBox.Close)
+                if self.opt.if_open == True:
+                    str1 = (path + '/MLP-modify-test.png').replace("/", "\\")
+                    os.startfile(str1)
+                    if scores[0] != -1:
+                        file_set_name = 'MLP_modify-' + str(cross) + '-fold-crossvalidation.png'
+                        str2 = (path + '/' + file_set_name).replace("/", "\\")
+                        os.startfile(str2)
+                    str3 = (path + '/MLP_modify-train.png').replace("/", "\\")
+                    os.startfile(str3)
         except Exception as e:
-                print(e)
+            print(e)
+
     def show_dialog_continuous_data_MLP(self):
-        def give(a,b,c,d,e):
-            self.num_1=a
+        def give(a, b, c, d, e):
+            self.num_1 = a
             self.num_2 = b
             self.num_3 = c
             self.num_4 = d
@@ -1831,8 +1954,8 @@ class mywindow(QtWidgets.QMainWindow, Ui_MainWindow):
                 d.setupUi(self.di)
                 self.di.show()
 
-                d.buttonBox.accepted.connect(lambda :give(d.lineEdit.text(),d.lineEdit_2.text(),d.lineEdit_3.text(),d.lineEdit_4.text()
-                                                                  ,d.lineEdit_5.text()))
+                d.buttonBox.accepted.connect(lambda: give(d.lineEdit.text(), d.lineEdit_2.text(), d.lineEdit_3.text(), d.lineEdit_4.text()
+                                                          , d.lineEdit_5.text()))
                 d.buttonBox.rejected.connect(self.di.close)
             else:
                 QMessageBox.information(self, 'Hint', 'Do "RFE feature selection"!', QMessageBox.Ok | QMessageBox.Close,
@@ -1842,6 +1965,9 @@ class mywindow(QtWidgets.QMainWindow, Ui_MainWindow):
             QMessageBox.information(self, 'Hint', 'Do "Train/Test -> Import"!', QMessageBox.Ok | QMessageBox.Close,
                                     QMessageBox.Close)
 
+    # =------------------------------------------------
+
+    # ------------------------------------------------------------
     def Continuousdata_dnn_tensorflow(self, epochs_enter, batch_sizer_enter, validation_split_enter):
         try:
 
@@ -3153,32 +3279,7 @@ class mywindow(QtWidgets.QMainWindow, Ui_MainWindow):
         else:
             QMessageBox.information(self, 'Hint', 'Please choose a model!', QMessageBox.Ok | QMessageBox.Close,
                                     QMessageBox.Close)
-    #
-    # def NLP_model_tsne(self):
-    #     try:
-    #         path = self.opt.save_path + "/NLP/tsne"
-    #         if os.path.exists(path):
-    #             shutil.rmtree(path)
-    #         os.makedirs(path)
-    #
-    #         dataML.NLP_model_tsne(self.opt.origin_path_2, path, self.opt.origin_path_7)
-    #
-    #         if self.opt.if_open == True:
-    #             str1 = (path + '/tsne_with_words.png').replace("/", "\\")
-    #             os.startfile(str1)
-    #             str2 = (path + '/tsne_without_words.png').replace("/", "\\")
-    #             os.startfile(str2)
-    #             # str3 = (path + '/Feature_ranking_bar.png').replace("/", "\\")
-    #             # os.startfile(str3)
-    #             # str4 = (path + '/Waterfall.png').replace("/", "\\")
-    #             # os.startfile(str4)
-    #             # str5 = (path + '/decision_tree.png').replace("/", "\\")
-    #             # os.startfile(str5)
-    #
-    #         QMessageBox.information(self, 'Hint', 'Completed!', QMessageBox.Ok | QMessageBox.Close,
-    #                                 QMessageBox.Close)
-    #     except Exception as e:
-    #         print(e)
+
 
 
     def NLP_model_tsne(self, highlight_words_blue, highlight_words_red, highlight_words_yellow, highlight_words_green,
@@ -3358,17 +3459,6 @@ class mywindow(QtWidgets.QMainWindow, Ui_MainWindow):
             print(e)
 
 
-
-
-
-
-
-
-
-
-
-
-
     def open_github_csv_template(self):
         from PyQt5.QtCore import QUrl
         from PyQt5.QtGui import QDesktopServices
@@ -3380,54 +3470,6 @@ class mywindow(QtWidgets.QMainWindow, Ui_MainWindow):
         from PyQt5.QtGui import QDesktopServices
         url = QUrl("https://figshare.com/articles/software/NJmatML/24607893")
         QDesktopServices.openUrl(url)
-
-
-
-    ####    TODO  : 代码问题：'int' object has no attribute 'document'
-    # def csv_clean(self):
-    #
-    #     import shutil
-    #     mat_path = self.opt.save_path + "/matbert"
-    #     if os.path.exists(mat_path):
-    #         shutil.rmtree(mat_path)
-    #     os.makedirs(mat_path)
-    #
-    #     try:
-    #         file_path, _ = QFileDialog.getOpenFileName(self, '选择 CSV 文件', '', 'CSV files (*.csv)')
-    #
-    #         import pandas as pd
-    #         from chemdataextractor import Document
-    #
-    #         # 读取 CSV 文件
-    #         df = pd.read_csv(file_path)
-    #
-    #         # 提取第一列数据
-    #         column_data = df.iloc[:, 0]
-    #
-    #         # 定义函数来识别化学物质
-    #         def is_chemical(entity):
-    #             doc = Document(entity)
-    #             chem_entities = doc.cems
-    #             return len(chem_entities) > 0
-    #
-    #         # 创建新列来表示化学物质
-    #         df['Chemical'] = column_data.apply(lambda x: 1 if is_chemical(x) else 0)
-    #
-    #         # 删除最后一列是 0 的整行
-    #         df = df[df.iloc[:, -1] != 0]
-    #
-    #         # 删除最后一列
-    #         df = df.drop(df.columns[-1], axis=1)
-    #
-    #         # 保存结果到新的CSV文件，命名为 clean.csv
-    #         df.to_csv(mat_path + "/clean.csv", index=False)
-    #
-    #         str1 = (mat_path + '/clean.csv').replace("/", "\\")
-    #         os.startfile(str1)
-    #     except Exception as e:
-    #         print(e)
-
-
 
 
 

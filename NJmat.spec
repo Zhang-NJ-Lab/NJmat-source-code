@@ -1,25 +1,60 @@
 # -*- mode: python ; coding: utf-8 -*-
 
 
-block_cipher = None
-
-
 a = Analysis(
-    ['NJmat.py'],
+    ['NJmat.py' ,
+     '.\\NJmatML\\dataML.py',
+     '.\\Visualizer\\ase_gui.py',
+     '.\\MP\\CIF download.py' , 
+     '.\\MP\\Descriptor design.py'
+     ],
+     
     pathex=[],
     binaries=[],
-    datas=[('.\\Visualizer\\ASE_Gui.py', '.\\Visualizer'), ('.\\MP\\CIF download.py', '.\\MP'), ('.\\MP\\Descriptor design.py', '.\\MP')],
-    hiddenimports=[],
+    datas=[
+        (".\\CSP", "CSP"), 
+        (".\\Visualizer", "Visualizer"),  
+        (".\\MP", "MP")
+    ],
+    hiddenimports=[
+        'ase',
+        'BeautifulReport',  
+        'catboost',
+        'chemdataextractor',
+        'dpdata',
+        'dscribe',
+        'gensim',
+        'ghapi', 
+        'gplearn',
+        'graphviz',
+        'ipython',  
+        'matminer',
+        'mendeleev',
+        'mpi4py',
+        'packaging',
+        'padelpy',
+        'paramiko',
+        'plotly',
+        'pydotplus',
+        'pymatgen',
+        'PyQt5',
+        'PyQt5-sip',
+        'quippy',
+        'rdkit',
+        'scikit-learn',
+        'scipy',
+        'seaborn',
+        'spglib',
+        'tensorflow',
+        'xgboost'
+    ],
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
     excludes=[],
-    win_no_prefer_redirects=False,
-    win_private_assemblies=False,
-    cipher=block_cipher,
     noarchive=False,
 )
-pyz = PYZ(a.pure, a.zipped_data, cipher=block_cipher)
+pyz = PYZ(a.pure)
 
 exe = EXE(
     pyz,
@@ -37,12 +72,10 @@ exe = EXE(
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
-    icon=['test.ico'],
 )
 coll = COLLECT(
     exe,
     a.binaries,
-    a.zipfiles,
     a.datas,
     strip=False,
     upx=True,
